@@ -107,3 +107,9 @@ Household/parent/enfant → quêtes (créer/accepter/déclarer/valider) → wall
 boutique + achat/validation → objectif + coffre → XP/niveaux/badges → 3 univers de cartes +
 boosters + album + doublons/maîtrise → sélection d'univers par le parent → premiers modules
 éducatifs + simulateur simple → dashboard parent → notifications → responsive + PWA installable.
+
+## Suivi de progression pendant le codage
+
+Quand un LLM code une tâche demandée par l'utilisateur sur ce projet, il doit indiquer régulièrement
+où il en est par rapport à la demande initiale — environ tous les 25% d'avancement (25%, 50%, 75%,
+100%) — avec à chaque fois une estimation du temps restant en minutes.
