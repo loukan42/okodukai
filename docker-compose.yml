@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: okodukai
+      POSTGRES_PASSWORD: okodukai
+      POSTGRES_DB: okodukai
+    ports:
+      - "5432:5432"
+    volumes:
+      - okodukai_db_data:/var/lib/postgresql/data
+
+volumes:
+  okodukai_db_data:

@@ -1,0 +1,612 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Foyer & comptes
+// ---------------------------------------------------------------------------
+
+model Household {
+  id        String   @id @default(uuid())
+  name      String
+  currencyName String @default("Pièces")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships   HouseholdMembership[]
+  children      ChildProfile[]
+  quests        Quest[]
+  rewards       Reward[]
+  universeGrants HouseholdUniverse[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  displayName  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  memberships HouseholdMembership[]
+  createdQuests Quest[] @relation("QuestCreator")
+  auditLogs   AuditLog[]
+}
+
+enum HouseholdRole {
+  PARENT_ADMIN
+  PARENT
+}
+
+model HouseholdMembership {
+  id          String        @id @default(uuid())
+  householdId String
+  household   Household     @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        HouseholdRole @default(PARENT)
+  createdAt   DateTime      @default(now())
+
+  @@unique([householdId, userId])
+}
+
+enum AgeBand {
+  AGE_8_9
+  AGE_10_12
+}
+
+model ChildProfile {
+  id          String   @id @default(uuid())
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  displayName String
+  ageBand     AgeBand
+  avatarId    String
+  pinHash     String
+  currentXp   Int      @default(0)
+  currentLevel Int     @default(1)
+  activeGoalId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  wallet          Wallet?
+  quests          Quest[]
+  questCompletions QuestCompletion[]
+  redemptions     RewardRedemption[]
+  savingsGoals    SavingsGoal[]
+  xpTransactions  XpTransaction[]
+  childBadges     ChildBadge[]
+  boosterInstances BoosterInstance[]
+  childCards      ChildCard[]
+  learningProgress LearningProgress[]
+  simPortfolios   SimulationPortfolio[]
+  notifications   Notification[]
+
+  @@index([householdId])
+}
+
+// ---------------------------------------------------------------------------
+// Portefeuille & ledger
+// ---------------------------------------------------------------------------
+
+model Wallet {
+  id        String   @id @default(uuid())
+  childId   String   @unique
+  child     ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  transactions WalletTransaction[]
+}
+
+enum WalletTransactionType {
+  QUEST_REWARD
+  PARENT_BONUS
+  PARENT_ADJUSTMENT
+  REWARD_PURCHASE
+  REWARD_REFUND
+  SAVINGS_LOCK
+  SAVINGS_UNLOCK
+  SAVINGS_BONUS
+}
+
+model WalletTransaction {
+  id             String   @id @default(uuid())
+  walletId       String
+  wallet         Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  amount         Int      // toujours positif ; l'effet sur le solde disponible / le coffre est déterminé par `type` (voir lib/ledger.ts)
+  type           WalletTransactionType
+  /// Uniquement significatif pour PARENT_ADJUSTMENT (les autres types ont un sens fixe) : "credit" ou "debit".
+  direction      String?
+  sourceType     String?  // ex: "quest_completion", "reward_redemption", "savings_goal"
+  sourceId       String?
+  actorId        String   // userId (parent) ou childId (enfant) à l'origine de l'action
+  reason         String?
+  idempotencyKey String   @unique
+  createdAt      DateTime @default(now())
+
+  @@index([walletId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Quêtes
+// ---------------------------------------------------------------------------
+
+enum QuestCategory {
+  MAISON
+  AUTONOMIE
+  APPRENTISSAGE
+  ENTRAIDE
+  CREATIVITE
+  ECOLE
+  JARDIN
+  ANIMAUX
+}
+
+enum QuestDifficulty {
+  FACILE
+  MOYENNE
+  IMPORTANTE
+  EXCEPTIONNELLE
+}
+
+enum QuestRecurrence {
+  UNIQUE
+  QUOTIDIENNE
+  HEBDOMADAIRE
+}
+
+enum QuestStatus {
+  DISPONIBLE
+  ACCEPTEE
+  EN_COURS
+  DECLAREE_TERMINEE
+  EN_ATTENTE_VALIDATION
+  VALIDEE
+  A_REFAIRE
+  REFUSEE
+}
+
+model Quest {
+  id                String   @id @default(uuid())
+  householdId       String
+  household         Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  creatorId         String
+  creator           User     @relation("QuestCreator", fields: [creatorId], references: [id])
+  childId           String
+  child             ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  title             String
+  description       String?
+  category          QuestCategory
+  difficulty        QuestDifficulty @default(FACILE)
+  rewardCoins       Int      @default(0)
+  rewardXp          Int      @default(0)
+  boosterDefinitionId String?
+  boosterDefinition BoosterDefinition? @relation(fields: [boosterDefinitionId], references: [id])
+  recurrence        QuestRecurrence @default(UNIQUE)
+  dueAt             DateTime?
+  validationRequired Boolean @default(true)
+  active            Boolean  @default(true)
+  status            QuestStatus @default(DISPONIBLE)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  completions QuestCompletion[]
+
+  @@index([householdId])
+  @@index([childId, status])
+}
+
+enum QuestCompletionStatus {
+  EN_ATTENTE
+  VALIDEE
+  A_REFAIRE
+  REFUSEE
+}
+
+model QuestCompletion {
+  id           String   @id @default(uuid())
+  questId      String
+  quest        Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
+  childId      String
+  child        ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  declaredAt   DateTime @default(now())
+  reviewedAt   DateTime?
+  reviewedById String?
+  status       QuestCompletionStatus @default(EN_ATTENTE)
+  note         String?
+
+  @@index([questId])
+  @@index([childId, status])
+}
+
+// ---------------------------------------------------------------------------
+// Boutique / récompenses
+// ---------------------------------------------------------------------------
+
+enum RewardCategory {
+  EXPERIENCE
+  OBJET
+}
+
+model Reward {
+  id                 String   @id @default(uuid())
+  householdId        String
+  household          Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  title              String
+  description        String?
+  imageUrl           String?
+  category           RewardCategory
+  priceCoins         Int
+  allowedChildIds     String[] // vide = tous les enfants du foyer
+  quantityAvailable  Int?     // null = illimité
+  cooldownHours      Int?
+  active             Boolean  @default(true)
+  expiresAt          DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  redemptions RewardRedemption[]
+
+  @@index([householdId])
+}
+
+enum RedemptionStatus {
+  DEMANDEE
+  ACCEPTEE
+  A_UTILISER
+  UTILISEE
+  REFUSEE
+}
+
+model RewardRedemption {
+  id           String   @id @default(uuid())
+  rewardId     String
+  reward       Reward   @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+  childId      String
+  child        ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  priceCoinsAtPurchase Int
+  status       RedemptionStatus @default(DEMANDEE)
+  requestedAt  DateTime @default(now())
+  reviewedAt   DateTime?
+  reviewedById String?
+  usedAt       DateTime?
+
+  @@index([rewardId])
+  @@index([childId, status])
+}
+
+// ---------------------------------------------------------------------------
+// Épargne (coffre)
+// ---------------------------------------------------------------------------
+
+model SavingsGoal {
+  id           String   @id @default(uuid())
+  childId      String
+  child        ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  title        String
+  targetCoins  Int
+  rewardId     String?
+  achievedAt   DateTime?
+  createdAt    DateTime @default(now())
+
+  @@index([childId])
+}
+
+// ---------------------------------------------------------------------------
+// XP / niveaux / badges
+// ---------------------------------------------------------------------------
+
+enum XpSourceType {
+  QUEST
+  SAVINGS_GOAL
+  LEARNING_MODULE
+  COLLECTION
+  BADGE
+  LEVEL_UP_BONUS
+}
+
+model XpTransaction {
+  id         String   @id @default(uuid())
+  childId    String
+  child      ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  amount     Int
+  sourceType XpSourceType
+  sourceId   String?
+  idempotencyKey String @unique
+  createdAt  DateTime @default(now())
+
+  @@index([childId, createdAt])
+}
+
+model Badge {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  title       String
+  description String
+  iconUrl     String?
+  createdAt   DateTime @default(now())
+
+  childBadges ChildBadge[]
+}
+
+model ChildBadge {
+  id        String   @id @default(uuid())
+  childId   String
+  child     ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  badgeId   String
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  earnedAt  DateTime @default(now())
+
+  @@unique([childId, badgeId])
+}
+
+// ---------------------------------------------------------------------------
+// Univers, cartes, boosters
+// ---------------------------------------------------------------------------
+
+model Universe {
+  id           String   @id @default(uuid())
+  code         String   @unique
+  title        String
+  description  String?
+  coverImageUrl String?
+  isLicensed   Boolean  @default(false)
+  licensor     String?
+  licenseId    String?
+  licenseStartsAt DateTime?
+  licenseEndsAt   DateTime?
+  active       Boolean  @default(true)
+  sortOrder    Int      @default(0)
+
+  series   CollectionSeries[]
+  cards    Card[]
+  boosterDefinitions BoosterDefinition[]
+  householdGrants HouseholdUniverse[]
+}
+
+model HouseholdUniverse {
+  id          String   @id @default(uuid())
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  universeId  String
+  universe    Universe @relation(fields: [universeId], references: [id], onDelete: Cascade)
+  enabledAt   DateTime @default(now())
+
+  @@unique([householdId, universeId])
+}
+
+model CollectionSeries {
+  id         String   @id @default(uuid())
+  universeId String
+  universe   Universe @relation(fields: [universeId], references: [id], onDelete: Cascade)
+  title      String
+  sortOrder  Int      @default(0)
+
+  cards Card[]
+}
+
+enum CardRarity {
+  COMMUNE
+  PEU_COMMUNE
+  RARE
+  EPIQUE
+  LEGENDAIRE
+}
+
+model Card {
+  id              String   @id @default(uuid())
+  universeId      String
+  universe        Universe @relation(fields: [universeId], references: [id], onDelete: Cascade)
+  seriesId        String?
+  series          CollectionSeries? @relation(fields: [seriesId], references: [id])
+  cardNumber      Int
+  name            String
+  rarity          CardRarity
+  category        String?
+  description     String?
+  educationalFact String?
+  artworkUrl      String?
+  active          Boolean  @default(true)
+
+  childCards ChildCard[]
+
+  @@unique([universeId, cardNumber])
+  @@index([universeId, rarity])
+}
+
+model ChildCard {
+  id          String   @id @default(uuid())
+  childId     String
+  child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  cardId      String
+  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  quantity    Int      @default(1)
+  firstObtainedAt DateTime @default(now())
+  lastObtainedAt  DateTime @default(now())
+
+  @@unique([childId, cardId])
+  @@index([childId])
+}
+
+model BoosterDefinition {
+  id            String   @id @default(uuid())
+  universeId    String
+  universe      Universe @relation(fields: [universeId], references: [id], onDelete: Cascade)
+  code          String   @unique
+  title         String
+  cardCount     Int      @default(5)
+  rngVersion    String   @default("v1")
+  // configuration des probabilités par emplacement, versionnée et sérialisée en JSON
+  slotConfig    Json
+
+  quests   Quest[]
+  instances BoosterInstance[]
+}
+
+enum BoosterInstanceStatus {
+  NON_OUVERT
+  OUVERT
+}
+
+model BoosterInstance {
+  id           String   @id @default(uuid())
+  childId      String
+  child        ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  definitionId String
+  definition   BoosterDefinition @relation(fields: [definitionId], references: [id])
+  sourceType   String   // "quest_reward" | "level_up" | "savings_goal" | "badge" | "parent_grant"
+  sourceId     String?
+  status       BoosterInstanceStatus @default(NON_OUVERT)
+  grantedAt    DateTime @default(now())
+  openedAt     DateTime?
+
+  opening BoosterOpening?
+
+  @@index([childId, status])
+}
+
+model BoosterOpening {
+  id           String   @id @default(uuid())
+  boosterInstanceId String @unique
+  boosterInstance BoosterInstance @relation(fields: [boosterInstanceId], references: [id], onDelete: Cascade)
+  childId      String
+  rngVersion   String
+  rngSeed      String
+  resultCardIds String[]
+  createdAt    DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Éducation financière
+// ---------------------------------------------------------------------------
+
+enum LearningAgeBand {
+  AGE_8_9
+  AGE_10_12
+  ALL
+}
+
+model LearningModule {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  order       Int
+  title       String
+  subtitle    String
+  ageBand     LearningAgeBand @default(ALL)
+  content     Json     // situation / choix / conséquence / explication / mini-question
+  rewardXp    Int      @default(20)
+  active      Boolean  @default(true)
+
+  progress LearningProgress[]
+}
+
+enum LearningProgressStatus {
+  NON_COMMENCE
+  EN_COURS
+  TERMINE
+}
+
+model LearningProgress {
+  id          String   @id @default(uuid())
+  childId     String
+  child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  moduleId    String
+  module      LearningModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  status      LearningProgressStatus @default(NON_COMMENCE)
+  completedAt DateTime?
+
+  @@unique([childId, moduleId])
+}
+
+// ---------------------------------------------------------------------------
+// Simulateur financier ("unités école" — jamais convertible en pièces)
+// ---------------------------------------------------------------------------
+
+enum SimulationProfile {
+  PRUDENT
+  EQUILIBRE
+  DYNAMIQUE
+}
+
+model SimulationScenario {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  title       String
+  description String
+  // série de rendements en % par période, par profil, pour rejouer le scénario
+  returnSeries Json
+
+  portfolios SimulationPortfolio[]
+}
+
+model SimulationPortfolio {
+  id          String   @id @default(uuid())
+  childId     String
+  child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  profile     SimulationProfile
+  scenarioId  String?
+  scenario    SimulationScenario? @relation(fields: [scenarioId], references: [id])
+  startingUnits Int
+  currentUnits  Float
+  createdAt   DateTime @default(now())
+
+  transactions SimulationTransaction[]
+}
+
+model SimulationTransaction {
+  id           String   @id @default(uuid())
+  portfolioId  String
+  portfolio    SimulationPortfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  periodIndex  Int
+  unitsBefore  Float
+  unitsAfter   Float
+  returnPct    Float
+  createdAt    DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Notifications & audit
+// ---------------------------------------------------------------------------
+
+enum NotificationAudience {
+  PARENT
+  CHILD
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  audience    NotificationAudience
+  childId     String?
+  child       ChildProfile? @relation(fields: [childId], references: [id], onDelete: Cascade)
+  type        String
+  payload     Json
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([householdId, audience, childId])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  actorUserId String?
+  actor       User?    @relation(fields: [actorUserId], references: [id])
+  action      String
+  targetType  String?
+  targetId    String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([householdId, createdAt])
+}

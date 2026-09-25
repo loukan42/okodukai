@@ -1,0 +1,189 @@
+import { Router } from "express";
+import argon2 from "argon2";
+import { z } from "zod";
+import { prisma } from "../lib/prisma.js";
+import { validateBody } from "../lib/validation.js";
+import { attachSession, requireParent } from "../middleware/requireAuth.js";
+import { getBalances, recordWalletTransaction, InsufficientFundsError } from "../lib/ledger.js";
+import { levelFromTotalXp } from "../lib/levels.js";
+import { newIdempotencyKey } from "../lib/boosters.js";
+
+export const householdRouter = Router();
+householdRouter.use(attachSession, requireParent);
+
+/** Vérifie que le foyer de la session correspond bien à la ressource demandée. */
+function assertOwnHousehold(req: { session?: { kind: string; householdId: string } }, householdId: string) {
+  return req.session?.householdId === householdId;
+}
+
+const createChildSchema = z.object({
+  displayName: z.string().min(1).max(40),
+  ageBand: z.enum(["AGE_8_9", "AGE_10_12"]),
+  avatarId: z.string().min(1),
+  pin: z.string().length(4),
+});
+
+householdRouter.post("/children", validateBody(createChildSchema), async (req, res) => {
+  const householdId = req.session!.householdId;
+  const pinHash = await argon2.hash(req.body.pin);
+
+  const child = await prisma.$transaction(async (tx) => {
+    const child = await tx.childProfile.create({
+      data: {
+        householdId,
+        displayName: req.body.displayName,
+        ageBand: req.body.ageBand,
+        avatarId: req.body.avatarId,
+        pinHash,
+      },
+    });
+    await tx.wallet.create({ data: { childId: child.id } });
+    await tx.auditLog.create({
+      data: {
+        householdId,
+        actorUserId: req.session!.kind === "parent" ? req.session!.userId : undefined,
+        action: "child_created",
+        targetType: "ChildProfile",
+        targetId: child.id,
+      },
+    });
+    return child;
+  });
+
+  res.status(201).json({ child });
+});
+
+householdRouter.get("/children", async (req, res) => {
+  const householdId = req.session!.householdId;
+  const children = await prisma.childProfile.findMany({ where: { householdId } });
+
+  const withBalances = await Promise.all(
+    children.map(async (child) => {
+      const wallet = await prisma.wallet.findUnique({ where: { childId: child.id } });
+      const balances = wallet ? await getBalances(prisma, wallet.id) : { available: 0, vault: 0 };
+      return {
+        ...child,
+        pinHash: undefined,
+        balances,
+      };
+    })
+  );
+
+  res.json({ children: withBalances });
+});
+
+householdRouter.get("/dashboard", async (req, res) => {
+  const householdId = req.session!.householdId;
+
+  const pendingCompletions = await prisma.questCompletion.count({
+    where: { status: "EN_ATTENTE", quest: { householdId } },
+  });
+  const pendingRedemptions = await prisma.rewardRedemption.count({
+    where: { status: "DEMANDEE", reward: { householdId } },
+  });
+  const recentAudit = await prisma.auditLog.findMany({
+    where: { householdId },
+    orderBy: { createdAt: "desc" },
+    take: 15,
+  });
+
+  res.json({ pendingCompletions, pendingRedemptions, recentAudit });
+});
+
+const universeToggleSchema = z.object({ enabled: z.boolean() });
+
+householdRouter.get("/universes", async (req, res) => {
+  const householdId = req.session!.householdId;
+  const universes = await prisma.universe.findMany({
+    where: { active: true },
+    orderBy: { sortOrder: "asc" },
+    include: { householdGrants: { where: { householdId } } },
+  });
+  res.json({
+    universes: universes.map((u) => ({ ...u, householdGrants: undefined, enabled: u.householdGrants.length > 0 })),
+  });
+});
+
+householdRouter.put("/universes/:universeId", validateBody(universeToggleSchema), async (req, res) => {
+  const householdId = req.session!.householdId;
+  const { universeId } = req.params;
+
+  if (req.body.enabled) {
+    await prisma.householdUniverse.upsert({
+      where: { householdId_universeId: { householdId, universeId } },
+      update: {},
+      create: { householdId, universeId },
+    });
+  } else {
+    await prisma.householdUniverse
+      .delete({ where: { householdId_universeId: { householdId, universeId } } })
+      .catch(() => undefined);
+  }
+
+  res.json({ ok: true });
+});
+
+const adjustmentSchema = z.object({
+  amount: z.number().int().positive(),
+  direction: z.enum(["credit", "debit"]),
+  reason: z.string().min(1).max(200),
+});
+
+householdRouter.post("/children/:childId/wallet/adjust", validateBody(adjustmentSchema), async (req, res) => {
+  const { childId } = req.params;
+  const child = await prisma.childProfile.findUnique({ where: { id: childId } });
+  if (!child || !assertOwnHousehold(req, child.householdId)) {
+    return res.status(404).json({ error: "Enfant introuvable" });
+  }
+
+  const wallet = await prisma.wallet.findUniqueOrThrow({ where: { childId } });
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      await recordWalletTransaction(tx, {
+        walletId: wallet.id,
+        amount: req.body.amount,
+        type: "PARENT_ADJUSTMENT",
+        direction: req.body.direction,
+        actorId: req.session!.kind === "parent" ? req.session!.userId : "",
+        idempotencyKey: newIdempotencyKey(),
+        reason: req.body.reason,
+      });
+      await tx.auditLog.create({
+        data: {
+          householdId: child.householdId,
+          actorUserId: req.session!.kind === "parent" ? req.session!.userId : undefined,
+          action: "wallet_adjustment",
+          targetType: "ChildProfile",
+          targetId: childId,
+          metadata: { amount: req.body.amount, direction: req.body.direction, reason: req.body.reason },
+        },
+      });
+    });
+  } catch (err) {
+    if (err instanceof InsufficientFundsError) {
+      return res.status(400).json({ error: "Solde insuffisant pour ce retrait" });
+    }
+    throw err;
+  }
+
+  const balances = await getBalances(prisma, wallet.id);
+  res.json({ balances });
+});
+
+householdRouter.get("/children/:childId/wallet", async (req, res) => {
+  const { childId } = req.params;
+  const child = await prisma.childProfile.findUnique({ where: { id: childId } });
+  if (!child || !assertOwnHousehold(req, child.householdId)) {
+    return res.status(404).json({ error: "Enfant introuvable" });
+  }
+  const wallet = await prisma.wallet.findUniqueOrThrow({ where: { childId } });
+  const balances = await getBalances(prisma, wallet.id);
+  const transactions = await prisma.walletTransaction.findMany({
+    where: { walletId: wallet.id },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
+  const level = levelFromTotalXp(child.currentXp);
+  res.json({ balances, transactions, level });
+});
