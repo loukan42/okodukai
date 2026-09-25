@@ -36,8 +36,25 @@
   --radius-lg: 24px;
   --radius-pill: 999px;
 
-  --shadow-card: 0 2px 8px rgba(28, 46, 74, 0.08), 0 8px 24px rgba(28, 46, 74, 0.06);
-  --shadow-raised: 0 4px 14px rgba(28, 46, 74, 0.12), 0 14px 34px rgba(28, 46, 74, 0.1);
+  /*
+   * Ombres à trois niveaux, en couches (teintées --ink plutôt que noir pur pour
+   * rester dans la palette chaude) : sm pour les surfaces compactes (pills,
+   * champs), md pour les cartes standard, lg pour les éléments hero (bannière
+   * objectif, ouverture de booster). Ne jamais mélanger un niveau avec une
+   * ombre ad hoc — la hiérarchie est le signal, pas la décoration.
+   */
+  --shadow-sm: 0px 2px 3px -1px rgba(28, 46, 74, 0.1), 0px 1px 0px 0px rgba(28, 46, 74, 0.03),
+    0px 0px 0px 1px rgba(28, 46, 74, 0.07);
+  --shadow-md: 0px 0px 0px 1px rgba(28, 46, 74, 0.05), 0px 1px 1px -0.5px rgba(28, 46, 74, 0.05),
+    0px 3px 3px -1.5px rgba(28, 46, 74, 0.05), 0px 6px 6px -3px rgba(28, 46, 74, 0.05),
+    0px 12px 12px -6px rgba(28, 46, 74, 0.04);
+  --shadow-lg: 0 2.8px 2.2px rgba(28, 46, 74, 0.04), 0 6.7px 5.3px rgba(28, 46, 74, 0.05),
+    0 12.5px 10px rgba(28, 46, 74, 0.06), 0 22.3px 17.9px rgba(28, 46, 74, 0.07),
+    0 41.8px 33.4px rgba(28, 46, 74, 0.09);
+
+  /* Courbes d'easing personnalisées — les easings CSS par défaut manquent de punch. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 
   --font-display: "Fraunces", "Georgia", serif;
   --font-interface: "Manrope", "Segoe UI", system-ui, sans-serif;
@@ -86,6 +103,17 @@ button {
 
 a {
   color: inherit;
+}
+
+/* Focus clavier visible sur tout élément interactif, jamais supprimé sans remplacement. */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 @media (prefers-reduced-motion: reduce) {

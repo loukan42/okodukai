@@ -332,6 +332,14 @@
   justify-content: center;
   font-size: 28px;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
 }
 
 .avatar-lg {
@@ -353,4 +361,265 @@
 }
 .mt-0 {
   margin-top: 0;
+}
+
+/* Cartes à collectionner — cadre doré ornemental --------------------------------
+ * Style repris de github.com/loukan42/kidsgamebook (CardOpenAnimation /
+ * CollectionCard) : cadre dégradé amber, lueur animée, effet de brillance qui
+ * balaie la carte, coins scintillants. Respecte prefers-reduced-motion (voir
+ * tokens.css) et le zoom/le pan tactile ne sont jamais bloqués par l'overlay.
+ */
+
+.gilded-frame {
+  position: relative;
+  border-radius: 14px;
+  padding: 6px;
+  background: linear-gradient(160deg, #fde8b6 0%, #f3d68a 45%, #e0b563 100%);
+  box-shadow: 0 4px 20px rgba(217, 164, 50, 0.3), 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.gilded-inner {
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.gilded-aspect {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  background: linear-gradient(160deg, #f1f0ec, #e4e2da);
+}
+
+.gilded-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gilded-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+  pointer-events: none;
+}
+
+.gilded-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  pointer-events: none;
+}
+
+/* Grille de cartes du booster (écran de révélation) */
+
+.booster-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 30, 0.92);
+  backdrop-filter: blur(6px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+}
+
+.booster-pack {
+  position: relative;
+}
+
+.booster-pack-img {
+  width: clamp(180px, 40vw, 260px);
+  height: auto;
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5));
+  border-radius: 12px;
+}
+
+.booster-pack-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.booster-pack-burst {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.6), transparent 70%);
+  pointer-events: none;
+}
+
+.booster-reveal {
+  width: 100%;
+  max-width: 720px;
+}
+
+.booster-reveal-title {
+  text-align: center;
+  color: #fff;
+  font-size: 26px;
+  margin-bottom: var(--space-5);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.booster-reveal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: var(--space-3);
+}
+
+.booster-reveal-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.booster-reveal-name {
+  margin-top: var(--space-2);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+.booster-reveal-hint {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: var(--space-5);
+  font-size: 13px;
+}
+
+/* Carte d'album (verrouillée / déverrouillée), utilisée dans la Collection */
+
+.album-card {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  transition: transform 200ms var(--ease-out);
+}
+
+.album-card:hover {
+  transform: translateY(-2px);
+}
+
+.album-card:disabled {
+  cursor: not-allowed;
+}
+
+.album-card-frame {
+  width: 100%;
+  border-radius: 12px;
+  padding: 5px;
+  background: linear-gradient(160deg, #fde8b6 0%, #f3d68a 45%, #e0b563 100%);
+  box-shadow: var(--shadow-sm);
+}
+
+.album-card-frame--locked {
+  background: linear-gradient(160deg, #b9c0c9, #9aa3ae 60%, #b9c0c9);
+  box-shadow: none;
+}
+
+.album-card-locked-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, rgba(120, 128, 140, 0.45), rgba(90, 98, 110, 0.55));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.album-card-locked-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(60, 66, 76, 0.3);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: rgba(90, 98, 110, 0.8);
+}
+
+.album-card-name {
+  margin-top: var(--space-2);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.25;
+}
+
+.album-card-name--locked {
+  color: var(--ink-faint);
+  font-style: italic;
+  font-weight: 500;
+}
+
+/* Modale plein écran d'une carte (flip 3D depuis l'album) */
+
+.card-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 30, 0.85);
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+}
+
+.card-modal-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--parchment-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  font-size: 16px;
+}
+
+.card-modal-flip {
+  position: relative;
+  width: min(80vw, 340px);
+}
+
+.card-modal-face {
+  border-radius: 20px;
+  padding: 10px;
+}
+
+.card-modal-face--back {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, #4f46e5, #7c3aed 60%, #4338ca);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 20px 60px rgba(79, 70, 229, 0.5), 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.card-modal-face--front {
+  background: linear-gradient(160deg, #fde8b6 0%, #f3d68a 45%, #e0b563 100%);
+  box-shadow: 0 20px 60px rgba(217, 164, 50, 0.5), 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.card-modal-title {
+  text-align: center;
+  margin-top: var(--space-4);
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 }

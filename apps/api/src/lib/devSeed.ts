@@ -1,6 +1,6 @@
 import argon2 from "argon2";
-import type { PrismaClient, CardRarity } from "@prisma/client";
-import { DEFAULT_SLOT_CONFIG } from "./boosters.js";
+import type { PrismaClient } from "@prisma/client";
+import { importKidsgamebookCollection } from "./kidsgamebookImport.js";
 
 /**
  * Recrée le foyer de démonstration "Famille Martin" (spec §107-109).
@@ -71,7 +71,7 @@ export async function seedDatabase(prisma: PrismaClient) {
       householdId: household.id,
       displayName: "Emma",
       ageBand: "AGE_8_9",
-      avatarId: "avatar-fox",
+      avatarId: "fille 1.png",
       pinHash: await argon2.hash("1234"),
     },
   });
@@ -80,7 +80,7 @@ export async function seedDatabase(prisma: PrismaClient) {
       householdId: household.id,
       displayName: "Lucas",
       ageBand: "AGE_10_12",
-      avatarId: "avatar-owl",
+      avatarId: "garçon 1.png",
       pinHash: await argon2.hash("5678"),
     },
   });
@@ -88,91 +88,18 @@ export async function seedDatabase(prisma: PrismaClient) {
   const emmaWallet = await prisma.wallet.create({ data: { childId: emma.id } });
   const lucasWallet = await prisma.wallet.create({ data: { childId: lucas.id } });
 
-  // -- Univers & cartes ------------------------------------------------------
+  // -- Univers & cartes (import du vrai contenu "Heros de la classe") --------
 
-  const universeSeeds: { code: string; title: string; description: string; sortOrder: number }[] = [
-    { code: "dinosaures", title: "Dinosaures", description: "Des géants disparus il y a des millions d'années.", sortOrder: 1 },
-    { code: "espace", title: "Espace", description: "Planètes, étoiles et exploration spatiale.", sortOrder: 2 },
-    { code: "animaux-extraordinaires", title: "Animaux extraordinaires", description: "Les créatures les plus étonnantes de la planète.", sortOrder: 3 },
-  ];
+  const importedUniverses = await importKidsgamebookCollection(prisma);
 
-  const rarityPlan: { rarity: CardRarity; count: number }[] = [
-    { rarity: "COMMUNE", count: 20 },
-    { rarity: "PEU_COMMUNE", count: 10 },
-    { rarity: "RARE", count: 6 },
-    { rarity: "EPIQUE", count: 3 },
-    { rarity: "LEGENDAIRE", count: 1 },
-  ];
-
-  const cardNamesByUniverse: Record<string, string[]> = {
-    dinosaures: [
-      "Tricératops", "Tyrannosaure", "Vélociraptor", "Diplodocus", "Stégosaure",
-      "Spinosaure", "Ankylosaure", "Ptéranodon", "Brachiosaure", "Iguanodon",
-      "Allosaure", "Parasaurolophus", "Compsognathus", "Carnotaure", "Deinonychus",
-      "Pachycephalosaure", "Gallimimus", "Therizinosaure", "Styracosaure", "Oviraptor",
-      "Mosasaure", "Elasmosaure", "Quetzalcoatlus", "Giganotosaure", "Baryonyx",
-      "Euoplocephale", "Camarasaure", "Cryolophosaure", "Kentrosaure", "Microraptor",
-      "Torosaure", "Pentaceratops", "Amargasaure", "Nothosaure", "Archaeopteryx",
-      "Suchomimus", "Majungasaure", "Edmontosaure", "Sinoceratops", "Rex Doré",
-    ],
-    espace: [
-      "Mercure", "Vénus", "Terre", "Mars", "Jupiter",
-      "Saturne", "Uranus", "Neptune", "Lune", "Soleil",
-      "Comète de Halley", "Ceinture d'astéroïdes", "Station spatiale", "Fusée Ariane", "Trou noir",
-      "Nébuleuse de l'Aigle", "Voie lactée", "Étoile filante", "Télescope Hubble", "Sonde Voyager",
-      "Astronaute", "Cratère lunaire", "Anneau de Saturne", "Galaxie spirale", "Supernova",
-      "Exoplanète", "Combinaison spatiale", "Module lunaire", "Satellite météo", "Étoile naine blanche",
-      "Constellation d'Orion", "Aurore boréale", "Météorite", "Rover martien", "Étoile géante rouge",
-      "Nuage d'Oort", "Quasar", "Pulsar", "Anneau de débris", "Étoile Polaire dorée",
-    ],
-    "animaux-extraordinaires": [
-      "Poulpe mimétique", "Axolotl", "Pangolin", "Narval", "Okapi",
-      "Fourmilier géant", "Étoile de mer", "Caméléon", "Ornithorynque", "Tigre de Sibérie",
-      "Méduse immortelle", "Bernard-l'ermite", "Paresseux", "Toucan", "Manchot empereur",
-      "Loutre de mer", "Chauve-souris frugivore", "Hippocampe", "Tatou", "Iguane marin",
-      "Poisson-lune", "Dragon de Komodo", "Fennec", "Wombat", "Kakapo",
-      "Requin-baleine", "Gecko volant", "Calmar géant", "Pieuvre à anneaux bleus", "Renard arctique",
-      "Colibri abeille", "Lémurien", "Tortue luth", "Raie manta", "Gavial du Gange",
-      "Écureuil volant", "Salamandre géante", "Cigogne royale", "Grand panda", "Phénix doré",
-    ],
-  };
-
-  for (const uSeed of universeSeeds) {
-    const universe = await prisma.universe.create({ data: uSeed });
-    await prisma.householdUniverse.create({ data: { householdId: household.id, universeId: universe.id } });
-
-    const names = cardNamesByUniverse[uSeed.code];
-    let cardNumber = 1;
-    for (const { rarity, count } of rarityPlan) {
-      for (let i = 0; i < count; i++) {
-        const name = names[cardNumber - 1] ?? `${uSeed.title} #${cardNumber}`;
-        await prisma.card.create({
-          data: {
-            universeId: universe.id,
-            cardNumber,
-            name,
-            rarity,
-            educationalFact: `Une carte de la collection ${uSeed.title}.`,
-          },
-        });
-        cardNumber += 1;
-      }
-    }
-
-    await prisma.boosterDefinition.create({
-      data: {
-        universeId: universe.id,
-        code: `booster-${uSeed.code}`,
-        title: `Booster ${uSeed.title}`,
-        cardCount: 5,
-        rngVersion: "v1",
-        slotConfig: DEFAULT_SLOT_CONFIG as object,
-      },
+  for (const universe of importedUniverses) {
+    await prisma.householdUniverse.create({
+      data: { householdId: household.id, universeId: universe.id },
     });
   }
 
-  const dinoBooster = await prisma.boosterDefinition.findFirstOrThrow({ where: { code: "booster-dinosaures" } });
-  const espaceBooster = await prisma.boosterDefinition.findFirstOrThrow({ where: { code: "booster-espace" } });
+  const dinoBooster = importedUniverses.find((u) => u.code === "dinosaures-et-creatures-prehistoriques")!;
+  const espaceBooster = importedUniverses.find((u) => u.code === "les-planetes-du-systeme-solaire")!;
 
   // -- Quêtes ------------------------------------------------------------
 
@@ -180,10 +107,10 @@ export async function seedDatabase(prisma: PrismaClient) {
     { child: emma, title: "Vider le lave-vaisselle", category: "MAISON", difficulty: "FACILE", coins: 10, xp: 15 },
     { child: emma, title: "Ranger sa chambre", category: "AUTONOMIE", difficulty: "MOYENNE", coins: 15, xp: 20 },
     { child: emma, title: "Mettre la table", category: "ENTRAIDE", difficulty: "FACILE", coins: 5, xp: 10 },
-    { child: emma, title: "Lire 15 minutes", category: "APPRENTISSAGE", difficulty: "FACILE", coins: 5, xp: 15, booster: dinoBooster.id },
+    { child: emma, title: "Lire 15 minutes", category: "APPRENTISSAGE", difficulty: "FACILE", coins: 5, xp: 15, booster: dinoBooster.boosterDefinitionId },
     { child: emma, title: "Préparer son sac d'école", category: "AUTONOMIE", difficulty: "FACILE", coins: 5, xp: 10 },
     { child: lucas, title: "Sortir les poubelles", category: "MAISON", difficulty: "FACILE", coins: 10, xp: 15 },
-    { child: lucas, title: "Aider à nettoyer la voiture", category: "ENTRAIDE", difficulty: "IMPORTANTE", coins: 40, xp: 35, booster: espaceBooster.id },
+    { child: lucas, title: "Aider à nettoyer la voiture", category: "ENTRAIDE", difficulty: "IMPORTANTE", coins: 40, xp: 35, booster: espaceBooster.boosterDefinitionId },
     { child: lucas, title: "Nourrir le chat", category: "ANIMAUX", difficulty: "FACILE", coins: 5, xp: 10, recurrence: "QUOTIDIENNE" as const },
     { child: lucas, title: "Terminer un module financier", category: "APPRENTISSAGE", difficulty: "MOYENNE", coins: 15, xp: 25 },
     { child: lucas, title: "Trier sa bibliothèque", category: "MAISON", difficulty: "MOYENNE", coins: 20, xp: 20 },

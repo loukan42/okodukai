@@ -67,14 +67,39 @@ Monorepo npm workspaces :
 Racine : `npm run db:up` (postgres via docker), `npm run db:migrate`, `npm run db:seed`,
 `npm run dev:api`, `npm run dev:web`.
 
-## Référence réutilisée
+## Système de cartes : repris de "Heros de la classe" (github.com/loukan42/kidsgamebook)
 
-`github.com/loukan42/kidsgamebook` contient un premier prototype de système de cartes/boosters
-(React + Supabase). Utile comme référence d'animation d'ouverture de booster
-(`src/components/CardOpenAnimation.tsx`, framer-motion) mais son modèle de données est naïf (le
-client tire la carte au hasard et écrit directement en base) — **ne pas reproduire ce pattern**,
-le tirage doit être recalculé côté serveur MoneyPocket avec raretés, anti-frustration et garanties
-versionnées (voir spec §42-43, §95-96).
+Le design, l'UX et les animations du système de boosters/collection sont repris fidèlement de
+`github.com/loukan42/kidsgamebook` (produit `herosdelaclasse.com`, même propriétaire) :
+- `apps/web/src/components/BoosterOpenOverlay.tsx` — animation zoom/secousse/éclat/révélation,
+  reprise de `CardOpenAnimation.tsx` de kidsgamebook.
+- `apps/web/src/components/AlbumCard.tsx` — carte d'album avec flip 3D en plein écran au clic,
+  reprise de `CollectionCard.tsx`.
+- Style visuel "cadre doré ornemental" dans `app.css` (`.gilded-*`, `.album-card-*`,
+  `.booster-*`), classes `gilded-frame`/`gilded-inner`/`gilded-shine` etc.
+- Le tirage RNG côté serveur, les raretés et l'anti-frustration restent propres à Okodukai
+  (spec §42-43, §95-96) — **ne pas reproduire le pattern client de kidsgamebook** qui tire la
+  carte côté client et écrit directement en base.
+
+**Le contenu réel** (14 univers, 105 cartes) vient de la base Supabase de production de
+kidsgamebook, pas du repo Git (les données n'y sont pas commitées) :
+- `apps/api/prisma/data/kidsgamebook-{themes,cards}.csv` — export des tables
+  `collection_themes`/`collection_cards`, commité (petit, texte).
+- `apps/api/src/lib/kidsgamebookImport.ts` — importe ces CSV et les associe aux images locales
+  par titre normalisé (accents/casse tolérés ; un titre "X, épique" fixe la rareté de la carte
+  au lieu du cycle déterministe par défaut).
+- **Les images** (~330 Mo, `apps/web/public/cards/<thème>/<carte>.png` et
+  `apps/web/public/avatars/*.png`) sont copiées localement depuis les dossiers de l'utilisateur
+  et **gitignorées** — elles doivent être re-copiées sur toute nouvelle machine avant de lancer
+  `npm run db:seed`. Avant la mise en production il faudra un vrai stockage (S3, Supabase
+  storage propre à Okodukai, ou Git LFS) : le hotlink direct vers le bucket Supabase de
+  kidsgamebook a été écarté au profit de fichiers locaux propres à Okodukai.
+- Les avatars enfant (`apps/web/src/components/Avatar.tsx`, `AVAILABLE_AVATARS`) viennent du
+  même dossier utilisateur (fille/garçon/ninja/pirate/chevalier/etc., pas des emoji).
+
+**Modèle économique non repris** : kidsgamebook vend les boosters avec des points (1pt/carte,
+10pts/booster). Okodukai garde sa propre règle — **les boosters se gagnent uniquement via les
+quêtes/paliers, jamais achetés** (spec §90) — confirmé explicitement par l'utilisateur.
 
 ## MVP (définition complète en §119 de la spec)
 

@@ -1,22 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { RARITY_ICONS, RARITY_LABELS, type CardRarity } from "@okodukai/shared";
+import cardSingleImage from "../assets/cards/card-single.png";
+import cardBoosterImage from "../assets/cards/card-booster.png";
 
 interface RevealedCard {
   id: string;
   name: string;
-  rarity: CardRarity;
   artworkUrl: string | null;
 }
 
-const RARITY_GLOW: Record<CardRarity, string> = {
-  COMMUNE: "rgba(154,163,174,0.5)",
-  PEU_COMMUNE: "rgba(62,124,177,0.55)",
-  RARE: "rgba(123,79,160,0.6)",
-  EPIQUE: "rgba(217,162,43,0.65)",
-  LEGENDAIRE: "rgba(233,120,180,0.75)",
-};
+type Phase = "idle" | "zoom" | "shake" | "open" | "reveal";
 
+/**
+ * Reprend le design/animation du système de boosters "Heros de la classe"
+ * (github.com/loukan42/kidsgamebook, CardOpenAnimation.tsx) : zoom → secousse
+ * dorée → éclat d'ouverture → révélation des cartes en flip. Adapté ici sans
+ * Tailwind (le projet utilise des tokens CSS custom) et sans le système de
+ * points/achat de cet ancien produit — les boosters d'Okodukai se gagnent via
+ * les quêtes, jamais en s'achetant (spec §90).
+ */
 export function BoosterOpenOverlay({
   open,
   onOpen,
@@ -26,7 +28,7 @@ export function BoosterOpenOverlay({
   onOpen: () => Promise<RevealedCard[]>;
   onClose: () => void;
 }) {
-  const [phase, setPhase] = useState<"idle" | "shake" | "reveal">("idle");
+  const [phase, setPhase] = useState<Phase>("idle");
   const [cards, setCards] = useState<RevealedCard[]>([]);
   const runningRef = useRef(false);
   const onOpenRef = useRef(onOpen);
@@ -43,15 +45,19 @@ export function BoosterOpenOverlay({
     runningRef.current = true;
 
     (async () => {
+      setPhase("zoom");
+      await new Promise((r) => setTimeout(r, 600));
       setPhase("shake");
-      await new Promise((r) => setTimeout(r, 900));
+      await new Promise((r) => setTimeout(r, 800));
+      setPhase("open");
       const result = await onOpenRef.current();
       setCards(result);
+      await new Promise((r) => setTimeout(r, 400));
       setPhase("reveal");
     })();
   }, [open]);
 
-  if (!open) return null;
+  if (!open || phase === "idle") return null;
 
   return (
     <AnimatePresence>
@@ -59,86 +65,119 @@ export function BoosterOpenOverlay({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        style={{
-          position: "fixed",
-          inset: 0,
-          background: "rgba(20,26,38,0.92)",
-          zIndex: 100,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 20,
-        }}
+        className="booster-overlay"
         onClick={() => phase === "reveal" && onClose()}
       >
-        {phase === "shake" && (
+        {phase !== "reveal" && (
           <motion.div
-            animate={{ rotate: [0, -4, 4, -4, 4, -2, 2, 0], scale: [1, 1.05, 1.05, 1.08, 1.08, 1.1, 1.1, 1.15] }}
-            transition={{ duration: 0.9, ease: "easeInOut" }}
-            style={{ fontSize: 90 }}
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={
+              phase === "zoom"
+                ? { scale: 1.2, opacity: 1, rotate: 0 }
+                : phase === "shake"
+                ? {
+                    scale: 1.3,
+                    opacity: 1,
+                    rotate: [0, -3, 3, -3, 3, -2, 2, 0],
+                    x: [0, -5, 5, -5, 5, -3, 3, 0],
+                  }
+                : { scale: 1.5, opacity: 1, rotate: 0 }
+            }
+            transition={
+              phase === "zoom"
+                ? { duration: 0.6, ease: "easeOut" }
+                : phase === "shake"
+                ? { duration: 0.8, ease: "easeInOut", times: [0, 0.1, 0.2, 0.3, 0.4, 0.6, 0.8, 1] }
+                : { duration: 0.3, ease: "easeOut" }
+            }
+            className="booster-pack"
           >
-            🎁
+            <img src={cardBoosterImage} alt="Booster" className="booster-pack-img" />
+            {phase === "shake" && (
+              <motion.div
+                className="booster-pack-glow"
+                animate={{
+                  boxShadow: [
+                    "0 0 30px rgba(251, 191, 36, 0.5)",
+                    "0 0 60px rgba(251, 191, 36, 0.8)",
+                    "0 0 30px rgba(251, 191, 36, 0.5)",
+                  ],
+                }}
+                transition={{ duration: 0.3, repeat: Infinity }}
+              />
+            )}
+            {phase === "open" && (
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 3, opacity: [0, 0.8, 0] }}
+                transition={{ duration: 0.5 }}
+                className="booster-pack-burst"
+              />
+            )}
           </motion.div>
         )}
 
         {phase === "reveal" && (
-          <div style={{ width: "100%", maxWidth: 720 }} onClick={(e) => e.stopPropagation()}>
+          <div className="booster-reveal" onClick={(e) => e.stopPropagation()}>
             <motion.h2
-              initial={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="font-display"
-              style={{ textAlign: "center", color: "#fff", fontSize: 26, marginBottom: 24 }}
+              transition={{ delay: 0.3 }}
+              className="font-display booster-reveal-title"
             >
               🎉 Nouvelles cartes !
             </motion.h2>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: `repeat(${Math.min(cards.length, 5)}, 1fr)`,
-                gap: 14,
-              }}
-            >
-              {cards.map((card, i) => (
+
+            <div className="booster-reveal-grid">
+              {cards.map((card, index) => (
                 <motion.div
-                  key={card.id + i}
-                  initial={{ rotateY: 180, opacity: 0, y: 30 }}
-                  animate={{ rotateY: 0, opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.15, type: "spring", damping: 14 }}
-                  style={{
-                    background: "#fff",
-                    borderRadius: 14,
-                    padding: 8,
-                    boxShadow: `0 0 24px ${RARITY_GLOW[card.rarity]}`,
-                  }}
+                  key={card.id + index}
+                  initial={{ rotateY: 180, opacity: 0, scale: 0.5, y: 50 }}
+                  animate={{ rotateY: 0, opacity: 1, scale: 1, y: 0 }}
+                  transition={{ delay: index * 0.15, duration: 0.5, type: "spring" }}
+                  className="booster-reveal-item"
                 >
-                  <div
-                    style={{
-                      aspectRatio: "3 / 4",
-                      borderRadius: 10,
-                      background: "linear-gradient(160deg, var(--parchment), var(--parchment-dim))",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 34,
-                      marginBottom: 6,
-                    }}
-                  >
-                    {card.artworkUrl ? (
-                      <img src={card.artworkUrl} alt={card.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 10 }} />
-                    ) : (
-                      RARITY_ICONS[card.rarity]
-                    )}
+                  <div className="gilded-frame">
+                    <div className="gilded-inner">
+                      <div className="gilded-aspect">
+                        {card.artworkUrl ? (
+                          <img src={card.artworkUrl} alt={card.name} className="gilded-image" />
+                        ) : (
+                          <img src={cardSingleImage} alt="" className="gilded-image" />
+                        )}
+                        <motion.div
+                          className="gilded-shine"
+                          initial={{ x: "-100%" }}
+                          animate={{ x: "200%" }}
+                          transition={{ duration: 1.5, ease: "easeInOut", delay: 0.3 + index * 0.15 }}
+                        />
+                      </div>
+                    </div>
+                    <motion.div
+                      className="gilded-glow"
+                      animate={{
+                        boxShadow: [
+                          "0 0 15px rgba(251, 191, 36, 0.4)",
+                          "0 0 25px rgba(251, 191, 36, 0.7)",
+                          "0 0 15px rgba(251, 191, 36, 0.4)",
+                        ],
+                      }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: index * 0.2 }}
+                    />
                   </div>
-                  <p style={{ fontSize: 12, fontWeight: 700, textAlign: "center", margin: "4px 0 2px" }}>{card.name}</p>
-                  <p style={{ fontSize: 10, textAlign: "center", color: "var(--ink-faint)", margin: 0 }}>
-                    {RARITY_LABELS[card.rarity]}
-                  </p>
+                  <p className="booster-reveal-name">{card.name}</p>
                 </motion.div>
               ))}
             </div>
-            <p style={{ textAlign: "center", color: "rgba(255,255,255,0.6)", marginTop: 24, fontSize: 13 }}>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1 }}
+              className="booster-reveal-hint"
+            >
               Touche l'écran pour continuer
-            </p>
+            </motion.p>
           </div>
         )}
       </motion.div>
