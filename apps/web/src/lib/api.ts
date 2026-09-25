@@ -1,4 +1,7 @@
-const API_BASE = "/api";
+// En local, le dev server Vite fait un reverse-proxy de /api vers l'API sur :4000
+// (voir vite.config.ts). En production, apps/web et apps/api sont deux déploiements
+// Vercel séparés : VITE_API_URL pointe vers l'URL publique de l'API.
+const API_BASE = import.meta.env.VITE_API_URL ?? "/api";
 
 export class ApiError extends Error {
   status: number;
