@@ -1,7 +1,10 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./lib/AuthContext";
 import { Landing } from "./pages/Landing";
-import { RegisterHousehold } from "./pages/RegisterHousehold";
+import { CreateAccount } from "./pages/onboarding/CreateAccount";
+import { CreateHousehold } from "./pages/onboarding/CreateHousehold";
+import { AddChildren } from "./pages/onboarding/AddChildren";
+import { Welcome } from "./pages/onboarding/Welcome";
 import { Login } from "./pages/Login";
 import { ProfileSelect } from "./pages/ProfileSelect";
 import { ParentLayout } from "./pages/parent/ParentLayout";
@@ -37,7 +40,10 @@ export default function App() {
     <>
       <Routes>
       <Route path="/" element={<Landing />} />
-      <Route path="/inscription" element={<RegisterHousehold />} />
+      <Route path="/inscription" element={<CreateAccount />} />
+      <Route path="/inscription/foyer" element={<CreateHousehold />} />
+      <Route path="/inscription/enfants" element={<AddChildren />} />
+      <Route path="/inscription/bienvenue" element={<Welcome />} />
       <Route path="/connexion" element={<Login />} />
       <Route path="/profils" element={<ProfileSelect />} />
 

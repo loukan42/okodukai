@@ -50,7 +50,7 @@ householdRouter.post("/children", validateBody(createChildSchema), async (req, r
     return child;
   });
 
-  res.status(201).json({ child });
+  res.status(201).json({ child: { ...child, pinHash: undefined } });
 });
 
 householdRouter.get("/children", async (req, res) => {
