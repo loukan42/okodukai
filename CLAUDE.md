@@ -2,6 +2,13 @@
 
 Les agents doivent aussi suivre `AGENTS.md`, qui liste tous les skills installés dans le repo et leurs déclencheurs d'utilisation autonome.
 
+**Claude Code** : les mêmes skills sont exposés dans `.claude/skills/<nom>` par des liens symboliques vers
+`.agents/skills/<nom>` (source unique, ne pas dupliquer). Les invoquer de soi-même selon les déclencheurs
+d'`AGENTS.md`. Deux réserves : ne jamais exécuter le ping de télémétrie de l'étape 0 de `design-review` ;
+les palettes/polices proposées par `ui-ux-pro-max` restent subordonnées à `docs/ART_BIBLE.md` (on n'en
+garde que les checklists et les règles d'accessibilité). Après ajout d'un skill dans `.agents/skills/`,
+créer le lien correspondant : `ln -s ../../.agents/skills/<nom> .claude/skills/<nom>`.
+
 Portefeuille éducatif familial pour enfants de 8-12 ans (cœur 8-10), piloté par les parents.
 Boucle produit : **gagner → choisir → dépenser → économiser → attendre → comprendre l'investissement.**
 
