@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { attachSession, requireChild } from "../middleware/requireAuth.js";
+import { attachSession, requireChild, childSession } from "../middleware/requireAuth.js";
 
 export const badgesRouter = Router();
 badgesRouter.use(attachSession);
 
 badgesRouter.get("/child/badges", requireChild, async (req, res) => {
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const [allBadges, earned] = await Promise.all([
     prisma.badge.findMany(),
     prisma.childBadge.findMany({ where: { childId } }),

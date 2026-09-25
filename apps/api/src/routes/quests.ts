@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { validateBody } from "../lib/validation.js";
-import { attachSession, requireParent, requireChild } from "../middleware/requireAuth.js";
+import { attachSession, requireParent, requireChild, childSession, parentSession } from "../middleware/requireAuth.js";
 import { recordWalletTransaction } from "../lib/ledger.js";
 import { grantXp } from "../lib/xp.js";
 import { checkAndAwardBadges } from "../lib/badges.js";
@@ -38,7 +38,7 @@ questsRouter.post("/quests", requireParent, validateBody(createQuestSchema), asy
   const quest = await prisma.quest.create({
     data: {
       householdId,
-      creatorId: req.session!.userId,
+      creatorId: parentSession(req).userId,
       childId: req.body.childId,
       title: req.body.title,
       description: req.body.description,
@@ -115,7 +115,7 @@ questsRouter.post(
         data: {
           status: req.body.decision,
           reviewedAt: new Date(),
-          reviewedById: req.session!.userId,
+          reviewedById: parentSession(req).userId,
           note: req.body.note,
         },
       });
@@ -129,7 +129,7 @@ questsRouter.post(
             walletId: completion.child.wallet.id,
             amount: completion.quest.rewardCoins,
             type: "QUEST_REWARD",
-            actorId: req.session!.userId,
+            actorId: parentSession(req).userId,
             idempotencyKey: `quest-completion:${completion.id}:coins`,
             sourceType: "quest_completion",
             sourceId: completion.id,
@@ -194,7 +194,7 @@ questsRouter.post(
 // ---------------------------------------------------------------------------
 
 questsRouter.get("/child/quests", requireChild, async (req, res) => {
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const quests = await prisma.quest.findMany({
     where: { childId, active: true },
     orderBy: { createdAt: "desc" },
@@ -206,7 +206,7 @@ questsRouter.get("/child/quests", requireChild, async (req, res) => {
 });
 
 questsRouter.post("/child/quests/:id/accept", requireChild, async (req, res) => {
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const quest = await prisma.quest.findUnique({ where: { id: req.params.id } });
   if (!quest || quest.childId !== childId) return res.status(404).json({ error: "Quête introuvable" });
   if (quest.status !== "DISPONIBLE" && quest.status !== "A_REFAIRE") {
@@ -218,7 +218,7 @@ questsRouter.post("/child/quests/:id/accept", requireChild, async (req, res) => 
 });
 
 questsRouter.post("/child/quests/:id/complete", requireChild, async (req, res) => {
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const quest = await prisma.quest.findUnique({ where: { id: req.params.id } });
   if (!quest || quest.childId !== childId) return res.status(404).json({ error: "Quête introuvable" });
   if (quest.status !== "ACCEPTEE" && quest.status !== "EN_COURS") {

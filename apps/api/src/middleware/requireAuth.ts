@@ -47,3 +47,16 @@ export function requireAnySession(req: Request, res: Response, next: NextFunctio
   }
   next();
 }
+
+type ParentSessionPayload = Extract<SessionPayload, { kind: "parent" }>;
+type ChildSessionPayload = Extract<SessionPayload, { kind: "child" }>;
+
+/** À utiliser uniquement après le middleware `requireParent` : évite les assertions dispersées. */
+export function parentSession(req: Request): ParentSessionPayload {
+  return req.session as ParentSessionPayload;
+}
+
+/** À utiliser uniquement après le middleware `requireChild` : évite les assertions dispersées. */
+export function childSession(req: Request): ChildSessionPayload {
+  return req.session as ChildSessionPayload;
+}

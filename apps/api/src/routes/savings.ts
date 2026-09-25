@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { validateBody } from "../lib/validation.js";
-import { attachSession, requireChild, requireParent } from "../middleware/requireAuth.js";
+import { attachSession, requireChild, requireParent, childSession, parentSession } from "../middleware/requireAuth.js";
 import { recordWalletTransaction, getBalances, InsufficientFundsError } from "../lib/ledger.js";
 import { checkAndAwardBadges } from "../lib/badges.js";
 
@@ -16,7 +16,7 @@ const createGoalSchema = z.object({
 });
 
 savingsRouter.post("/child/savings/goals", requireChild, validateBody(createGoalSchema), async (req, res) => {
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const goal = await prisma.savingsGoal.create({
     data: { childId, title: req.body.title, targetCoins: req.body.targetCoins, rewardId: req.body.rewardId },
   });
@@ -25,7 +25,7 @@ savingsRouter.post("/child/savings/goals", requireChild, validateBody(createGoal
 });
 
 savingsRouter.get("/child/savings/goals", requireChild, async (req, res) => {
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const goals = await prisma.savingsGoal.findMany({ where: { childId }, orderBy: { createdAt: "desc" } });
   res.json({ goals });
 });
@@ -33,7 +33,7 @@ savingsRouter.get("/child/savings/goals", requireChild, async (req, res) => {
 const moveSchema = z.object({ amount: z.number().int().positive() });
 
 savingsRouter.post("/child/savings/lock", requireChild, validateBody(moveSchema), async (req, res) => {
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const wallet = await prisma.wallet.findUniqueOrThrow({ where: { childId } });
 
   try {
@@ -57,7 +57,7 @@ savingsRouter.post("/child/savings/lock", requireChild, validateBody(moveSchema)
 });
 
 savingsRouter.post("/child/savings/unlock", requireChild, validateBody(moveSchema), async (req, res) => {
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const wallet = await prisma.wallet.findUniqueOrThrow({ where: { childId } });
 
   try {
@@ -92,7 +92,7 @@ savingsRouter.post("/household/savings/bonus", requireParent, validateBody(bonus
       walletId: wallet.id,
       amount: req.body.amount,
       type: "SAVINGS_BONUS",
-      actorId: req.session!.userId,
+      actorId: parentSession(req).userId,
       idempotencyKey: `savings-bonus:${child.id}:${Date.now()}`,
       reason: req.body.reason ?? "Bonus d'épargne",
     });

@@ -2,14 +2,14 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { validateBody } from "../lib/validation.js";
-import { attachSession, requireChild } from "../middleware/requireAuth.js";
+import { attachSession, requireChild, childSession } from "../middleware/requireAuth.js";
 import { grantXp } from "../lib/xp.js";
 
 export const learningRouter = Router();
 learningRouter.use(attachSession);
 
 learningRouter.get("/child/learning/modules", requireChild, async (req, res) => {
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId } });
 
   const modules = await prisma.learningModule.findMany({
@@ -34,7 +34,7 @@ learningRouter.post(
   requireChild,
   validateBody(completeSchema),
   async (req, res) => {
-    const childId = req.session!.childId;
+    const childId = childSession(req).childId;
     const learningModule = await prisma.learningModule.findUnique({ where: { id: req.params.id } });
     if (!learningModule) return res.status(404).json({ error: "Module introuvable" });
 

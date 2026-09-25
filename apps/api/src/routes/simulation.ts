@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { validateBody } from "../lib/validation.js";
-import { attachSession, requireChild } from "../middleware/requireAuth.js";
+import { attachSession, requireChild, childSession } from "../middleware/requireAuth.js";
 
 export const simulationRouter = Router();
 simulationRouter.use(attachSession);
@@ -27,7 +27,7 @@ simulationRouter.post(
   requireChild,
   validateBody(createPortfolioSchema),
   async (req, res) => {
-    const childId = req.session!.childId;
+    const childId = childSession(req).childId;
     const portfolio = await prisma.simulationPortfolio.create({
       data: {
         childId,
@@ -42,7 +42,7 @@ simulationRouter.post(
 );
 
 simulationRouter.get("/child/simulation/portfolios", requireChild, async (req, res) => {
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const portfolios = await prisma.simulationPortfolio.findMany({
     where: { childId },
     include: { transactions: { orderBy: { periodIndex: "asc" } }, scenario: true },
@@ -53,7 +53,7 @@ simulationRouter.get("/child/simulation/portfolios", requireChild, async (req, r
 
 /** Avance le portefeuille d'une période supplémentaire du scénario rejoué. */
 simulationRouter.post("/child/simulation/portfolios/:id/advance", requireChild, async (req, res) => {
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const portfolio = await prisma.simulationPortfolio.findUnique({
     where: { id: req.params.id },
     include: { scenario: true, transactions: true },

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { validateBody } from "../lib/validation.js";
-import { attachSession, requireParent, requireChild } from "../middleware/requireAuth.js";
+import { attachSession, requireParent, requireChild, childSession, parentSession } from "../middleware/requireAuth.js";
 import { recordWalletTransaction, InsufficientFundsError } from "../lib/ledger.js";
 
 export const rewardsRouter = Router();
@@ -62,7 +62,7 @@ rewardsRouter.patch("/rewards/:id", requireParent, async (req, res) => {
 
 rewardsRouter.get("/child/rewards", requireChild, async (req, res) => {
   const householdId = req.session!.householdId;
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const rewards = await prisma.reward.findMany({
     where: { householdId, active: true },
   });
@@ -72,7 +72,7 @@ rewardsRouter.get("/child/rewards", requireChild, async (req, res) => {
 
 rewardsRouter.post("/child/rewards/:id/redeem", requireChild, async (req, res) => {
   const householdId = req.session!.householdId;
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const reward = await prisma.reward.findUnique({ where: { id: req.params.id } });
 
   if (!reward || reward.householdId !== householdId || !reward.active) {
@@ -168,7 +168,7 @@ rewardsRouter.post(
           walletId: wallet.id,
           amount: redemption.priceCoinsAtPurchase,
           type: "REWARD_REFUND",
-          actorId: req.session!.userId,
+          actorId: parentSession(req).userId,
           idempotencyKey: `reward-redemption:${redemption.id}:refund`,
           sourceType: "reward_redemption",
           sourceId: redemption.id,
@@ -180,7 +180,7 @@ rewardsRouter.post(
         data: {
           status: req.body.decision,
           reviewedAt: new Date(),
-          reviewedById: req.session!.userId,
+          reviewedById: parentSession(req).userId,
         },
       });
     });
@@ -206,7 +206,7 @@ rewardsRouter.post("/reward-redemptions/:id/mark-ready", requireParent, async (r
 });
 
 rewardsRouter.post("/child/reward-redemptions/:id/mark-used", requireChild, async (req, res) => {
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const redemption = await prisma.rewardRedemption.findUnique({ where: { id: req.params.id } });
   if (!redemption || redemption.childId !== childId || redemption.status !== "A_UTILISER") {
     return res.status(409).json({ error: "Action impossible" });
@@ -219,7 +219,7 @@ rewardsRouter.post("/child/reward-redemptions/:id/mark-used", requireChild, asyn
 });
 
 rewardsRouter.get("/child/reward-redemptions", requireChild, async (req, res) => {
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const redemptions = await prisma.rewardRedemption.findMany({
     where: { childId },
     include: { reward: true },

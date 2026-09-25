@@ -1,0 +1,356 @@
+/* Mise en page générale ------------------------------------------------- */
+
+.screen {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen-content {
+  flex: 1;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) calc(var(--space-7) + 64px);
+}
+
+.screen-content--wide {
+  max-width: 960px;
+}
+
+.centered-auth {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+}
+
+/* Cartes ------------------------------------------------------------------ */
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-5);
+}
+
+.card--tight {
+  padding: var(--space-4);
+}
+
+.card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* Boutons ------------------------------------------------------------------ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 12px 22px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+  min-height: 44px;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--parchment);
+  box-shadow: var(--shadow-raised);
+}
+
+.btn-gold {
+  background: linear-gradient(180deg, var(--gold-soft), var(--gold));
+  color: var(--ink);
+  box-shadow: var(--shadow-raised);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--parchment-line);
+}
+
+.btn-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 13px;
+  min-height: 36px;
+}
+
+/* Formulaires --------------------------------------------------------------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: var(--space-4);
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.field input,
+.field select,
+.field textarea {
+  border: 1.5px solid var(--parchment-line);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: 2px solid var(--sky);
+  outline-offset: 1px;
+}
+
+.form-error {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  font-size: 14px;
+  margin-bottom: var(--space-4);
+}
+
+/* Pièces / pills ------------------------------------------------------------ */
+
+.coin-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gold-soft);
+  color: var(--ink);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pill-forest {
+  background: var(--forest-soft);
+  color: var(--forest);
+}
+.pill-sky {
+  background: var(--sky-soft);
+  color: var(--sky);
+}
+.pill-coral {
+  background: var(--coral-soft);
+  color: var(--coral);
+}
+
+/* Barre de progression -------------------------------------------------------- */
+
+.progress-track {
+  background: var(--parchment-dim);
+  border-radius: var(--radius-pill);
+  height: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--forest), var(--gold));
+  border-radius: var(--radius-pill);
+  transition: width 0.4s ease;
+}
+
+/* Navigation enfant (bottom tabs) --------------------------------------------- */
+
+.child-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--parchment-line);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px var(--space-2) max(8px, env(safe-area-inset-bottom));
+  z-index: 40;
+}
+
+.child-nav a {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-decoration: none;
+  color: var(--ink-faint);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 4px;
+  border-radius: var(--radius-sm);
+}
+
+.child-nav a.active {
+  color: var(--ink);
+}
+
+.child-nav .icon {
+  font-size: 22px;
+}
+
+/* Navigation parent ------------------------------------------------------------ */
+
+.parent-topbar {
+  background: var(--ink);
+  color: var(--parchment);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.parent-nav {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  background: var(--surface);
+  border-bottom: 1px solid var(--parchment-line);
+  padding: 0 var(--space-4);
+}
+
+.parent-nav a {
+  padding: 14px 12px;
+  text-decoration: none;
+  color: var(--ink-faint);
+  font-weight: 700;
+  font-size: 14px;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+}
+
+.parent-nav a.active {
+  color: var(--ink);
+  border-bottom-color: var(--gold);
+}
+
+/* Grilles ------------------------------------------------------------------------ */
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+}
+
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-3);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.row-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* États vides --------------------------------------------------------------------- */
+
+.empty-state {
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+  color: var(--ink-faint);
+}
+
+.empty-state .emoji {
+  font-size: 40px;
+  display: block;
+  margin-bottom: var(--space-3);
+}
+
+/* Avatar -------------------------------------------------------------------------- */
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--forest-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.avatar-lg {
+  width: 88px;
+  height: 88px;
+  font-size: 44px;
+}
+
+/* Utilitaires ----------------------------------------------------------------------- */
+
+.text-faint {
+  color: var(--ink-faint);
+}
+.text-sm {
+  font-size: 13px;
+}
+.text-center {
+  text-align: center;
+}
+.mt-0 {
+  margin-top: 0;
+}

@@ -1,0 +1,99 @@
+:root {
+  /* Couleurs — palette chaleureuse "aventure familiale", pas de bleu/rose/jaune primaire */
+  --ink: #1c2e4a;
+  --ink-soft: #3b4a66;
+  --ink-faint: #6b7791;
+
+  --parchment: #f6f1e4;
+  --parchment-dim: #ede6d3;
+  --parchment-line: #ddd3b8;
+
+  --surface: #ffffff;
+
+  --gold: #c9973b;
+  --gold-soft: #e7c878;
+  --forest: #2f6b4f;
+  --forest-soft: #dcebe1;
+  --coral: #d9694f;
+  --coral-soft: #f6ded6;
+  --sky: #3e7cb1;
+  --sky-soft: #dbe9f3;
+
+  --success: #2f8f5b;
+  --danger: #c24545;
+  --danger-soft: #f6dcd8;
+
+  --rarity-commune: #9aa3ae;
+  --rarity-peu-commune: #3e7cb1;
+  --rarity-rare: #7b4fa0;
+  --rarity-epique: #d9a22b;
+  --rarity-legendaire-1: #f6c453;
+  --rarity-legendaire-2: #e88a2f;
+  --rarity-legendaire-3: #d94e9a;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+
+  --shadow-card: 0 2px 8px rgba(28, 46, 74, 0.08), 0 8px 24px rgba(28, 46, 74, 0.06);
+  --shadow-raised: 0 4px 14px rgba(28, 46, 74, 0.12), 0 14px 34px rgba(28, 46, 74, 0.1);
+
+  --font-display: "Fraunces", "Georgia", serif;
+  --font-interface: "Manrope", "Segoe UI", system-ui, sans-serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--parchment);
+  color: var(--ink);
+  font-family: var(--font-interface);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+button {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

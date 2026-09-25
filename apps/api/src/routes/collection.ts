@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { attachSession, requireChild } from "../middleware/requireAuth.js";
+import { attachSession, requireChild, childSession } from "../middleware/requireAuth.js";
 import { openBooster, generateBoosterSeed, type BoosterSlotConfig } from "../lib/boosters.js";
 import { checkAndAwardBadges } from "../lib/badges.js";
 
@@ -17,7 +17,7 @@ collectionRouter.get("/child/universes", requireChild, async (req, res) => {
 });
 
 collectionRouter.get("/child/collection/:universeId", requireChild, async (req, res) => {
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const householdId = req.session!.householdId;
   const { universeId } = req.params;
 
@@ -53,7 +53,7 @@ function masteryTierFromQuantity(quantity: number): string | null {
 }
 
 collectionRouter.get("/child/boosters", requireChild, async (req, res) => {
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const boosters = await prisma.boosterInstance.findMany({
     where: { childId, status: "NON_OUVERT" },
     include: { definition: { include: { universe: true } } },
@@ -63,7 +63,7 @@ collectionRouter.get("/child/boosters", requireChild, async (req, res) => {
 });
 
 collectionRouter.post("/child/boosters/:id/open", requireChild, async (req, res) => {
-  const childId = req.session!.childId;
+  const childId = childSession(req).childId;
   const instance = await prisma.boosterInstance.findUnique({
     where: { id: req.params.id },
     include: { definition: true },
