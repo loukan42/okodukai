@@ -3,6 +3,7 @@ import { api } from "../../lib/api";
 import { Avatar } from "../../components/Avatar";
 import { ChildForm, type ChildFormValues } from "../../components/ChildForm";
 import { CoinPill } from "../../components/CoinPill";
+import { GameIcon } from "../../components/GameIcon";
 
 interface ChildRow {
   id: string;
@@ -53,11 +54,9 @@ export function ChildrenManage() {
   }
 
   return (
-    <div className="stack">
-      <div className="card">
-        <h1 className="font-display" style={{ fontSize: 22, marginBottom: 12 }}>
-          Ajouter un enfant
-        </h1>
+    <div className="stack parent-manage-page">
+      <div className="card parent-form-panel">
+        <h1 className="parent-form-title"><GameIcon name="user" size={27}/> Ajouter un enfant</h1>
         <ChildForm onSubmit={onSubmit} submitting={creating} />
       </div>
 
@@ -73,7 +72,7 @@ export function ChildrenManage() {
                 </p>
                 <div className="row" style={{ marginTop: 6 }}>
                   <CoinPill amount={child.balances.available} />
-                  <span className="pill pill-forest">🏦 {child.balances.vault}</span>
+                  <span className="pill pill-forest"><GameIcon name="vault" size={16}/> {child.balances.vault}</span>
                 </div>
               </div>
             </div>

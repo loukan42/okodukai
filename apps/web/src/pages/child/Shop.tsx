@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { api, ApiError } from "../../lib/api";
 import { CoinPill } from "../../components/CoinPill";
 import { EmptyState } from "../../components/EmptyState";
+import { GameIcon } from "../../components/GameIcon";
+import { useDialogFocus } from "../../lib/useDialogFocus";
 
 interface RewardRow {
   id: string;
@@ -17,14 +19,18 @@ export function Shop() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const purchaseRef = useDialogFocus<HTMLDivElement>(confirming !== null);
 
   async function load() {
-    const [rewardsRes, walletRes] = await Promise.all([
+    try { const [rewardsRes, walletRes] = await Promise.all([
       api.get<{ rewards: RewardRow[] }>("/child/rewards"),
       api.get<{ balances: { available: number } }>("/child/wallet"),
     ]);
     setRewards(rewardsRes.rewards);
     setBalance(walletRes.balances.available);
+    } catch { setError("Impossible de charger la boutique. Réessaie dans un instant."); }
+    finally { setLoading(false); }
   }
 
   useEffect(() => {
@@ -48,13 +54,8 @@ export function Shop() {
   }
 
   return (
-    <div className="stack">
-      <div className="row" style={{ justifyContent: "space-between" }}>
-        <h1 className="font-display" style={{ fontSize: 24 }}>
-          Boutique
-        </h1>
-        <CoinPill amount={balance} />
-      </div>
+    <div className="stack shop-page">
+      <header className="shop-header"><div className="page-scene-title"><span className="page-scene-icon"><GameIcon name="shop" size={30}/></span><div><p className="scene-kicker">Récompenses familiales</p><h1>Boutique</h1><p>Choisis ce que tu veux obtenir avec tes pièces.</p></div></div><div className="shop-wallet"><span>Ma bourse</span><CoinPill amount={balance}/></div></header>
 
       {success && (
         <div className="card" style={{ background: "var(--forest-soft)", color: "var(--forest)" }}>
@@ -62,43 +63,32 @@ export function Shop() {
         </div>
       )}
 
-      {rewards.length === 0 ? (
-        <EmptyState emoji="🎁" title="Boutique vide" subtitle="Reviens bientôt, tes parents préparent des récompenses." />
+      {loading ? <p className="loading-message" role="status">La boutique se prépare…</p> : error && !confirming ? <p className="form-error" role="alert">{error}</p> : rewards.length === 0 ? (
+        <EmptyState icon="gift" title="Boutique vide" subtitle="Reviens bientôt, tes parents préparent des récompenses." />
       ) : (
-        <div className="grid-2">
+        <div className="reward-grid">
           {rewards.map((r) => (
-            <div key={r.id} className="card card--tight" style={{ textAlign: "center" }}>
-              <p style={{ fontSize: 30 }}>{r.category === "EXPERIENCE" ? "🎟️" : "🎁"}</p>
-              <p style={{ fontWeight: 700, minHeight: 40 }}>{r.title}</p>
-              <CoinPill amount={r.priceCoins} />
+            <article key={r.id} className="reward-item">
+              <span className="reward-item-icon"><GameIcon name={r.category === "EXPERIENCE" ? "ticket" : "gift"} size={36}/></span>
+              <span className="reward-item-category">{r.category === "EXPERIENCE" ? "Expérience" : "Objet"}</span>
+              <h2>{r.title}</h2>
+              <div className="reward-item-price"><span>Prix</span><CoinPill amount={r.priceCoins}/></div>
               <button
-                className="btn btn-primary btn-block btn-sm"
-                style={{ marginTop: 10 }}
+                className="btn btn-primary btn-block"
                 disabled={balance < r.priceCoins}
                 onClick={() => setConfirming(r)}
               >
-                Obtenir
+                {balance < r.priceCoins ? `Il manque ${r.priceCoins - balance} pièces` : "Demander cette récompense"}
               </button>
-            </div>
+            </article>
           ))}
         </div>
       )}
 
       {confirming && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(28,46,74,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 20,
-            zIndex: 50,
-          }}
-        >
-          <div className="card" style={{ width: "100%", maxWidth: 360, textAlign: "center" }}>
-            <h2 className="font-display" style={{ fontSize: 20 }}>
+        <div className="dialog-backdrop">
+          <div ref={purchaseRef} className="card reward-dialog" role="dialog" aria-modal="true" aria-labelledby="purchase-title" onKeyDown={(e) => { if (e.key === "Escape") setConfirming(null); }}>
+            <h2 id="purchase-title" className="font-display" style={{ fontSize: 20 }}>
               Tu veux utiliser {confirming.priceCoins} de tes {balance} pièces ?
             </h2>
             <p className="text-faint text-sm">Il te restera {balance - confirming.priceCoins} pièces.</p>

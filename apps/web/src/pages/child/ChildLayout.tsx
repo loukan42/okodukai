@@ -3,6 +3,16 @@ import { useState } from "react";
 import { api, ApiError } from "../../lib/api";
 import { useAuth } from "../../lib/AuthContext";
 import { Avatar } from "../../components/Avatar";
+import { GameIcon, type GameIconName } from "../../components/GameIcon";
+import { useDialogFocus } from "../../lib/useDialogFocus";
+
+const navigation: { to: string; label: string; icon: GameIconName; end?: boolean }[] = [
+  { to: "/enfant", label: "Accueil", icon: "home", end: true },
+  { to: "/enfant/quetes", label: "Quêtes", icon: "quest" },
+  { to: "/enfant/boutique", label: "Boutique", icon: "shop" },
+  { to: "/enfant/collection", label: "Collection", icon: "collection" },
+  { to: "/enfant/coffre", label: "Coffre", icon: "vault" },
+];
 
 export function ChildLayout() {
   const { session, refresh } = useAuth();
@@ -11,6 +21,7 @@ export function ChildLayout() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const gateRef = useDialogFocus<HTMLFormElement>(showExit);
 
   if (session?.kind !== "child") return null;
 
@@ -27,23 +38,12 @@ export function ChildLayout() {
   }
 
   return (
-    <div className="screen">
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "12px 20px",
-        }}
-      >
-        <div className="row">
-          <Avatar avatarId={session.child.avatarId} />
-          <span className="font-display" style={{ fontSize: 18 }}>
-            {session.child.displayName}
-          </span>
-        </div>
-        <button className="btn btn-ghost btn-sm" onClick={() => setShowExit(true)}>
-          🔒 Parent
+    <div className="screen child-screen">
+      <header className="child-header">
+        <div className="child-brand"><img src="/logo-full.png" alt="Okodukai" /></div>
+        <div className="child-identity"><Avatar avatarId={session.child.avatarId} /><span>{session.child.displayName}</span></div>
+        <button className="parent-gate" onClick={() => setShowExit(true)} aria-label="Accéder à l'espace parent">
+          <GameIcon name="lock" size={19} /><span>Parent</span>
         </button>
       </header>
 
@@ -51,54 +51,26 @@ export function ChildLayout() {
         <Outlet />
       </div>
 
-      <nav className="child-nav">
-        <NavLink to="/enfant" end className={({ isActive }) => (isActive ? "active" : "")}>
-          <span className="icon">🏠</span>
-          Accueil
-        </NavLink>
-        <NavLink to="/enfant/quetes" className={({ isActive }) => (isActive ? "active" : "")}>
-          <span className="icon">🗺️</span>
-          Quêtes
-        </NavLink>
-        <NavLink to="/enfant/boutique" className={({ isActive }) => (isActive ? "active" : "")}>
-          <span className="icon">🎁</span>
-          Boutique
-        </NavLink>
-        <NavLink to="/enfant/collection" className={({ isActive }) => (isActive ? "active" : "")}>
-          <span className="icon">🃏</span>
-          Collection
-        </NavLink>
-        <NavLink to="/enfant/coffre" className={({ isActive }) => (isActive ? "active" : "")}>
-          <span className="icon">🏦</span>
-          Mon coffre
-        </NavLink>
+      <nav className="child-nav" aria-label="Navigation enfant">
+        {navigation.map((item) => <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => (isActive ? "active" : "")}>
+          <GameIcon name={item.icon} size={23} /><span>{item.label}</span>
+        </NavLink>)}
       </nav>
 
       {showExit && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(28,46,74,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 50,
-            padding: 20,
-          }}
-        >
-          <form onSubmit={exitToParent} className="card" style={{ width: "100%", maxWidth: 360 }}>
-            <h2 className="font-display" style={{ fontSize: 20, marginBottom: 12 }}>
+        <div className="dialog-backdrop" role="presentation">
+          <form ref={gateRef} onSubmit={exitToParent} onKeyDown={(e) => { if (e.key === "Escape") setShowExit(false); }} className="card parent-gate-dialog" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+            <h2 id="gate-title" className="font-display" style={{ fontSize: 20, marginBottom: 12 }}>
               Retour espace parent
             </h2>
             {error && <div className="form-error">{error}</div>}
             <div className="field">
-              <label>Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <label htmlFor="gate-email">Email</label>
+              <input id="gate-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div className="field">
-              <label>Mot de passe</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <label htmlFor="gate-password">Mot de passe</label>
+              <input id="gate-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
             <div className="row">
               <button type="submit" className="btn btn-primary btn-block">

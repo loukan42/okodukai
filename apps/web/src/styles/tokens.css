@@ -1,22 +1,24 @@
 :root {
   /* Couleurs — palette chaleureuse "aventure familiale", pas de bleu/rose/jaune primaire */
-  --ink: #1c2e4a;
-  --ink-soft: #3b4a66;
-  --ink-faint: #6b7791;
+  --ink: #172941;
+  --ink-soft: #354a60;
+  --ink-faint: #5c6b78;
 
-  --parchment: #f6f1e4;
-  --parchment-dim: #ede6d3;
-  --parchment-line: #ddd3b8;
+  --parchment: #f6f0df;
+  --parchment-dim: #ebe2cd;
+  --parchment-line: #d8c9a7;
 
-  --surface: #ffffff;
+  --surface: #fffaf0;
+  --surface-raised: #fffdf7;
+  --surface-game: #243d55;
 
-  --gold: #c9973b;
-  --gold-soft: #e7c878;
-  --forest: #2f6b4f;
+  --gold: #d59b38;
+  --gold-soft: #f1d389;
+  --forest: #2d7254;
   --forest-soft: #dcebe1;
-  --coral: #d9694f;
+  --coral: #bd5140;
   --coral-soft: #f6ded6;
-  --sky: #3e7cb1;
+  --sky: #4a7895;
   --sky-soft: #dbe9f3;
 
   --success: #2f8f5b;
@@ -53,6 +55,14 @@
     0 41.8px 33.4px rgba(28, 46, 74, 0.09);
   --shadow-card: var(--shadow-md);
   --shadow-raised: var(--shadow-sm);
+  --border-game: 1px solid rgba(255, 250, 240, 0.22);
+  --duration-fast: 120ms;
+  --duration-normal: 220ms;
+  --duration-slow: 400ms;
+  --z-nav: 40;
+  --z-dialog: 80;
+  --z-booster: 100;
+  --z-card: 110;
 
   /* Courbes d'easing personnalisées — les easings CSS par défaut manquent de punch. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);

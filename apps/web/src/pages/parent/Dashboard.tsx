@@ -4,158 +4,53 @@ import { api } from "../../lib/api";
 import { Avatar } from "../../components/Avatar";
 import { CoinPill } from "../../components/CoinPill";
 import { EmptyState } from "../../components/EmptyState";
+import { GameIcon } from "../../components/GameIcon";
 
-interface PendingCompletion {
-  id: string;
-  quest: { title: string; rewardCoins: number; rewardXp: number };
-  child: { id: string; displayName: string; avatarId: string };
-}
-
-interface PendingRedemption {
-  id: string;
-  priceCoinsAtPurchase: number;
-  reward: { title: string };
-  child: { id: string; displayName: string; avatarId: string };
-}
-
-interface ChildSummary {
-  id: string;
-  displayName: string;
-  avatarId: string;
-  currentLevel: number;
-  balances: { available: number; vault: number };
-}
+interface PendingCompletion { id: string; quest: { title: string; rewardCoins: number; rewardXp: number }; child: { id: string; displayName: string; avatarId: string } }
+interface PendingRedemption { id: string; priceCoinsAtPurchase: number; reward: { title: string }; child: { id: string; displayName: string; avatarId: string } }
+interface ChildSummary { id: string; displayName: string; avatarId: string; currentLevel: number; balances: { available: number; vault: number } }
 
 export function Dashboard() {
   const [completions, setCompletions] = useState<PendingCompletion[]>([]);
   const [redemptions, setRedemptions] = useState<PendingRedemption[]>([]);
   const [children, setChildren] = useState<ChildSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   async function load() {
-    const [dashboard, childrenRes] = await Promise.all([
-      api.get<{ pendingCompletions: PendingCompletion[]; pendingRedemptions: PendingRedemption[] }>(
-        "/household/dashboard"
-      ),
+    try { const [dashboard, childrenRes] = await Promise.all([
+      api.get<{ pendingCompletions: PendingCompletion[]; pendingRedemptions: PendingRedemption[] }>("/household/dashboard"),
       api.get<{ children: ChildSummary[] }>("/household/children"),
-    ]);
-    setCompletions(dashboard.pendingCompletions);
-    setRedemptions(dashboard.pendingRedemptions);
-    setChildren(childrenRes.children);
-    setLoading(false);
+    ]); setCompletions(dashboard.pendingCompletions); setRedemptions(dashboard.pendingRedemptions); setChildren(childrenRes.children); setError(null); }
+    catch { setError("Impossible de charger la vue familiale. Réessayez dans un instant."); }
+    finally { setLoading(false); }
   }
-
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { void load(); }, []);
 
   async function reviewQuest(id: string, decision: "VALIDEE" | "A_REFAIRE" | "REFUSEE") {
-    await api.post(`/quest-completions/${id}/review`, { decision });
-    load();
+    setBusyId(id); try { await api.post(`/quest-completions/${id}/review`, { decision }); await load(); } catch { setError("La décision n'a pas été enregistrée. Réessayez."); } finally { setBusyId(null); }
   }
-
   async function reviewReward(id: string, decision: "ACCEPTEE" | "REFUSEE") {
-    await api.post(`/reward-redemptions/${id}/review`, { decision });
-    load();
+    setBusyId(id); try { await api.post(`/reward-redemptions/${id}/review`, { decision }); await load(); } catch { setError("La décision n'a pas été enregistrée. Réessayez."); } finally { setBusyId(null); }
   }
 
-  if (loading) return <p className="text-faint">Chargement…</p>;
-
-  return (
-    <div className="stack">
-      <div>
-        <h1 className="font-display" style={{ fontSize: 26, marginBottom: 16 }}>
-          La famille aujourd'hui
-        </h1>
-        <div className="grid-2">
-          {children.map((child) => (
-            <div key={child.id} className="card card--tight">
-              <div className="row">
-                <Avatar avatarId={child.avatarId} />
-                <div>
-                  <p style={{ fontWeight: 700, margin: 0 }}>{child.displayName}</p>
-                  <p className="text-sm text-faint" style={{ margin: 0 }}>
-                    Niveau {child.currentLevel}
-                  </p>
-                </div>
-              </div>
-              <div className="row" style={{ marginTop: 12, justifyContent: "space-between" }}>
-                <CoinPill amount={child.balances.available} />
-                <span className="pill pill-forest">🏦 {child.balances.vault}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <h2 className="font-display" style={{ fontSize: 20, marginBottom: 12 }}>
-          En attente de validation
-        </h2>
-        {completions.length === 0 && redemptions.length === 0 ? (
-          <EmptyState emoji="✅" title="Tout est à jour" subtitle="Aucune validation en attente pour le moment." />
-        ) : (
-          <div className="stack">
-            {completions.map((c) => (
-              <div key={c.id} className="card card--tight card-row">
-                <div className="row">
-                  <Avatar avatarId={c.child.avatarId} />
-                  <div>
-                    <p style={{ fontWeight: 700, margin: 0 }}>{c.quest.title}</p>
-                    <p className="text-sm text-faint" style={{ margin: 0 }}>
-                      {c.child.displayName} · +{c.quest.rewardCoins} 🪙 · +{c.quest.rewardXp} XP
-                    </p>
-                  </div>
-                </div>
-                <div className="row">
-                  <button className="btn btn-primary btn-sm" onClick={() => reviewQuest(c.id, "VALIDEE")}>
-                    Valider
-                  </button>
-                  <button className="btn btn-ghost btn-sm" onClick={() => reviewQuest(c.id, "A_REFAIRE")}>
-                    À refaire
-                  </button>
-                  <button className="btn btn-danger btn-sm" onClick={() => reviewQuest(c.id, "REFUSEE")}>
-                    Refuser
-                  </button>
-                </div>
-              </div>
-            ))}
-            {redemptions.map((r) => (
-              <div key={r.id} className="card card--tight card-row">
-                <div className="row">
-                  <Avatar avatarId={r.child.avatarId} />
-                  <div>
-                    <p style={{ fontWeight: 700, margin: 0 }}>{r.reward.title}</p>
-                    <p className="text-sm text-faint" style={{ margin: 0 }}>
-                      {r.child.displayName} veut utiliser {r.priceCoinsAtPurchase} 🪙
-                    </p>
-                  </div>
-                </div>
-                <div className="row">
-                  <button className="btn btn-primary btn-sm" onClick={() => reviewReward(r.id, "ACCEPTEE")}>
-                    Accepter
-                  </button>
-                  <button className="btn btn-danger btn-sm" onClick={() => reviewReward(r.id, "REFUSEE")}>
-                    Refuser
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="row-wrap">
-        <Link to="/parent/quetes" className="btn btn-gold">
-          + Nouvelle quête
-        </Link>
-        <Link to="/parent/boutique" className="btn btn-ghost">
-          + Nouvelle récompense
-        </Link>
-        <Link to="/parent/enfants" className="btn btn-ghost">
-          + Nouvel enfant
-        </Link>
-      </div>
-    </div>
-  );
+  if (loading) return <p className="loading-message" role="status">Chargement de la famille…</p>;
+  return <div className="parent-dashboard">
+    <header className="parent-dashboard-header"><div><p className="scene-kicker">Votre foyer</p><h1>La famille aujourd'hui</h1><p>Les pièces, les projets et les demandes en un regard.</p></div><div className="parent-dashboard-pending"><strong>{completions.length + redemptions.length}</strong><span>à valider</span></div></header>
+    {error && <p className="form-error" role="alert">{error}</p>}
+    <section aria-labelledby="children-title"><div className="parent-section-heading"><h2 id="children-title">Les enfants</h2><Link to="/parent/enfants">Gérer les profils <GameIcon name="arrow" size={16}/></Link></div>
+      {children.length === 0 ? <EmptyState icon="user" title="Aucun profil enfant" subtitle="Ajoutez un enfant pour commencer."/> : <div className="parent-child-grid">{children.map((child) => <div className="parent-child-card" key={child.id}>
+        <div className="parent-child-identity"><Avatar avatarId={child.avatarId}/><div><strong>{child.displayName}</strong><span>Niveau {child.currentLevel}</span></div></div>
+        <div className="parent-child-money"><div><span>Disponible</span><CoinPill amount={child.balances.available}/></div><div><span>Au coffre</span><strong><GameIcon name="vault" size={18}/>{child.balances.vault}</strong></div></div>
+      </div>)}</div>}
+    </section>
+    <section aria-labelledby="pending-title"><div className="parent-section-heading"><h2 id="pending-title">Demandes à valider</h2><span className="pending-count">{completions.length + redemptions.length}</span></div>
+      {completions.length === 0 && redemptions.length === 0 ? <EmptyState icon="check" title="Tout est à jour" subtitle="Aucune validation en attente pour le moment."/> : <div className="approval-list">
+        {completions.map((c) => <article key={c.id} className="approval-row"><span className="approval-icon"><GameIcon name="quest" size={23}/></span><div className="approval-copy"><span>{c.child.displayName} a terminé une quête</span><strong>{c.quest.title}</strong><small>+{c.quest.rewardCoins} pièces · +{c.quest.rewardXp} XP · 1 booster</small></div><div className="approval-actions"><button className="btn btn-primary btn-sm" disabled={busyId === c.id} onClick={() => void reviewQuest(c.id,"VALIDEE")}>Valider</button><button className="btn btn-ghost btn-sm" disabled={busyId === c.id} onClick={() => void reviewQuest(c.id,"A_REFAIRE")}>À refaire</button><button className="btn btn-danger btn-sm" disabled={busyId === c.id} onClick={() => void reviewQuest(c.id,"REFUSEE")}>Refuser</button></div></article>)}
+        {redemptions.map((r) => <article key={r.id} className="approval-row"><span className="approval-icon"><GameIcon name="gift" size={23}/></span><div className="approval-copy"><span>{r.child.displayName} demande une récompense</span><strong>{r.reward.title}</strong><small>{r.priceCoinsAtPurchase} pièces</small></div><div className="approval-actions"><button className="btn btn-primary btn-sm" disabled={busyId === r.id} onClick={() => void reviewReward(r.id,"ACCEPTEE")}>Accepter</button><button className="btn btn-danger btn-sm" disabled={busyId === r.id} onClick={() => void reviewReward(r.id,"REFUSEE")}>Refuser</button></div></article>)}
+      </div>}
+    </section>
+    <nav className="parent-quick-actions" aria-label="Actions rapides"><Link to="/parent/quetes"><GameIcon name="quest" size={21}/>Créer une quête</Link><Link to="/parent/boutique"><GameIcon name="gift" size={21}/>Ajouter une récompense</Link><Link to="/parent/enfants"><GameIcon name="user" size={21}/>Ajouter un enfant</Link></nav>
+  </div>;
 }

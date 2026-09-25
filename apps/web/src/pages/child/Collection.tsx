@@ -3,61 +3,61 @@ import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
 import { EmptyState } from "../../components/EmptyState";
 import { ProgressBar } from "../../components/ProgressBar";
+import { GameIcon } from "../../components/GameIcon";
+import { BoosterOpenOverlay } from "../../components/BoosterOpenOverlay";
+import boosterImage from "../../assets/cards/card-booster.png";
+import type { CardRarity } from "@okodukai/shared";
+import { useAuth } from "../../lib/AuthContext";
 
-interface Universe {
-  id: string;
-  code: string;
-  title: string;
-  description: string | null;
-}
+interface Universe { id: string; code: string; title: string; description: string | null }
+interface UniverseDisplay extends Universe { owned: number; total: number; imageUrl: string | null }
+interface BoosterRow { id: string; grantedAt: string; definition: { title: string; universe: { title: string } } }
 
 export function Collection() {
-  const [universes, setUniverses] = useState<Universe[]>([]);
-  const [completion, setCompletion] = useState<Record<string, { owned: number; total: number }>>({});
+  const { session } = useAuth();
+  const childId = session?.kind === "child" ? session.child.id : null;
+  const [universes, setUniverses] = useState<UniverseDisplay[]>([]);
+  const [boosters, setBoosters] = useState<BoosterRow[]>([]);
+  const [openingBooster, setOpeningBooster] = useState<BoosterRow | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    api.get<{ universes: Universe[] }>("/child/universes").then(async (res) => {
-      setUniverses(res.universes);
-      const entries = await Promise.all(
-        res.universes.map(async (u) => {
-          const detail = await api.get<{ completion: { owned: number; total: number } }>(
-            `/child/collection/${u.id}`
-          );
-          return [u.id, detail.completion] as const;
-        })
-      );
-      setCompletion(Object.fromEntries(entries));
-    });
-  }, []);
-
-  if (universes.length === 0) {
-    return <EmptyState emoji="🃏" title="Aucun univers activé" subtitle="Demande à un parent d'activer un univers de collection." />;
+  async function load() {
+    try {
+      const [res, inventory] = await Promise.all([
+        api.get<{ universes: Universe[] }>("/child/universes"),
+        api.get<{ boosters: BoosterRow[] }>("/child/boosters"),
+      ]);
+      const displays = await Promise.all(res.universes.map(async (universe) => {
+        const detail = await api.get<{ completion: { owned: number; total: number }; cards: { owned: boolean; artworkUrl: string | null }[] }>(`/child/collection/${universe.id}`);
+        return { ...universe, ...detail.completion, imageUrl: detail.cards.find((card) => card.owned && card.artworkUrl)?.artworkUrl ?? detail.cards.find((card) => card.artworkUrl)?.artworkUrl ?? null };
+      }));
+      setUniverses(displays);
+      setBoosters(inventory.boosters);
+      setError(false);
+    } catch { setError(true); }
+    finally { setLoading(false); }
   }
 
-  return (
-    <div className="stack">
-      <h1 className="font-display" style={{ fontSize: 24 }}>
-        Ma collection
-      </h1>
-      {universes.map((u) => {
-        const c = completion[u.id];
-        return (
-          <Link key={u.id} to={`/enfant/collection/${u.id}`} className="card" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
-            <p style={{ fontWeight: 700, fontSize: 18, margin: 0 }}>{u.title}</p>
-            <p className="text-sm text-faint" style={{ marginTop: 4 }}>
-              {u.description}
-            </p>
-            {c && (
-              <div style={{ marginTop: 12 }}>
-                <ProgressBar value={c.owned} max={c.total} />
-                <p className="text-sm text-faint" style={{ marginTop: 6 }}>
-                  {c.owned} / {c.total}
-                </p>
-              </div>
-            )}
-          </Link>
-        );
-      })}
-    </div>
-  );
+  useEffect(() => { if (childId) { setLoading(true); void load(); } }, [childId]);
+
+  if (loading) return <p className="loading-message" role="status">Ouverture de l'album…</p>;
+  if (error) return <div className="empty-state"><strong>L'album ne charge pas.</strong><p>Vérifie ta connexion et réessaie.</p><button className="btn btn-primary" onClick={() => void load()}>Réessayer</button></div>;
+
+  const totalOwned = universes.reduce((sum, u) => sum + u.owned, 0);
+  const totalCards = universes.reduce((sum, u) => sum + u.total, 0);
+
+  return <div className="collection-page">
+    <header className="collection-header"><div><p className="scene-kicker">Ton album</p><h1>Ma collection</h1><p>Explore tes univers et retrouve les cartes gagnées.</p></div><div className="collection-total"><GameIcon name="collection" size={26}/><strong>{totalOwned} / {totalCards}</strong><span>cartes trouvées</span></div></header>
+    <section className="booster-inventory" aria-labelledby="inventory-title"><div className="booster-inventory-heading"><div><p className="scene-kicker">À ouvrir quand tu veux</p><h2 id="inventory-title">Mes boosters <span>{boosters.length}</span></h2></div><GameIcon name="gift" size={28}/></div>
+      {boosters.length === 0 ? <div className="booster-inventory-empty"><img src={boosterImage} alt=""/><div><strong>Aucun booster pour le moment</strong><p>Termine une quête et fais-la valider par un parent. Tu recevras un booster à garder ici.</p><Link to="/enfant/quetes" className="btn btn-gold">Voir mes quêtes <GameIcon name="arrow" size={17}/></Link></div></div>
+        : <div className="booster-inventory-grid">{boosters.map((booster) => <article className="booster-inventory-item" key={booster.id}><img src={boosterImage} alt=""/><div><small>Booster gagné</small><h3>{booster.definition.universe.title}</h3><p>{booster.definition.title}</p><button className="btn btn-gold" onClick={() => setOpeningBooster(booster)}>Ouvrir ce booster <GameIcon name="arrow" size={17}/></button></div></article>)}</div>}
+    </section>
+    <section aria-labelledby="albums-title"><div className="section-heading"><h2 id="albums-title">Mes univers</h2></div>
+    {universes.length === 0 ? <EmptyState icon="collection" title="Aucun univers activé" subtitle="Demande à un parent d'activer un univers de collection."/> : <div className="collection-universes">{universes.map((universe, index) => <Link key={universe.id} to={`/enfant/collection/${universe.id}`} className="universe-tile">
+      {universe.imageUrl ? <img className="universe-tile-art" src={universe.imageUrl} alt="" loading="lazy"/> : <span className="universe-tile-pattern" aria-hidden="true"/>}
+      <span className="universe-tile-shade"/><span className="universe-tile-content"><small>Univers {String(index + 1).padStart(2,"0")}</small><strong>{universe.title}</strong><span className="universe-tile-description">{universe.description}</span><span className="universe-tile-progress"><span>{universe.owned} / {universe.total} cartes</span><ProgressBar value={universe.owned} max={universe.total}/></span><span className="universe-tile-link">Ouvrir l'album <GameIcon name="arrow" size={17}/></span></span>
+    </Link>)}</div>}</section>
+    <BoosterOpenOverlay open={openingBooster !== null} onOpen={async () => { const res = await api.post<{ cards: { id: string; name: string; rarity: CardRarity; artworkUrl: string | null }[] }>(`/child/boosters/${openingBooster!.id}/open`); return res.cards; }} onClose={() => { setOpeningBooster(null); void load(); }}/>
+  </div>;
 }
