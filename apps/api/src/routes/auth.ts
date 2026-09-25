@@ -2,19 +2,14 @@ import { Router } from "express";
 import argon2 from "argon2";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
-import { signSession, SESSION_COOKIE } from "../lib/auth.js";
+import { signSession, SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from "../lib/auth.js";
 import { validateBody } from "../lib/validation.js";
 import { attachSession } from "../middleware/requireAuth.js";
 
 export const authRouter = Router();
 authRouter.use(attachSession);
 
-const cookieOptions = {
-  httpOnly: true,
-  sameSite: "lax" as const,
-  secure: process.env.NODE_ENV === "production",
-  maxAge: 30 * 24 * 60 * 60 * 1000,
-};
+const cookieOptions = SESSION_COOKIE_OPTIONS;
 
 const registerSchema = z.object({
   householdName: z.string().min(1).max(80),

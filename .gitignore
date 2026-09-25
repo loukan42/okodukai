@@ -11,3 +11,6 @@ coverage/
 .turbo/
 apps/web/tsconfig.tsbuildinfo
 *.tsbuildinfo
+
+.agents/
+skills-lock.json

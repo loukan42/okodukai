@@ -18,6 +18,7 @@ import { Collection } from "./pages/child/Collection";
 import { CollectionUniverse } from "./pages/child/CollectionUniverse";
 import { Vault } from "./pages/child/Vault";
 import { Learn } from "./pages/child/Learn";
+import { DevBar } from "./components/DevBar";
 
 function FullScreenLoader() {
   return (
@@ -33,7 +34,8 @@ export default function App() {
   if (loading) return <FullScreenLoader />;
 
   return (
-    <Routes>
+    <>
+      <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/inscription" element={<RegisterHousehold />} />
       <Route path="/connexion" element={<Login />} />
@@ -64,6 +66,8 @@ export default function App() {
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+      {import.meta.env.DEV && <DevBar />}
+    </>
   );
 }

@@ -12,6 +12,7 @@ import { learningRouter } from "./routes/learning.js";
 import { simulationRouter } from "./routes/simulation.js";
 import { badgesRouter } from "./routes/badges.js";
 import { notificationsRouter } from "./routes/notifications.js";
+import { devRouter } from "./routes/dev.js";
 
 export function createApp() {
   const app = express();
@@ -38,6 +39,10 @@ export function createApp() {
   app.use("/", simulationRouter);
   app.use("/", badgesRouter);
   app.use("/", notificationsRouter);
+
+  if (process.env.NODE_ENV !== "production") {
+    app.use("/", devRouter);
+  }
 
   app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error(err);
