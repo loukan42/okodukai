@@ -9,3 +9,5 @@ Thumbs.db
 apps/api/prisma/dev.db
 coverage/
 .turbo/
+apps/web/tsconfig.tsbuildinfo
+*.tsbuildinfo

@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { authRouter } from "./routes/auth.js";
 import { householdRouter } from "./routes/household.js";
+import { childRouter } from "./routes/child.js";
 import { questsRouter } from "./routes/quests.js";
 import { rewardsRouter } from "./routes/rewards.js";
 import { savingsRouter } from "./routes/savings.js";
@@ -28,6 +29,7 @@ export function createApp() {
 
   app.use("/auth", authRouter);
   app.use("/household", householdRouter);
+  app.use("/", childRouter);
   app.use("/", questsRouter);
   app.use("/", rewardsRouter);
   app.use("/", savingsRouter);

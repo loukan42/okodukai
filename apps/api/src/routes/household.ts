@@ -75,17 +75,23 @@ householdRouter.get("/children", async (req, res) => {
 householdRouter.get("/dashboard", async (req, res) => {
   const householdId = req.session!.householdId;
 
-  const pendingCompletions = await prisma.questCompletion.count({
-    where: { status: "EN_ATTENTE", quest: { householdId } },
-  });
-  const pendingRedemptions = await prisma.rewardRedemption.count({
-    where: { status: "DEMANDEE", reward: { householdId } },
-  });
-  const recentAudit = await prisma.auditLog.findMany({
-    where: { householdId },
-    orderBy: { createdAt: "desc" },
-    take: 15,
-  });
+  const [pendingCompletions, pendingRedemptions, recentAudit] = await Promise.all([
+    prisma.questCompletion.findMany({
+      where: { status: "EN_ATTENTE", quest: { householdId } },
+      include: { quest: true, child: { select: { id: true, displayName: true, avatarId: true } } },
+      orderBy: { declaredAt: "asc" },
+    }),
+    prisma.rewardRedemption.findMany({
+      where: { status: "DEMANDEE", reward: { householdId } },
+      include: { reward: true, child: { select: { id: true, displayName: true, avatarId: true } } },
+      orderBy: { requestedAt: "asc" },
+    }),
+    prisma.auditLog.findMany({
+      where: { householdId },
+      orderBy: { createdAt: "desc" },
+      take: 15,
+    }),
+  ]);
 
   res.json({ pendingCompletions, pendingRedemptions, recentAudit });
 });
