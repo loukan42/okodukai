@@ -1,6 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { api } from "../../lib/api";
 import { EmptyState } from "../../components/EmptyState";
+import { CoinPill } from "../../components/CoinPill";
+import { GameIcon } from "../../components/GameIcon";
 
 interface ChildOption {
   id: string;
@@ -97,11 +99,10 @@ export function QuestsManage() {
   }
 
   return (
-    <div className="stack">
-      <div className="card">
-        <h1 className="font-display" style={{ fontSize: 22, marginBottom: 12 }}>
-          Nouvelle quête
-        </h1>
+    <div className="stack parent-manage-page">
+      <div className="card parent-form-panel">
+        <h1 className="parent-form-title"><GameIcon name="quest" size={27}/> Nouvelle quête</h1>
+        <p className="text-faint text-sm">Partez d'une idée ou écrivez votre propre quête. Chaque quête validée offre aussi un booster de cartes, ajouté à l'inventaire de l'enfant.</p>
         <div className="row-wrap" style={{ marginBottom: 16 }}>
           {TEMPLATES.map((t) => (
             <button key={t.title} type="button" className="pill pill-sky" style={{ cursor: "pointer", border: "none" }} onClick={() => applyTemplate(t)}>
@@ -113,8 +114,8 @@ export function QuestsManage() {
         <form onSubmit={onSubmit}>
           <div className="grid-2">
             <div className="field">
-              <label>Enfant</label>
-              <select value={childId} onChange={(e) => setChildId(e.target.value)}>
+              <label htmlFor="quest-child">Enfant</label>
+              <select id="quest-child" value={childId} onChange={(e) => setChildId(e.target.value)}>
                 {children.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.displayName}
@@ -123,8 +124,8 @@ export function QuestsManage() {
               </select>
             </div>
             <div className="field">
-              <label>Catégorie</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)}>
+              <label htmlFor="quest-category">Catégorie</label>
+              <select id="quest-category" value={category} onChange={(e) => setCategory(e.target.value)}>
                 {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
                   <option key={k} value={k}>
                     {v}
@@ -135,24 +136,24 @@ export function QuestsManage() {
           </div>
 
           <div className="field">
-            <label>Titre de la quête</label>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Vider le lave-vaisselle" required />
+            <label htmlFor="quest-title">Titre de la quête</label>
+            <input id="quest-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Vider le lave-vaisselle" required />
           </div>
 
           <div className="grid-2">
             <div className="field">
-              <label>Pièces</label>
-              <input type="number" min={0} value={coins} onChange={(e) => setCoins(Number(e.target.value))} />
+              <label htmlFor="quest-coins">Pièces</label>
+              <input id="quest-coins" type="number" min={0} value={coins} onChange={(e) => setCoins(Number(e.target.value))} />
             </div>
             <div className="field">
-              <label>XP</label>
-              <input type="number" min={0} value={xp} onChange={(e) => setXp(Number(e.target.value))} />
+              <label htmlFor="quest-xp">XP</label>
+              <input id="quest-xp" type="number" min={0} value={xp} onChange={(e) => setXp(Number(e.target.value))} />
             </div>
           </div>
 
           <div className="field">
-            <label>Récurrence</label>
-            <select value={recurrence} onChange={(e) => setRecurrence(e.target.value)}>
+            <label htmlFor="quest-recurrence">Récurrence</label>
+            <select id="quest-recurrence" value={recurrence} onChange={(e) => setRecurrence(e.target.value)}>
               <option value="UNIQUE">Unique</option>
               <option value="QUOTIDIENNE">Quotidienne</option>
               <option value="HEBDOMADAIRE">Hebdomadaire</option>
@@ -170,7 +171,7 @@ export function QuestsManage() {
           Quêtes actives
         </h2>
         {quests.filter((q) => q.active).length === 0 ? (
-          <EmptyState emoji="🗺️" title="Aucune quête" subtitle="Créez-en une pour commencer." />
+          <EmptyState icon="quest" title="Aucune quête" subtitle="Créez-en une pour commencer." />
         ) : (
           <div className="stack">
             {quests
@@ -180,9 +181,10 @@ export function QuestsManage() {
                   <div>
                     <p style={{ fontWeight: 700, margin: 0 }}>{q.title}</p>
                     <p className="text-sm text-faint" style={{ margin: 0 }}>
-                      {q.child.displayName} · +{q.rewardCoins} 🪙 · +{q.rewardXp} XP · {q.status}
+                      {q.child.displayName} · +{q.rewardXp} XP · 1 booster · {q.status}
                     </p>
                   </div>
+                  <CoinPill amount={q.rewardCoins}/>
                   <button className="btn btn-ghost btn-sm" onClick={() => archive(q.id)}>
                     Archiver
                   </button>

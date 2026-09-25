@@ -121,6 +121,11 @@ householdRouter.put("/universes/:universeId", validateBody(universeToggleSchema)
       create: { householdId, universeId },
     });
   } else {
+    const enabledCount = await prisma.householdUniverse.count({ where: { householdId } });
+    const existing = await prisma.householdUniverse.findUnique({ where: { householdId_universeId: { householdId, universeId } } });
+    if (existing && enabledCount <= 1) {
+      return res.status(409).json({ error: "Gardez au moins un univers actif pour les boosters gagnés après chaque quête." });
+    }
     await prisma.householdUniverse
       .delete({ where: { householdId_universeId: { householdId, universeId } } })
       .catch(() => undefined);

@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { api } from "../../lib/api";
 import { Avatar, AVAILABLE_AVATARS } from "../../components/Avatar";
 import { CoinPill } from "../../components/CoinPill";
+import { GameIcon } from "../../components/GameIcon";
 
 interface ChildRow {
   id: string;
@@ -60,19 +61,17 @@ export function ChildrenManage() {
   }
 
   return (
-    <div className="stack">
-      <div className="card">
-        <h1 className="font-display" style={{ fontSize: 22, marginBottom: 12 }}>
-          Ajouter un enfant
-        </h1>
+    <div className="stack parent-manage-page">
+      <div className="card parent-form-panel">
+        <h1 className="parent-form-title"><GameIcon name="user" size={27}/> Ajouter un enfant</h1>
         <form onSubmit={onSubmit}>
           <div className="field">
-            <label>Prénom</label>
-            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
+            <label htmlFor="child-name">Prénom</label>
+            <input id="child-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
           </div>
           <div className="field">
-            <label>Tranche d'âge</label>
-            <select value={ageBand} onChange={(e) => setAgeBand(e.target.value as "AGE_8_9" | "AGE_10_12")}>
+            <label htmlFor="child-age">Tranche d'âge</label>
+            <select id="child-age" value={ageBand} onChange={(e) => setAgeBand(e.target.value as "AGE_8_9" | "AGE_10_12")}>
               <option value="AGE_8_9">8-9 ans</option>
               <option value="AGE_10_12">10-12 ans</option>
             </select>
@@ -85,6 +84,8 @@ export function ChildrenManage() {
                   key={id}
                   type="button"
                   onClick={() => setAvatarId(id)}
+                  aria-label={`Choisir l'avatar ${id}`}
+                  aria-pressed={id === avatarId}
                   style={{
                     border: id === avatarId ? "2px solid var(--gold)" : "2px solid transparent",
                     borderRadius: "50%",
@@ -99,8 +100,9 @@ export function ChildrenManage() {
             </div>
           </div>
           <div className="field">
-            <label>Code PIN (4 chiffres)</label>
+            <label htmlFor="child-pin">Code PIN (4 chiffres)</label>
             <input
+              id="child-pin"
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
               inputMode="numeric"
@@ -126,7 +128,7 @@ export function ChildrenManage() {
                 </p>
                 <div className="row" style={{ marginTop: 6 }}>
                   <CoinPill amount={child.balances.available} />
-                  <span className="pill pill-forest">🏦 {child.balances.vault}</span>
+                  <span className="pill pill-forest"><GameIcon name="vault" size={16}/> {child.balances.vault}</span>
                 </div>
               </div>
             </div>

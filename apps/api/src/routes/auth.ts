@@ -36,6 +36,13 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res) => {
     await tx.householdMembership.create({
       data: { householdId: household.id, userId: user.id, role: "PARENT_ADMIN" },
     });
+    const starterUniverse = await tx.universe.findFirst({
+      where: { active: true, boosterDefinitions: { some: {} }, cards: { some: { active: true } } },
+      orderBy: { sortOrder: "asc" },
+    });
+    if (starterUniverse) {
+      await tx.householdUniverse.create({ data: { householdId: household.id, universeId: starterUniverse.id } });
+    }
     await tx.auditLog.create({
       data: {
         householdId: household.id,

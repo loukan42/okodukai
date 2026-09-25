@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAuth, LAST_HOUSEHOLD_KEY } from "../lib/AuthContext";
+import { GameIcon } from "./GameIcon";
 
 interface DevHousehold {
   id: string;
@@ -80,7 +81,7 @@ export function DevBar() {
   }
 
   return (
-    <div style={{ position: "fixed", bottom: 12, right: 12, zIndex: 200, fontFamily: "var(--font-interface)" }}>
+    <div style={{ position: "fixed", bottom: 86, right: 12, zIndex: 200, fontFamily: "var(--font-interface)" }}>
       {open && (
         <div
           className="card"
@@ -93,7 +94,7 @@ export function DevBar() {
           }}
         >
           <div className="row" style={{ justifyContent: "space-between", marginBottom: 10 }}>
-            <p style={{ fontWeight: 800, margin: 0 }}>🛠 Dev</p>
+            <p style={{ fontWeight: 800, margin: 0 }}>Outils de démo</p>
             <button className="btn btn-ghost btn-sm" onClick={reseed} disabled={busy}>
               Réinitialiser
             </button>
@@ -118,7 +119,7 @@ export function DevBar() {
                     onClick={() => loginAsParent(p.userId, h.id)}
                     style={{ justifyContent: "flex-start" }}
                   >
-                    👤 {p.displayName} (parent)
+                    <GameIcon name="user" size={17}/>{p.displayName} (parent)
                   </button>
                 ))}
                 {h.children.map((c) => (
@@ -129,7 +130,7 @@ export function DevBar() {
                     onClick={() => loginAsChild(c.childId, h.id)}
                     style={{ justifyContent: "flex-start" }}
                   >
-                    🧒 {c.displayName} (enfant)
+                    <GameIcon name="user" size={17}/>{c.displayName} (enfant)
                   </button>
                 ))}
               </div>
@@ -142,7 +143,7 @@ export function DevBar() {
         style={{ boxShadow: "0 4px 14px rgba(0,0,0,0.25)" }}
         onClick={() => setOpen((o) => !o)}
       >
-        🛠 Dev
+        Démo
       </button>
     </div>
   );

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { api, ApiError } from "../../lib/api";
 import { CoinPill } from "../../components/CoinPill";
 import { ProgressBar } from "../../components/ProgressBar";
+import { GameIcon } from "../../components/GameIcon";
 
 interface Goal {
   id: string;
@@ -88,56 +89,44 @@ export function Vault() {
   const activeGoal = goals.find((g) => !g.achievedAt);
 
   return (
-    <div className="stack">
-      <h1 className="font-display" style={{ fontSize: 24 }}>
-        Mon coffre
-      </h1>
+    <div className="stack vault-page">
+      <header className="page-scene-title"><span className="page-scene-icon"><GameIcon name="vault" size={31}/></span><div><p className="scene-kicker">Ma bourse et mon épargne</p><h1>Mon coffre</h1><p>Mets des pièces de côté pour ce qui compte pour toi.</p></div></header>
 
-      <div className="grid-2">
-        <div className="card card--tight" style={{ textAlign: "center" }}>
-          <p className="text-sm text-faint">Ma bourse</p>
-          <CoinPill amount={balances.available} />
+      <div className="vault-balances">
+        <div className="vault-balance vault-balance--wallet">
+          <GameIcon name="coin" size={30}/><span>Dans ma bourse</span><strong>{balances.available} <small>pièces</small></strong>
         </div>
-        <div className="card card--tight" style={{ textAlign: "center" }}>
-          <p className="text-sm text-faint">Mon coffre</p>
-          <span className="pill pill-forest" style={{ fontSize: 16 }}>
-            🏦 {balances.vault}
-          </span>
+        <div className="vault-balance vault-balance--saved">
+          <GameIcon name="vault" size={30}/><span>Dans mon coffre</span><strong>{balances.vault} <small>pièces</small></strong>
         </div>
       </div>
 
       {error && <div className="form-error">{error}</div>}
 
-      <div className="card">
-        <p className="text-sm text-faint" style={{ marginBottom: 8 }}>
-          Mettre de côté ou reprendre
-        </p>
-        <div className="row">
+      <div className="card vault-transfer">
+        <label htmlFor="vault-amount">Combien de pièces veux-tu déplacer ?</label>
+        <div className="row-wrap">
           <input
+            id="vault-amount"
             type="number"
             min={1}
             value={amount}
             onChange={(e) => setAmount(Number(e.target.value))}
-            style={{ width: 90, border: "1.5px solid var(--parchment-line)", borderRadius: 8, padding: 10 }}
           />
-          <button className="btn btn-primary btn-sm" onClick={lock}>
-            → Coffre
+          <button className="btn btn-primary" onClick={lock}>
+            Mettre au coffre
           </button>
-          <button className="btn btn-ghost btn-sm" onClick={unlock}>
-            ← Bourse
+          <button className="btn btn-ghost" onClick={unlock}>
+            Reprendre dans ma bourse
           </button>
         </div>
       </div>
 
       {activeGoal ? (
-        <div className="card">
-          <p className="text-sm text-faint">Mon objectif</p>
-          <p style={{ fontWeight: 700, fontSize: 18 }}>{activeGoal.title}</p>
+        <div className="goal-panel vault-goal">
+          <span className="goal-panel-mark"><GameIcon name="flag" size={29}/></span><div className="goal-panel-content"><span>Mon objectif</span><strong>{activeGoal.title}</strong>
           <ProgressBar value={balances.vault} max={activeGoal.targetCoins} />
-          <p className="text-sm text-faint" style={{ marginTop: 8 }}>
-            {balances.vault} / {activeGoal.targetCoins}
-            {balances.vault < activeGoal.targetCoins && ` · il te manque ${activeGoal.targetCoins - balances.vault}`}
-          </p>
+          <small>{balances.vault} sur {activeGoal.targetCoins} pièces{balances.vault < activeGoal.targetCoins && ` · il te manque ${activeGoal.targetCoins - balances.vault}`}</small></div>
         </div>
       ) : (
         <button className="btn btn-ghost btn-block" onClick={() => setShowNewGoal(true)}>
@@ -148,12 +137,12 @@ export function Vault() {
       {showNewGoal && (
         <form onSubmit={createGoal} className="card">
           <div className="field">
-            <label>Objectif</label>
-            <input value={newGoalTitle} onChange={(e) => setNewGoalTitle(e.target.value)} placeholder="Glace en famille" required />
+            <label htmlFor="goal-name">Objectif</label>
+            <input id="goal-name" value={newGoalTitle} onChange={(e) => setNewGoalTitle(e.target.value)} placeholder="Glace en famille" required />
           </div>
           <div className="field">
-            <label>Prix (pièces)</label>
-            <input type="number" min={1} value={newGoalTarget} onChange={(e) => setNewGoalTarget(Number(e.target.value))} />
+            <label htmlFor="goal-target">Prix (pièces)</label>
+            <input id="goal-target" type="number" min={1} value={newGoalTarget} onChange={(e) => setNewGoalTarget(Number(e.target.value))} />
           </div>
           <button type="submit" className="btn btn-primary btn-block">
             Enregistrer
@@ -161,21 +150,15 @@ export function Vault() {
         </form>
       )}
 
-      <Link to="/enfant/apprendre" className="card card-row" style={{ textDecoration: "none", color: "inherit" }}>
-        <div>
-          <p style={{ fontWeight: 700, margin: 0 }}>📘 Apprendre</p>
-          <p className="text-sm text-faint" style={{ margin: 0 }}>
-            Comprendre l'épargne et l'argent
-          </p>
-        </div>
-        <span style={{ fontSize: 18 }}>→</span>
+      <Link to="/enfant/apprendre" className="learn-callout">
+        <span className="feature-icon"><GameIcon name="learn" size={25}/></span><span><strong>Apprendre</strong><small>Comprendre l'épargne et l'argent</small></span><GameIcon name="arrow" size={18}/>
       </Link>
 
       <div>
         <h2 className="font-display" style={{ fontSize: 18, marginBottom: 10 }}>
           Historique
         </h2>
-        <div className="stack" style={{ gap: 8 }}>
+        <div className="vault-history">
           {transactions.map((t) => (
             <div key={t.id} className="card card--tight card-row">
               <span className="text-sm">{t.reason ?? TYPE_LABEL[t.type] ?? t.type}</span>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { EmptyState } from "../../components/EmptyState";
+import { GameIcon } from "../../components/GameIcon";
 
 interface ModuleContent {
   situation: string;
@@ -80,7 +81,7 @@ export function Learn() {
                 {active.content.explanation}
               </p>
               <p className="card--tight" style={{ background: "var(--sky-soft)", borderRadius: 10, padding: 12, fontWeight: 700 }}>
-                💡 {active.content.vocabulary}
+                <GameIcon name="learn" size={19}/> {active.content.vocabulary}
               </p>
               <button className="btn btn-primary btn-block" style={{ marginTop: 16 }} onClick={() => setStep("quiz")}>
                 Continuer
@@ -104,7 +105,7 @@ export function Learn() {
 
           {step === "done" && (
             <div className="text-center">
-              <p style={{ fontSize: 40 }}>🎉</p>
+              <span className="learn-complete-icon"><GameIcon name="check" size={32}/></span>
               <p style={{ fontWeight: 700 }}>Bien joué ! +{xpAwarded} XP</p>
               <button
                 className="btn btn-primary btn-block"
@@ -124,14 +125,12 @@ export function Learn() {
   }
 
   if (modules.length === 0) {
-    return <EmptyState emoji="📘" title="Pas encore de module" subtitle="Reviens bientôt pour apprendre de nouvelles choses." />;
+    return <EmptyState icon="learn" title="Pas encore de module" subtitle="Reviens bientôt pour apprendre de nouvelles choses." />;
   }
 
   return (
-    <div className="stack">
-      <h1 className="font-display" style={{ fontSize: 24 }}>
-        Apprendre
-      </h1>
+    <div className="stack learn-page">
+      <header className="page-scene-title"><span className="page-scene-icon"><GameIcon name="learn" size={30}/></span><div><p className="scene-kicker">Faire des choix</p><h1>Apprendre</h1><p>Comprends l'argent à ton rythme.</p></div></header>
       {modules.map((m) => (
         <button
           key={m.id}

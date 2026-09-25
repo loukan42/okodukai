@@ -62,7 +62,14 @@ collectionRouter.get("/child/boosters", requireChild, async (req, res) => {
   res.json({ boosters });
 });
 
-collectionRouter.post("/child/boosters/:id/open", requireChild, async (req, res) => {
+async function cardsFromOpening(boosterInstanceId: string) {
+  const opening = await prisma.boosterOpening.findUnique({ where: { boosterInstanceId } });
+  if (!opening) return [];
+  const cards = await prisma.card.findMany({ where: { id: { in: opening.resultCardIds } } });
+  return opening.resultCardIds.map((id) => cards.find((card) => card.id === id)!).filter(Boolean);
+}
+
+collectionRouter.post("/child/boosters/:id/open", requireChild, async (req, res, next) => {
   const childId = childSession(req).childId;
   const instance = await prisma.boosterInstance.findUnique({
     where: { id: req.params.id },
@@ -73,11 +80,7 @@ collectionRouter.post("/child/boosters/:id/open", requireChild, async (req, res)
     return res.status(404).json({ error: "Booster introuvable" });
   }
   if (instance.status === "OUVERT") {
-    const existingOpening = await prisma.boosterOpening.findUnique({ where: { boosterInstanceId: instance.id } });
-    const cards = existingOpening
-      ? await prisma.card.findMany({ where: { id: { in: existingOpening.resultCardIds } } })
-      : [];
-    return res.json({ alreadyOpened: true, cards });
+    return res.json({ alreadyOpened: true, cards: await cardsFromOpening(instance.id) });
   }
 
   const [availableCards, ownedCards] = await Promise.all([
@@ -104,11 +107,13 @@ collectionRouter.post("/child/boosters/:id/open", requireChild, async (req, res)
     boostersSinceGuarantee: config.guarantee ? recentOpenings % config.guarantee.everyNBoosters : 0,
   });
 
+  try {
   await prisma.$transaction(async (tx) => {
-    await tx.boosterInstance.update({
-      where: { id: instance.id },
+    const claimed = await tx.boosterInstance.updateMany({
+      where: { id: instance.id, status: "NON_OUVERT" },
       data: { status: "OUVERT", openedAt: new Date() },
     });
+    if (claimed.count !== 1) throw new Error("BOOSTER_ALREADY_OPENED");
 
     await tx.boosterOpening.create({
       data: {
@@ -140,6 +145,12 @@ collectionRouter.post("/child/boosters/:id/open", requireChild, async (req, res)
 
     await checkAndAwardBadges(tx, childId, req.session!.householdId);
   });
+  } catch (error) {
+    if (error instanceof Error && error.message === "BOOSTER_ALREADY_OPENED") {
+      return res.json({ alreadyOpened: true, cards: await cardsFromOpening(instance.id) });
+    }
+    return next(error);
+  }
 
   const cards = await prisma.card.findMany({ where: { id: { in: cardIds } } });
   // conserve l'ordre du tirage (findMany ne garantit pas l'ordre d'entrée)

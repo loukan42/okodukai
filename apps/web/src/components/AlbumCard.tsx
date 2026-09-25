@@ -1,111 +1,38 @@
-import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import type { CardRarity } from "@okodukai/shared";
+import { GameIcon } from "./GameIcon";
+import { RarityBadge } from "./RarityBadge";
+import { useDialogFocus } from "../lib/useDialogFocus";
+import { tiltCard, resetCardTilt } from "../lib/cardTilt";
 
-interface AlbumCardProps {
-  imageUrl: string | null;
-  title: string;
-  unlocked: boolean;
-  cardNumber: number;
-}
+interface AlbumCardProps { imageUrl: string | null; title: string; unlocked: boolean; cardNumber: number; rarity: CardRarity; quantity: number }
 
-/** Carte d'album avec flip 3D en plein écran au clic — reprend CollectionCard.tsx de kidsgamebook. */
-export function AlbumCard({ imageUrl, title, unlocked, cardNumber }: AlbumCardProps) {
+/** Existing collection art, with the reference's stage lighting and clear rarity treatment. */
+export function AlbumCard({ imageUrl, title, unlocked, cardNumber, rarity, quantity }: AlbumCardProps) {
   const [open, setOpen] = useState(false);
-  const [flipped, setFlipped] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const dialogRef = useDialogFocus<HTMLDivElement>(open);
+  useEffect(() => { if (!open) return; const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); }; window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey); }, [open]);
 
-  function handleClick() {
-    if (!unlocked) return;
-    setOpen(true);
-    setFlipped(false);
-    setTimeout(() => setFlipped(true), 100);
-  }
+  const visual = <><span className={`album-card-frame rarity-${rarity.toLowerCase().replace("_", "-")} ${unlocked ? "" : "album-card-frame--locked"}`}><span className="gilded-inner"><span className="gilded-aspect">
+    {imageUrl && <img src={imageUrl} alt="" className="gilded-image" loading="lazy"/>}{unlocked && <span className="card-pointer-glint" aria-hidden="true"/>}{!unlocked && <span className="album-card-locked-overlay"><span className="album-card-locked-icon"><GameIcon name="lock" size={21}/></span></span>}
+  </span></span></span><span className="album-card-caption"><span className="album-card-name">{unlocked ? title : `Carte ${String(cardNumber).padStart(2,"0")}`}</span>{unlocked && <RarityBadge rarity={rarity}/>}</span></>;
 
-  return (
-    <>
-      <button type="button" className="album-card" disabled={!unlocked} onClick={handleClick}>
-        <div className={`album-card-frame ${unlocked ? "" : "album-card-frame--locked"}`}>
-          <div className="gilded-inner">
-            <div className="gilded-aspect">
-              {unlocked && imageUrl ? (
-                <img src={imageUrl} alt={title} className="gilded-image" loading="lazy" />
-              ) : (
-                <div className="album-card-locked-overlay">
-                  <span className="album-card-locked-icon" aria-hidden>
-                    🔒
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        <p className={`album-card-name ${unlocked ? "" : "album-card-name--locked"}`}>
-          {unlocked ? title : `#${cardNumber}`}
-        </p>
-      </button>
+  return <>
+    {unlocked ? <button type="button" className="album-card" onClick={() => setOpen(true)} onPointerMove={tiltCard} onPointerLeave={resetCardTilt} aria-label={`Voir ${title}, ${quantity} exemplaire${quantity > 1 ? "s" : ""}`}>
+      {visual}{quantity > 1 && <span className="album-card-quantity">×{quantity}</span>}
+    </button> : <div className="album-card album-card--locked" aria-label={`Carte ${cardNumber} non trouvée`}>{visual}</div>}
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="card-modal-backdrop"
-            onClick={() => setOpen(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 200, damping: 20 }}
-              style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button type="button" className="card-modal-close" onClick={() => setOpen(false)} aria-label="Fermer">
-                ✕
-              </button>
-
-              <motion.div
-                className="card-modal-flip"
-                style={{ transformStyle: "preserve-3d" }}
-                initial={{ rotateY: 180 }}
-                animate={{ rotateY: flipped ? 0 : 180 }}
-                transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1], delay: 0.1 }}
-              >
-                <div
-                  className="card-modal-face card-modal-face--back"
-                  style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)", aspectRatio: "3 / 4" }}
-                >
-                  <span style={{ fontSize: 64, color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>?</span>
-                </div>
-
-                <div className="card-modal-face card-modal-face--front" style={{ backfaceVisibility: "hidden" }}>
-                  <div className="gilded-inner">
-                    <div className="gilded-aspect">
-                      {imageUrl && <img src={imageUrl} alt={title} className="gilded-image" />}
-                      <motion.div
-                        className="gilded-shine"
-                        initial={{ x: "-100%" }}
-                        animate={{ x: flipped ? "200%" : "-100%" }}
-                        transition={{ duration: 1.2, ease: "easeInOut", delay: 0.8 }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.h3
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: flipped ? 1 : 0, y: flipped ? 0 : 10 }}
-                transition={{ delay: 0.9, duration: 0.4 }}
-                className="font-display card-modal-title"
-                style={{ fontSize: 22 }}
-              >
-                {title}
-              </motion.h3>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
-  );
+    <AnimatePresence>{open && <motion.div className="card-modal-backdrop album-theatre" role="dialog" aria-modal="true" aria-label={`Carte ${title}`} initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={() => setOpen(false)}>
+      <div ref={dialogRef} className={`album-theatre-inner rarity-stage-${rarity.toLowerCase()}`} onClick={(e) => e.stopPropagation()}>
+        <button className="card-modal-close" onClick={() => setOpen(false)} aria-label="Fermer la carte"><GameIcon name="close" size={21}/></button>
+        <p className="album-theatre-kicker">Carte #{String(cardNumber).padStart(2,"0")}</p>
+        <motion.div className="album-theatre-card" initial={reduceMotion ? false : {rotateY:90,scale:.82}} animate={{rotateY:0,scale:1}} transition={{duration:reduceMotion ? 0 : .55,ease:[.23,1,.32,1]}}>
+          {imageUrl && <img src={imageUrl} alt={title}/>}<span className="album-theatre-shine" aria-hidden="true"/>
+        </motion.div>
+        <h2>{title}</h2><div className="album-theatre-details"><RarityBadge rarity={rarity}/><span>{quantity} exemplaire{quantity > 1 ? "s" : ""}</span></div>
+      </div>
+    </motion.div>}</AnimatePresence>
+  </>;
 }

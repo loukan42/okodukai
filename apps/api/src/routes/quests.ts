@@ -34,6 +34,12 @@ questsRouter.post("/quests", requireParent, validateBody(createQuestSchema), asy
   if (!child || child.householdId !== householdId) {
     return res.status(404).json({ error: "Enfant introuvable dans ce foyer" });
   }
+  if (req.body.boosterDefinitionId) {
+    const definition = await prisma.boosterDefinition.findFirst({
+      where: { id: req.body.boosterDefinitionId, universe: { active: true, householdGrants: { some: { householdId } } } },
+    });
+    if (!definition) return res.status(400).json({ error: "Booster indisponible pour ce foyer" });
+  }
 
   const quest = await prisma.quest.create({
     data: {
@@ -75,6 +81,12 @@ questsRouter.patch("/quests/:id", requireParent, async (req, res) => {
   const updateSchema = createQuestSchema.partial().extend({ active: z.boolean().optional() });
   const parsed = updateSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Requête invalide" });
+  if (parsed.data.boosterDefinitionId) {
+    const definition = await prisma.boosterDefinition.findFirst({
+      where: { id: parsed.data.boosterDefinitionId, universe: { active: true, householdGrants: { some: { householdId } } } },
+    });
+    if (!definition) return res.status(400).json({ error: "Booster indisponible pour ce foyer" });
+  }
 
   const updated = await prisma.quest.update({
     where: { id: quest.id },
@@ -95,7 +107,7 @@ questsRouter.post(
   "/quest-completions/:id/review",
   requireParent,
   validateBody(reviewSchema),
-  async (req, res) => {
+  async (req, res, next) => {
     const householdId = req.session!.householdId;
     const completion = await prisma.questCompletion.findUnique({
       where: { id: req.params.id },
@@ -109,9 +121,28 @@ questsRouter.post(
       return res.status(409).json({ error: "Cette déclaration a déjà été traitée" });
     }
 
+    // Every approved quest grants one unopened pack. A quest may request a
+    // specific theme; otherwise we rotate through the household's enabled themes.
+    let boosterDefinitionId: string | undefined;
+    if (req.body.decision === "VALIDEE") {
+      const definitions = await prisma.boosterDefinition.findMany({
+        where: { universe: { active: true, householdGrants: { some: { householdId } }, cards: { some: { active: true } } } },
+        orderBy: { code: "asc" },
+        select: { id: true },
+      });
+      if (definitions.length === 0) {
+        return res.status(409).json({ error: "Activez un univers de cartes avant de valider cette quête." });
+      }
+      const earnedPacks = await prisma.boosterInstance.count({ where: { childId: completion.childId, sourceType: "quest_reward" } });
+      boosterDefinitionId = definitions.some((definition) => definition.id === completion.quest.boosterDefinitionId)
+        ? completion.quest.boosterDefinitionId!
+        : definitions[earnedPacks % definitions.length].id;
+    }
+
+    try {
     const result = await prisma.$transaction(async (tx) => {
-      const updatedCompletion = await tx.questCompletion.update({
-        where: { id: completion.id },
+      const claimed = await tx.questCompletion.updateMany({
+        where: { id: completion.id, status: "EN_ATTENTE" },
         data: {
           status: req.body.decision,
           reviewedAt: new Date(),
@@ -119,6 +150,8 @@ questsRouter.post(
           note: req.body.note,
         },
       });
+      if (claimed.count !== 1) throw new Error("QUEST_ALREADY_REVIEWED");
+      const updatedCompletion = await tx.questCompletion.findUniqueOrThrow({ where: { id: completion.id } });
 
       let newQuestStatus = completion.quest.status;
       if (req.body.decision === "VALIDEE") {
@@ -146,16 +179,14 @@ questsRouter.post(
           });
         }
 
-        if (completion.quest.boosterDefinitionId) {
-          await tx.boosterInstance.create({
-            data: {
-              childId: completion.childId,
-              definitionId: completion.quest.boosterDefinitionId,
-              sourceType: "quest_reward",
-              sourceId: completion.id,
-            },
-          });
-        }
+        await tx.boosterInstance.create({
+          data: {
+            childId: completion.childId,
+            definitionId: boosterDefinitionId!,
+            sourceType: "quest_reward",
+            sourceId: completion.id,
+          },
+        });
 
         if (completion.quest.recurrence === "UNIQUE") {
           await tx.quest.update({ where: { id: completion.quest.id }, data: { active: false } });
@@ -186,6 +217,12 @@ questsRouter.post(
     });
 
     res.json(result);
+    } catch (error) {
+      if (error instanceof Error && error.message === "QUEST_ALREADY_REVIEWED") {
+        return res.status(409).json({ error: "Cette déclaration a déjà été traitée" });
+      }
+      return next(error);
+    }
   }
 );
 

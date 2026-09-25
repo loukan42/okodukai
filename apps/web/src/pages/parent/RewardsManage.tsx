@@ -1,6 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { api } from "../../lib/api";
 import { EmptyState } from "../../components/EmptyState";
+import { CoinPill } from "../../components/CoinPill";
+import { GameIcon } from "../../components/GameIcon";
 
 interface RewardRow {
   id: string;
@@ -60,11 +62,10 @@ export function RewardsManage() {
   }
 
   return (
-    <div className="stack">
-      <div className="card">
-        <h1 className="font-display" style={{ fontSize: 22, marginBottom: 12 }}>
-          Nouvelle récompense
-        </h1>
+    <div className="stack parent-manage-page">
+      <div className="card parent-form-panel">
+        <h1 className="parent-form-title"><GameIcon name="gift" size={27}/> Nouvelle récompense</h1>
+        <p className="text-faint text-sm">Choisissez une récompense que votre famille pourra valider.</p>
         <div className="row-wrap" style={{ marginBottom: 16 }}>
           {TEMPLATES.map((t) => (
             <button key={t.title} type="button" className="pill pill-sky" style={{ cursor: "pointer", border: "none" }} onClick={() => applyTemplate(t)}>
@@ -74,20 +75,20 @@ export function RewardsManage() {
         </div>
         <form onSubmit={onSubmit}>
           <div className="field">
-            <label>Titre</label>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Choisir le film" required />
+            <label htmlFor="reward-title">Titre</label>
+            <input id="reward-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Choisir le film" required />
           </div>
           <div className="grid-2">
             <div className="field">
-              <label>Catégorie</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value as "EXPERIENCE" | "OBJET")}>
+                <label htmlFor="reward-category">Catégorie</label>
+                <select id="reward-category" value={category} onChange={(e) => setCategory(e.target.value as "EXPERIENCE" | "OBJET")}>
                 <option value="EXPERIENCE">Expérience</option>
                 <option value="OBJET">Objet</option>
               </select>
             </div>
             <div className="field">
-              <label>Prix (pièces)</label>
-              <input type="number" min={1} value={price} onChange={(e) => setPrice(Number(e.target.value))} />
+                <label htmlFor="reward-price">Prix (pièces)</label>
+                <input id="reward-price" type="number" min={1} value={price} onChange={(e) => setPrice(Number(e.target.value))} />
             </div>
           </div>
           <button type="submit" className="btn btn-primary btn-block" disabled={creating}>
@@ -101,7 +102,7 @@ export function RewardsManage() {
           Boutique du foyer
         </h2>
         {rewards.length === 0 ? (
-          <EmptyState emoji="🎁" title="Boutique vide" subtitle="Ajoutez une première récompense." />
+          <EmptyState icon="gift" title="Boutique vide" subtitle="Ajoutez une première récompense." />
         ) : (
           <div className="stack">
             {rewards.map((r) => (
@@ -109,9 +110,10 @@ export function RewardsManage() {
                 <div>
                   <p style={{ fontWeight: 700, margin: 0 }}>{r.title}</p>
                   <p className="text-sm text-faint" style={{ margin: 0 }}>
-                    {r.category === "EXPERIENCE" ? "Expérience" : "Objet"} · {r.priceCoins} 🪙
+                    {r.category === "EXPERIENCE" ? "Expérience" : "Objet"}
                   </p>
                 </div>
+                <CoinPill amount={r.priceCoins}/>
                 <button className="btn btn-ghost btn-sm" onClick={() => toggleActive(r)}>
                   {r.active ? "Désactiver" : "Réactiver"}
                 </button>

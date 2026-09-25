@@ -15,26 +15,23 @@ export function ParentLayout() {
   }
 
   return (
-    <div className="screen">
+    <div className="screen parent-screen">
       <div className="parent-topbar">
-        <span className="row" style={{ gap: 8 }}>
-          <img src="/icons/logo-mark.png" alt="" style={{ width: 28, height: 28 }} />
-          <span className="font-display" style={{ fontSize: 20 }}>
-            Okodukai
-          </span>
+        <span className="parent-brand">
+          <img src="/logo-full.png" alt="Okodukai" />
         </span>
         <div className="row">
           <span className="text-sm" style={{ opacity: 0.8 }}>
             {session.user.displayName}
           </span>
-          <button className="btn btn-ghost btn-sm" style={{ borderColor: "rgba(255,255,255,0.3)", color: "#fff" }} onClick={logout}>
+          <button className="btn btn-ghost btn-sm parent-logout" onClick={logout}>
             Déconnexion
           </button>
         </div>
       </div>
       <nav className="parent-nav">
         <NavLink to="/parent" end className={({ isActive }) => (isActive ? "active" : "")}>
-          Dashboard
+          Vue d'ensemble
         </NavLink>
         <NavLink to="/parent/quetes" className={({ isActive }) => (isActive ? "active" : "")}>
           Quêtes
