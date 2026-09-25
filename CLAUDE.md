@@ -1,5 +1,7 @@
 # Okodukai (anciennement MoneyPocket / Family Wallet)
 
+Les agents doivent aussi suivre `AGENTS.md`, qui liste tous les skills installés dans le repo et leurs déclencheurs d'utilisation autonome.
+
 Portefeuille éducatif familial pour enfants de 8-12 ans (cœur 8-10), piloté par les parents.
 Boucle produit : **gagner → choisir → dépenser → économiser → attendre → comprendre l'investissement.**
 
