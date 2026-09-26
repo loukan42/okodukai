@@ -88,7 +88,6 @@ model ChildProfile {
   boosterInstances BoosterInstance[]
   childCards      ChildCard[]
   learningProgress LearningProgress[]
-  simPortfolios   SimulationPortfolio[]
   notifications   Notification[]
   vaultRule       VaultRule?
   vaultRequests   VaultWithdrawalRequest[]
@@ -362,6 +361,8 @@ enum XpSourceType {
   COLLECTION
   BADGE
   LEVEL_UP_BONUS
+  /// Placements école : première répartition, bilan final d'une partie lu (jamais lié au résultat).
+  FINANCE_LEARNING
 }
 
 model XpTransaction {
@@ -578,52 +579,6 @@ model LearningProgress {
 }
 
 // ---------------------------------------------------------------------------
-// Simulateur financier ("unités école" — jamais convertible en pièces)
-// ---------------------------------------------------------------------------
-
-enum SimulationProfile {
-  PRUDENT
-  EQUILIBRE
-  DYNAMIQUE
-}
-
-model SimulationScenario {
-  id          String   @id @default(uuid())
-  code        String   @unique
-  title       String
-  description String
-  // série de rendements en % par période, par profil, pour rejouer le scénario
-  returnSeries Json
-
-  portfolios SimulationPortfolio[]
-}
-
-model SimulationPortfolio {
-  id          String   @id @default(uuid())
-  childId     String
-  child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
-  profile     SimulationProfile
-  scenarioId  String?
-  scenario    SimulationScenario? @relation(fields: [scenarioId], references: [id])
-  startingUnits Int
-  currentUnits  Float
-  createdAt   DateTime @default(now())
-
-  transactions SimulationTransaction[]
-}
-
-model SimulationTransaction {
-  id           String   @id @default(uuid())
-  portfolioId  String
-  portfolio    SimulationPortfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
-  periodIndex  Int
-  unitsBefore  Float
-  unitsAfter   Float
-  returnPct    Float
-  createdAt    DateTime @default(now())
-}
-
-// ---------------------------------------------------------------------------
 // Notifications & audit
 // ---------------------------------------------------------------------------
 
@@ -660,6 +615,19 @@ model AuditLog {
   createdAt   DateTime @default(now())
 
   @@index([householdId, createdAt])
+}
+
+/// Essais de connexion par clé (`parent:{email}`, `child-pin:{childId}`), en base car l'API tourne
+/// en serverless : un compteur en mémoire repartirait de zéro à chaque instance. Supprimé au succès.
+model AuthThrottle {
+  key             String    @id
+  attempts        Int       @default(0)
+  windowStartedAt DateTime  @default(now())
+  /// Fin du dernier blocage (conservée après son expiration pour oublier les blocages anciens).
+  lockedUntil     DateTime?
+  /// Blocages consécutifs : chacun double la durée du suivant, jusqu'au plafond de la règle.
+  lockouts        Int       @default(0)
+  updatedAt       DateTime  @updatedAt
 }
 
 // ---------------------------------------------------------------------------

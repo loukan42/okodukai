@@ -23,6 +23,7 @@ import {
 import { Atelier, EMPTY_ALLOCATION, type Allocation } from "../../../components/invest/Atelier";
 import { RiskMeter, SupportEmblem } from "../../../components/invest/SupportEmblem";
 import { ValueChart } from "../../../components/invest/ValueChart";
+import { XpEarned } from "../../../components/invest/XpEarned";
 import { ObjectArt } from "../../../art/ObjectArt";
 
 const RISKS: Record<SupportCode, number> = { SECURISE: 1, PRETER: 2, MONDE: 4, ENTREPRISES: 5 };
@@ -49,6 +50,7 @@ function Onboarding({ state, onDone }: { state: InvestState; onDone: () => Promi
   const [open, setOpen] = useState<SupportCode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [xpAwarded, setXpAwarded] = useState(0);
   const key = useRef(intentKey());
   const first = rendezVousLabel(state.firstRendezVousAt);
   const placed = SUPPORT_ORDER.reduce((s, c) => s + allocation[c], 0);
@@ -57,7 +59,8 @@ function Onboarding({ state, onDone }: { state: InvestState; onDone: () => Promi
     setSending(true);
     setError(null);
     try {
-      await api.post("/child/invest/start", { allocation, idempotencyKey: key.current });
+      const res = await api.post<{ xpAwarded?: number }>("/child/invest/start", { allocation, idempotencyKey: key.current });
+      setXpAwarded(res.xpAwarded ?? 0);
       setStep(6);
     } catch (err) {
       setError(err instanceof ApiError && err.status !== 0 && err.status < 500 ? err.message : "Ta répartition n'a pas été enregistrée. Rien n'a changé. Réessaie.");
@@ -182,6 +185,7 @@ function Onboarding({ state, onDone }: { state: InvestState; onDone: () => Promi
         <section className="invest-step">
           <h1>Ta répartition est enregistrée.</h1>
           <p>Premier relevé : {first}. D'ici là, rien ne bouge.</p>
+          <XpEarned amount={xpAwarded} reason="Première répartition" />
           <p className="library-note" role="note">
             Si ton placement école baisse un jour, tes pièces ne bougent pas : ce sont deux choses séparées.
           </p>
@@ -379,6 +383,7 @@ function Observatory({ state, reload }: { state: InvestState; reload: () => Prom
           <h2>Ta partie est terminée</h2>
           {run.scenarioRevealed && <p className="statement-main">Tu viens de vivre : {run.scenarioRevealed}.</p>}
           <p>Personne ne pouvait savoir à l'avance comment le marché allait bouger. Une nouvelle partie te fera vivre une autre situation.</p>
+          <XpEarned amount={run.completionXp} reason="Partie terminée" />
           <button className="btn btn-quest" onClick={() => void newGame()}>
             Commencer une nouvelle partie
           </button>

@@ -45,6 +45,16 @@ export const ORCHARD = {
   monthlyChoices: [0, 2, 5] as const,
 };
 
+/**
+ * XP des placements (docs/FINANCIAL_EDUCATION.md §7.1) : montant fixe, jamais lié à la valeur ni au
+ * scénario. Première répartition : une fois par enfant ; bilan final lu : une fois par partie.
+ */
+export const FINANCE_XP = { firstAllocation: 20, gameFinished: 20 };
+export const financeXpKey = {
+  onboarding: (childId: string) => `fin:onboarding:${childId}`,
+  game: (childId: string, runId: string) => `fin:partie:${childId}:${runId}`,
+};
+
 /** Ce que l'enfant apprend à la fin de sa partie (jamais avant). */
 const SCENARIO_LABEL: Record<ScenarioCode, string> = {
   CROISSANCE_REGULIERE: "une croissance régulière",
@@ -208,6 +218,7 @@ export async function runView(client: Client, run: SimulationRun, ageBand: AgeBa
   const previousBySupport = (lastTwo.length === 2 ? lastTwo[0].bySupport : points[0].bySupport) as Record<SupportCode, number>;
   const finished = clock.finished || run.status !== "EN_COURS";
   const fees = run.fees as unknown as FeeSchedule;
+  const completionXp = finished ? await client.xpTransaction.findUnique({ where: { idempotencyKey: financeXpKey.game(run.childId, run.id) } }) : null;
   return {
     id: run.id,
     mode: run.mode,
@@ -255,6 +266,8 @@ export async function runView(client: Client, run: SimulationRun, ageBand: AgeBa
     },
     pendingOperations: operations.filter((o) => o.step > clock.revealedSteps).length,
     scenarioRevealed: finished ? SCENARIO_LABEL[run.scenario as ScenarioCode] ?? null : null,
+    /** XP reçue pour avoir lu le bilan final (0 tant qu'il n'est pas lu). */
+    completionXp: completionXp?.amount ?? 0,
   };
 }
 

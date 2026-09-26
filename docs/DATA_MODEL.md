@@ -39,9 +39,20 @@ Aucune table ne convertit, n'additionne ni ne transfère l'une dans l'autre. Sch
   la valeur découverte (`valueAtReveal`), la valeur par support, le versé, l'indice de performance et
   l'indice des prix. Créé en rattrapage à la lecture, **jamais recalculé** ; `seenAt` quand le bilan
   est lu.
+- **XP des placements** (`XpSourceType.FINANCE_LEARNING`, montant fixe, jamais lié au résultat) :
+  +20 à la première répartition (`fin:onboarding:{childId}`, une fois par enfant) et +20 quand le
+  bilan final d'une partie est lu (`fin:partie:{childId}:{runId}`, une fois par partie).
 - Les anciennes tables `SimulationScenario` / `SimulationPortfolio` / `SimulationTransaction`
-  (simulateur « clic pour avancer ») ne sont plus utilisées par l'API ; à supprimer dans une migration
-  dédiée une fois les données de démonstration nettoyées.
+  (simulateur « clic pour avancer ») ont été supprimées (migration `20260926082000_drop_legacy_simulator`).
+
+## Connexion
+
+- **`AuthThrottle`** : compteur d'essais par clé (`parent:{email}`, `child-pin:{childId}`), en base
+  car l'API tourne en serverless. L'essai est compté avant la vérification, sous verrou de ligne ; un
+  succès supprime la ligne. Mot de passe parent : 10 essais par 15 min (connexion et sortie du mode
+  enfant partagent le compteur). PIN enfant : 5 essais par 15 min. Chaque blocage double le suivant
+  (parent 15 min → 1 h, enfant 5 min → 1 h) ; les blocages sont oubliés un jour après le dernier.
+  Réponse 429 avec `Retry-After`. Un e-mail inconnu ne crée pas de ligne.
 
 ## Isolation et autorité
 

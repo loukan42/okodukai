@@ -6,6 +6,7 @@ import { SUPPORT_ORDER, TREND_GLYPH, rendezVousLabel, signedPercent, signedUnits
 import { Atelier, EMPTY_ALLOCATION, type Allocation } from "../../../components/invest/Atelier";
 import { RiskMeter, SupportEmblem } from "../../../components/invest/SupportEmblem";
 import { ValueChart } from "../../../components/invest/ValueChart";
+import { XpEarned } from "../../../components/invest/XpEarned";
 import { ObjectArt } from "../../../art/ObjectArt";
 
 const RISKS: Record<SupportCode, number> = { SECURISE: 1, PRETER: 2, MONDE: 4, ENTREPRISES: 5 };
@@ -230,6 +231,7 @@ function OrchardDashboard({ run, reload }: { run: InvestRun; reload: () => Promi
           <p>
             Versé : {units(run.contributed, false)} · Valeur finale : {units(run.value, false)} · Frais payés : {units(run.feesPaid, false)}. Personne ne pouvait savoir à l'avance comment l'histoire allait tourner.
           </p>
+          <XpEarned amount={run.completionXp} reason="Partie terminée" />
           <button
             className="btn btn-quest"
             onClick={() => {

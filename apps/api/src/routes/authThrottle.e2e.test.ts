@@ -1,0 +1,76 @@
+import { randomUUID } from "node:crypto";
+import { fileURLToPath } from "node:url";
+import type { AddressInfo } from "node:net";
+import argon2 from "argon2";
+import { config } from "dotenv";
+import { describe, expect, it } from "vitest";
+import { createApp } from "../app.js";
+import { prisma } from "../lib/prisma.js";
+import { childPinThrottleKey, parentThrottleKey } from "../lib/throttle.js";
+
+config({ path: fileURLToPath(new URL("../../.env", import.meta.url)) });
+
+const json = { "content-type": "application/json" };
+
+describe.skipIf(!process.env.DATABASE_URL)("limitation des tentatives de connexion", () => {
+  it("bloque le PIN enfant et le mot de passe parent après trop d'essais, même en parallèle", async () => {
+    const code = `throttle-${randomUUID()}`;
+    const email = `${code}@example.test`;
+    const server = createApp().listen(0);
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    const household = await prisma.household.create({ data: { name: code } });
+    const user = await prisma.user.create({ data: { email, displayName: "Camille", passwordHash: await argon2.hash("motdepasse123") } });
+    const child = await prisma.childProfile.create({
+      data: { householdId: household.id, displayName: "Léo", ageBand: "AGE_8_9", avatarId: "aventurier-01", pinHash: await argon2.hash("1234") },
+    });
+    const pinKey = childPinThrottleKey(child.id);
+    const parentKey = parentThrottleKey(email);
+    const pin = (value: string) =>
+      fetch(`${base}/auth/households/${household.id}/children/${child.id}/login`, { method: "POST", headers: json, body: JSON.stringify({ pin: value }) });
+    const signIn = (path: string, password: string) => fetch(`${base}${path}`, { method: "POST", headers: json, body: JSON.stringify({ email, password }) });
+    const endLock = (key: string) =>
+      prisma.authThrottle.update({ where: { key }, data: { lockedUntil: new Date(Date.now() - 1000), windowStartedAt: new Date(Date.now() - 1000) } });
+
+    try {
+      await prisma.householdMembership.create({ data: { householdId: household.id, userId: user.id, role: "PARENT_ADMIN" } });
+
+      // PIN : 4 erreurs, la 5e bloque, et même le bon code attend la fin du blocage.
+      for (let i = 0; i < 4; i++) expect((await pin("0000")).status).toBe(401);
+      const locked = await pin("0000");
+      expect(locked.status).toBe(429);
+      expect(Number(locked.headers.get("retry-after"))).toBe(300);
+      expect(((await locked.json()) as { error: string }).error).toBe("Trop d'essais pour l'instant. Tu pourras réessayer dans 5 minutes.");
+      expect((await pin("1234")).status).toBe(429);
+
+      await endLock(pinKey);
+      expect((await pin("1234")).status).toBe(200);
+      expect(await prisma.authThrottle.count({ where: { key: pinKey } })).toBe(0);
+
+      // Rafale en parallèle : le quota tient (compté sous verrou avant la vérification).
+      const burst = await Promise.all(Array.from({ length: 8 }, () => pin("0000")));
+      const statuses = burst.map((r) => r.status).sort();
+      expect(statuses).toEqual([401, 401, 401, 401, 429, 429, 429, 429]);
+
+      // Parent : la connexion et la sortie du mode enfant partagent le même compteur.
+      for (let i = 0; i < 9; i++) expect((await signIn("/auth/continue", "pas-le-bon")).status).toBe(401);
+      const parentLocked = await signIn("/auth/exit-child-mode", "pas-le-bon");
+      expect(parentLocked.status).toBe(429);
+      expect(((await parentLocked.json()) as { error: string }).error).toBe("Trop de tentatives pour ce compte. Réessayez dans 15 minutes.");
+      expect((await signIn("/auth/continue", "motdepasse123")).status).toBe(429);
+
+      await endLock(parentKey);
+      expect((await signIn("/auth/continue", "motdepasse123")).status).toBe(200);
+      expect(await prisma.authThrottle.count({ where: { key: parentKey } })).toBe(0);
+
+      // Un e-mail inconnu ne crée pas de compteur : la table ne grossit pas au gré des essais.
+      const unknown = `inconnu-${email}`;
+      await fetch(`${base}/auth/exit-child-mode`, { method: "POST", headers: json, body: JSON.stringify({ email: unknown, password: "pas-le-bon" }) });
+      expect(await prisma.authThrottle.count({ where: { key: parentThrottleKey(unknown) } })).toBe(0);
+    } finally {
+      await prisma.authThrottle.deleteMany({ where: { key: { in: [pinKey, parentKey] } } });
+      await prisma.household.delete({ where: { id: household.id } });
+      await prisma.user.delete({ where: { id: user.id } });
+      server.close();
+    }
+  });
+});

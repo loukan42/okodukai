@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "XpSourceType" ADD VALUE 'FINANCE_LEARNING';

@@ -87,6 +87,8 @@ export interface InvestRun {
   lastStatement: null | { fromStep: number; toStep: number; startValue: number; endValue: number; performance: number; netFlows: number; marketEffect: number; bySupportChange: Record<SupportCode, number> };
   pendingOperations: number;
   scenarioRevealed: string | null;
+  /** XP reçue pour le bilan final lu (0 avant). */
+  completionXp: number;
 }
 
 export interface InvestState {

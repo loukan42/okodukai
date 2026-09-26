@@ -5,7 +5,21 @@ import { prisma } from "../lib/prisma.js";
 import { validateBody } from "../lib/validation.js";
 import { attachSession, requireChild, requireParent, childSession, parentSession } from "../middleware/requireAuth.js";
 import { RHYTHMS, listRendezVous, portfolioRiskLevel } from "../lib/financeSim/index.js";
-import { ORCHARD, TIME_ZONE, activeRun, allocationStep, createRun, investSettingsFor, runView, supportsFor, syncRun, validateAllocation } from "../lib/invest.js";
+import {
+  FINANCE_XP,
+  ORCHARD,
+  TIME_ZONE,
+  activeRun,
+  allocationStep,
+  createRun,
+  financeXpKey,
+  investSettingsFor,
+  runView,
+  supportsFor,
+  syncRun,
+  validateAllocation,
+} from "../lib/invest.js";
+import { grantXp } from "../lib/xp.js";
 import type { AgeBand, SimMode, SimulationRun } from "@prisma/client";
 
 export const investRouter = Router();
@@ -56,6 +70,12 @@ async function investState(childId: string) {
   return { ...base, gate: "onboarding" as const, run: null, allowedSupports: supportsFor(child.ageBand, false), firstRendezVousAt, orchard };
 }
 
+/** XP de la première répartition, si c'est cette partie qui l'a ouverte (aussi au rejeu de la requête). */
+async function firstAllocationXp(childId: string, runId: string) {
+  const xp = await prisma.xpTransaction.findUnique({ where: { idempotencyKey: financeXpKey.onboarding(childId) } });
+  return xp?.sourceId === runId ? xp.amount : 0;
+}
+
 function modeOf(value: unknown): SimMode {
   return value === "ASSURANCE_VIE" ? "ASSURANCE_VIE" : "MIROIR";
 }
@@ -82,7 +102,7 @@ investRouter.post("/child/invest/start", requireChild, validateBody(startSchema)
   const { childId, householdId } = childSession(req);
   const key = `sim-run:${childId}:${req.body.idempotencyKey}`;
   const replay = await prisma.simulationRun.findUnique({ where: { idempotencyKey: key } });
-  if (replay) return res.json(await investState(childId));
+  if (replay) return res.json({ ...(await investState(childId)), xpAwarded: await firstAllocationXp(childId, replay.id) });
 
   const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId } });
   const settings = await investSettingsFor(prisma, childId, child.ageBand);
@@ -94,11 +114,17 @@ investRouter.post("/child/invest/start", requireChild, validateBody(startSchema)
   if (!allocation) return res.status(400).json({ error: "Ta répartition n'a pas été enregistrée : il faut placer exactement 100 unités." });
 
   try {
-    await prisma.$transaction((tx) => createRun(tx, { childId, householdId, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths, allocation, idempotencyKey: key }));
+    await prisma.$transaction(async (tx) => {
+      const run = await createRun(tx, { childId, householdId, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths, allocation, idempotencyKey: key });
+      await grantXp(tx, { childId, amount: FINANCE_XP.firstAllocation, sourceType: "FINANCE_LEARNING", sourceId: run.id, idempotencyKey: financeXpKey.onboarding(childId) });
+    });
   } catch (err) {
     if (!(err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002")) throw err;
   }
-  res.status(201).json(await investState(childId));
+  // Après un conflit, la partie est soit celle d'un envoi identique, soit absente (autre envoi gagnant).
+  const run = await prisma.simulationRun.findUnique({ where: { idempotencyKey: key } });
+  if (!run) return res.status(409).json({ error: "Tu as déjà une partie." });
+  res.status(201).json({ ...(await investState(childId)), xpAwarded: await firstAllocationXp(childId, run.id) });
 });
 
 const orchardSchema = z.object({ allocation: allocationSchema, monthly: z.union([z.literal(0), z.literal(2), z.literal(5)]), idempotencyKey: z.string().uuid() });
@@ -128,7 +154,16 @@ investRouter.post("/child/invest/statements/:index/seen", requireChild, async (r
   const run = await activeRun(prisma, childId, modeOf(req.query.mode));
   const index = Number(req.params.index);
   if (!run || !Number.isInteger(index)) return res.status(404).json({ error: "Bilan introuvable" });
+  const { clock } = await syncRun(prisma, run);
   await prisma.simulationSnapshot.updateMany({ where: { runId: run.id, rendezVousIndex: { lte: index }, seenAt: null }, data: { seenAt: new Date() } });
+  // Bilan final lu : la partie est finie et plus aucun relevé n'attend. Même XP quel que soit le résultat.
+  if (clock.finished && (await prisma.simulationSnapshot.count({ where: { runId: run.id, seenAt: null } })) === 0) {
+    await prisma
+      .$transaction((tx) => grantXp(tx, { childId, amount: FINANCE_XP.gameFinished, sourceType: "FINANCE_LEARNING", sourceId: run.id, idempotencyKey: financeXpKey.game(childId, run.id) }))
+      .catch((err: unknown) => {
+        if (!(err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002")) throw err;
+      });
+  }
   res.json(await investState(childId));
 });
 

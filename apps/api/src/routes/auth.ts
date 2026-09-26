@@ -5,6 +5,15 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { signSession, SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from "../lib/auth.js";
 import { validateBody } from "../lib/validation.js";
+import {
+  CHILD_PIN,
+  PARENT_PASSWORD,
+  childPinThrottleKey,
+  parentThrottleKey,
+  throttledVerify,
+  tooManyParentAttempts,
+  tooManyPinAttempts,
+} from "../lib/throttle.js";
 import { attachSession } from "../middleware/requireAuth.js";
 
 export const authRouter = Router();
@@ -36,7 +45,9 @@ authRouter.post("/continue", validateBody(continueSchema), async (req, res) => {
   const existing = await findUserByEmail(email);
 
   if (existing) {
-    if (!(await argon2.verify(existing.passwordHash, password))) {
+    const check = await throttledVerify(parentThrottleKey(email), PARENT_PASSWORD, () => argon2.verify(existing.passwordHash, password));
+    if (!check.ok) {
+      if (check.retryAfterMs) return tooManyParentAttempts(res, check.retryAfterMs);
       return res.status(401).json({ error: "Ce mot de passe ne correspond pas à ce compte." });
     }
     const membership = existing.memberships[0];
@@ -149,8 +160,11 @@ authRouter.post(
     });
     if (!child) return res.status(404).json({ error: "Profil introuvable" });
 
-    const valid = await argon2.verify(child.pinHash, req.body.pin);
-    if (!valid) return res.status(401).json({ error: "Code incorrect" });
+    const check = await throttledVerify(childPinThrottleKey(child.id), CHILD_PIN, () => argon2.verify(child.pinHash, req.body.pin));
+    if (!check.ok) {
+      if (check.retryAfterMs) return tooManyPinAttempts(res, check.retryAfterMs);
+      return res.status(401).json({ error: "Code incorrect" });
+    }
 
     const token = signSession({ kind: "child", childId: child.id, householdId: child.householdId });
     res.cookie(SESSION_COOKIE, token, cookieOptions);
@@ -164,7 +178,11 @@ const exitChildModeSchema = z.object({ email: z.string().trim().toLowerCase().em
 authRouter.post("/exit-child-mode", validateBody(exitChildModeSchema), async (req, res) => {
   const { email, password } = req.body;
   const user = await findUserByEmail(email);
-  if (!user || !(await argon2.verify(user.passwordHash, password))) {
+  if (!user) return res.status(401).json({ error: "Identifiants invalides" });
+  // Même compteur que la connexion : l'enfant sur l'appareil ne peut pas deviner le mot de passe.
+  const check = await throttledVerify(parentThrottleKey(email), PARENT_PASSWORD, () => argon2.verify(user.passwordHash, password));
+  if (!check.ok) {
+    if (check.retryAfterMs) return tooManyParentAttempts(res, check.retryAfterMs);
     return res.status(401).json({ error: "Identifiants invalides" });
   }
   const membership = user.memberships[0];

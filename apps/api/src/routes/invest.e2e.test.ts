@@ -94,4 +94,54 @@ describe.skipIf(!process.env.DATABASE_URL)("placements école : moteur, relevés
       await prisma.user.delete({ where: { id: user.id } });
     }
   });
+
+  it("donne +20 XP à la première répartition et au bilan final lu, une seule fois chacun", async () => {
+    const code = `invest-xp-${randomUUID()}`;
+    const server = createApp().listen(0);
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    const household = await prisma.household.create({ data: { name: code } });
+    try {
+      const child = await prisma.childProfile.create({ data: { householdId: household.id, displayName: "Léo", ageBand: "AGE_8_9", avatarId: "aventurier-01", pinHash: "test" } });
+      const wallet = await prisma.wallet.create({ data: { childId: child.id } });
+      await prisma.walletTransaction.create({ data: { walletId: wallet.id, amount: 5, type: "SAVINGS_LOCK", actorId: child.id, idempotencyKey: `${code}-lock` } });
+      const kid = { cookie: `okodukai_session=${signSession({ kind: "child", childId: child.id, householdId: household.id })}`, "content-type": "application/json" };
+      type Run = { status: string; unseen: number; completionXp: number; statements: { index: number }[] };
+      const get = async () => (await (await fetch(`${base}/child/invest`, { headers: kid })).json()) as { gate: string; run: Run | null };
+      const post = async (path: string, body: unknown) => {
+        const res = await fetch(`${base}${path}`, { method: "POST", headers: kid, body: JSON.stringify(body) });
+        return { status: res.status, body: (await res.json()) as { xpAwarded?: number; run: Run | null } };
+      };
+      const xp = async () => (await prisma.childProfile.findUniqueOrThrow({ where: { id: child.id } })).currentXp;
+
+      const key = randomUUID();
+      const allocation = { SECURISE: 40, ENTREPRISES: 60 };
+      const started = await post("/child/invest/start", { allocation, idempotencyKey: key });
+      expect(started).toMatchObject({ status: 201, body: { xpAwarded: 20 } });
+      expect(await post("/child/invest/start", { allocation, idempotencyKey: key })).toMatchObject({ status: 200, body: { xpAwarded: 20 } });
+      expect(await xp()).toBe(20);
+
+      // Partie de 5 ans au rythme Standard (6 mois par jour) : terminée après 10 relevés.
+      await prisma.simulationRun.updateMany({ where: { childId: child.id }, data: { startedAt: new Date(Date.now() - 12 * 86_400_000) } });
+      const finished = (await get()).run!;
+      expect(finished).toMatchObject({ status: "TERMINEE", completionXp: 0 });
+      expect(finished.unseen).toBeGreaterThan(1);
+
+      // Un bilan intermédiaire lu ne suffit pas : il faut arriver au bilan final.
+      expect((await post(`/child/invest/statements/${finished.statements[0].index}/seen`, {})).body.run!.completionXp).toBe(0);
+      const last = finished.statements.at(-1)!.index;
+      expect((await post(`/child/invest/statements/${last}/seen`, {})).body.run!.completionXp).toBe(20);
+      await post(`/child/invest/statements/${last}/seen`, {});
+      expect(await xp()).toBe(40);
+
+      // Nouvelle partie : l'XP de première répartition n'est pas redonnée.
+      await post("/child/invest/new-game", {});
+      expect((await get()).gate).toBe("onboarding");
+      expect(await post("/child/invest/start", { allocation, idempotencyKey: randomUUID() })).toMatchObject({ status: 201, body: { xpAwarded: 0 } });
+      expect(await xp()).toBe(40);
+      expect(await prisma.xpTransaction.count({ where: { childId: child.id, sourceType: "FINANCE_LEARNING" } })).toBe(2);
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      await prisma.household.delete({ where: { id: household.id } });
+    }
+  });
 });

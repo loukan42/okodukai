@@ -18,7 +18,7 @@ npm run dev:web             # site : http://localhost:5173
 ```
 
 - En dev, le bouton **Démo** (en bas à droite) connecte en un clic un parent ou un enfant de démo.
-- Tests API : `cd apps/api && set -a && . ./.env && set +a && npx vitest run` (54 tests, tous verts
+- Tests API : `cd apps/api && set -a && . ./.env && set +a && npx vitest run` (59 tests, tous verts
   au 26/09). Types : `npx tsc --noEmit -p apps/api` et `npm run build --workspace apps/web`.
 - Pour voir des relevés de placements sans attendre : reculer `startedAt` de la partie en base, par
   exemple `UPDATE "SimulationRun" SET "startedAt" = now() - interval '4 days' WHERE "childId" = '…';`.
@@ -85,17 +85,23 @@ le propriétaire trancher.
 
 ## 4. Reste à faire, par priorité
 
-### P1 : sécurité et solidité
+### P1 : sécurité et solidité (fait le 26/09, branche `feat/p1-securite-solidite`)
 
-1. **Limiter les tentatives** sur `POST /auth/continue`, la connexion enfant par PIN et
-   `/auth/exit-child-mode` (compteurs en base, pas en mémoire : Vercel est serverless). Une tâche
-   détaillée a été proposée dans l'app (« Add rate limiting to parent sign-in »).
-2. **XP de première répartition** : la spec prévoit « +20 XP · Première répartition » à la fin de
-   l'onboarding des placements (et « +20 XP · Partie terminée », jamais lié au résultat). À accorder côté
-   serveur avec `grantXp` et une clé d'idempotence (`routes/invest.ts`, création de partie et fin).
-3. **Nettoyage** : supprimer les anciennes tables `SimulationScenario` / `SimulationPortfolio` /
-   `SimulationTransaction` (plus utilisées) par une migration dédiée, et retirer leur seed dans
-   `apps/api/src/lib/devSeed.ts`.
+Fait : limitation des essais en base (`AuthThrottle`, `lib/throttle.ts`, voir `DATA_MODEL.md`
+§Connexion), XP des placements (+20 première répartition, +20 bilan final lu, `FINANCE_LEARNING`),
+suppression des anciennes tables du simulateur. **Au prochain déploiement**, `migrate deploy` applique
+3 migrations, dont un `DROP TABLE` des tables `Simulation{Scenario,Portfolio,Transaction}` (inutilisées).
+
+Suites possibles :
+
+1. **Limite par IP** (essais répartis sur beaucoup de comptes) : pas faite, l'IP n'est pas fiable
+   derrière le relais `apps/web/api/proxy.js` (Vercel réécrit `x-forwarded-for`). Il faudrait que le
+   relais transmette l'IP dans un en-tête signé par un secret partagé.
+2. `GET /auth/households/:id/children` est public (prénoms et avatars d'un foyer à partir de son id,
+   pour l'écran de choix du profil). Acceptable tant que l'id reste un UUID non divulgué ; à revoir
+   si l'id circule (lien d'invitation, QR code…).
+3. L'XP de première répartition est donnée à la validation ; quand Q04 existera (P2.2), la donner
+   après Q04 comme le prévoit `FINANCIAL_EDUCATION.md` §7.1.
 
 ### P2 : mission financière (compléments)
 

@@ -11,9 +11,6 @@ export async function seedDatabase(prisma: PrismaClient) {
   await prisma.$transaction([
     prisma.auditLog.deleteMany(),
     prisma.notification.deleteMany(),
-    prisma.simulationTransaction.deleteMany(),
-    prisma.simulationPortfolio.deleteMany(),
-    prisma.simulationScenario.deleteMany(),
     prisma.learningProgress.deleteMany(),
     prisma.learningModule.deleteMany(),
     prisma.boosterOpening.deleteMany(),
@@ -279,21 +276,6 @@ export async function seedDatabase(prisma: PrismaClient) {
         },
       },
     ],
-  });
-
-  // -- Simulateur : scénarios financiers pédagogiques ("unités école") -------
-
-  await prisma.simulationScenario.create({
-    data: {
-      code: "cycle-standard",
-      title: "Un cycle d'investissement",
-      description: "Cinq périodes avec des hauts et des bas, comme dans la vraie vie.",
-      returnSeries: {
-        PRUDENT: [1, 0.5, 1, 0.5, 1],
-        EQUILIBRE: [3, -2, 4, 1, 2],
-        DYNAMIQUE: [8, -10, 12, -4, 6],
-      },
-    },
   });
 
   return { household, sophie, thomas, emma, lucas };
