@@ -63,7 +63,7 @@ async function investState(childId: string) {
   const run = await activeRun(prisma, childId);
   const base = {
     ageBand: pedagogyBand(child),
-    settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths, contributionsEnabled: settings.contributionsEnabled, contributionCap: settings.contributionCap },
+    settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths, contributionsEnabled: settings.contributionsEnabled, contributionCap: settings.contributionCap, notifyStatement: settings.notifyStatement },
     allocationStep: allocationStep(pedagogyBand(child)),
   };
   if (!settings.enabled) return { ...base, gate: "disabled" as const, run: null, orchard: { gate: "hidden" as const, run: null } };
@@ -231,7 +231,7 @@ investRouter.get("/household/children/:childId/invest", requireParent, async (re
   const run = await activeRun(prisma, child.id);
   const { paused } = await pausesFor(prisma, child.id);
   res.json({
-    settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths, contributionsEnabled: settings.contributionsEnabled, contributionCap: settings.contributionCap },
+    settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths, contributionsEnabled: settings.contributionsEnabled, contributionCap: settings.contributionCap, notifyStatement: settings.notifyStatement },
     paused,
     ageBand: pedagogyBand(child),
     run: run ? await runView(prisma, run, pedagogyBand(child)) : null,
@@ -244,6 +244,7 @@ const settingsSchema = z.object({
   horizonMonths: z.union([z.literal(60), z.literal(120)]),
   contributionsEnabled: z.boolean().optional(),
   contributionCap: z.number().int().min(100).max(2000).optional(),
+  notifyStatement: z.boolean().optional(),
 });
 
 investRouter.put("/household/children/:childId/invest-settings", requireParent, validateBody(settingsSchema), async (req, res) => {
@@ -256,11 +257,12 @@ investRouter.put("/household/children/:childId/invest-settings", requireParent, 
     horizonMonths: req.body.horizonMonths,
     ...(req.body.contributionsEnabled !== undefined ? { contributionsEnabled: req.body.contributionsEnabled } : {}),
     ...(req.body.contributionCap !== undefined ? { contributionCap: req.body.contributionCap } : {}),
+    ...(req.body.notifyStatement !== undefined ? { notifyStatement: req.body.notifyStatement } : {}),
     updatedById: userId,
   };
   const settings = await prisma.investSettings.upsert({ where: { childId: child.id }, create: { childId: child.id, ...data }, update: data });
   await prisma.auditLog.create({ data: { householdId, actorUserId: userId, action: "invest_settings_updated", targetType: "ChildProfile", targetId: child.id, metadata: data } });
-  res.json({ settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths, contributionsEnabled: settings.contributionsEnabled, contributionCap: settings.contributionCap } });
+  res.json({ settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths, contributionsEnabled: settings.contributionsEnabled, contributionCap: settings.contributionCap, notifyStatement: settings.notifyStatement } });
 });
 
 // ---------------------------------------------------------------------------

@@ -134,3 +134,4 @@
 .understanding-state--sait_expliquer { color: #1f5c40; background: var(--forest-soft); }
 .parent-next-talk { border-left: 4px solid var(--gold); }
 .parent-next-talk p { margin: 0; font: 600 17px / 1.45 var(--font-display); }
+.statement-alerts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; color: var(--ink-soft); font-weight: 700; }

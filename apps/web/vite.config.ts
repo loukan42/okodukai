@@ -9,7 +9,8 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       // Une navigation vers /api/* (ex. /api/health) doit atteindre le serveur, pas l'app en cache.
-      workbox: { navigateFallbackDenylist: [/^\/api\//] },
+      // push-sw.js : affichage des notifications (« Ton relevé est prêt. ») et ouverture de l'app au clic.
+      workbox: { navigateFallbackDenylist: [/^\/api\//], importScripts: ["/push-sw.js"] },
       includeAssets: ["favicon.png"],
       manifest: {
         name: "Okodukai",

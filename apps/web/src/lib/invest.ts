@@ -104,7 +104,7 @@ export interface InvestRun {
 export interface InvestState {
   ageBand: "AGE_8_9" | "AGE_10_12";
   gate: "disabled" | "locked" | "onboarding" | "open";
-  settings: { enabled: boolean; rhythm: string; horizonMonths: number; contributionsEnabled: boolean; contributionCap: number };
+  settings: { enabled: boolean; rhythm: string; horizonMonths: number; contributionsEnabled: boolean; contributionCap: number; notifyStatement: boolean };
   allocationStep: number;
   allowedSupports?: SupportCode[];
   firstRendezVousAt?: string;

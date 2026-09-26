@@ -6,5 +6,11 @@
       "source": "/(.*)",
       "destination": "/api"
     }
+  ],
+  "crons": [
+    {
+      "path": "/internal/cron/statements",
+      "schedule": "30 16 * * *"
+    }
   ]
 }

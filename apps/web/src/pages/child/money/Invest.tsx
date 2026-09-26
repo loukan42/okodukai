@@ -29,6 +29,7 @@ import { FinanceTip } from "../../../components/finance/FinanceTip";
 import { GameIcon } from "../../../components/GameIcon";
 import { GameEnd } from "../../../components/invest/GameEnd";
 import { MonthSummary } from "../../../components/money/MonthSummary";
+import { StatementAlerts } from "../../../components/invest/StatementAlerts";
 import { Contributions } from "../../../components/invest/Contributions";
 import { ObjectArt } from "../../../art/ObjectArt";
 
@@ -428,6 +429,8 @@ function Observatory({ state, reload }: { state: InvestState; reload: () => Prom
           </button>
         )
       )}
+
+      {!finished && state.settings.notifyStatement && <StatementAlerts />}
 
       {!finished && !young && !run.paused && state.settings.contributionsEnabled && run.clock.rendezVousCount > 0 && (
         <Contributions run={run} cap={run.contributionCap ?? state.settings.contributionCap} onChanged={reload} />

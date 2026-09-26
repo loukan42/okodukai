@@ -73,7 +73,7 @@ export const scenarioLabel = (code: string) => SCENARIO_LABEL[code as ScenarioCo
 
 export async function investSettingsFor(client: Client, childId: string, ageBand: AgeBand) {
   const stored = await client.investSettings.findUnique({ where: { childId } });
-  return stored ?? { childId, enabled: true, rhythm: "STANDARD" as SimRhythm, horizonMonths: ageBand === "AGE_8_9" ? 60 : 120, contributionsEnabled: false, contributionCap: 300 };
+  return stored ?? { childId, enabled: true, rhythm: "STANDARD" as SimRhythm, horizonMonths: ageBand === "AGE_8_9" ? 60 : 120, contributionsEnabled: false, contributionCap: 300, notifyStatement: false };
 }
 
 /**

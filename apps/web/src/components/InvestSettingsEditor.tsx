@@ -8,6 +8,7 @@ interface Settings {
   horizonMonths: 60 | 120;
   contributionsEnabled: boolean;
   contributionCap: number;
+  notifyStatement: boolean;
 }
 interface RunSummary {
   status: "EN_COURS" | "TERMINEE";
@@ -100,6 +101,10 @@ export function InvestSettingsEditor({ childId }: { childId: string }) {
           </label>
         ))}
       </div>
+      <label className="vault-rule-toggle">
+        <input type="checkbox" checked={settings.notifyStatement} onChange={(e) => setSettings({ ...settings, notifyStatement: e.target.checked })} />
+        Prévenir votre enfant quand un relevé est prêt (message : « Ton relevé est prêt. », jamais de chiffre, jamais la nuit)
+      </label>
       <label className="vault-rule-toggle">
         <input type="checkbox" checked={settings.contributionsEnabled} onChange={(e) => setSettings({ ...settings, contributionsEnabled: e.target.checked })} />
         Autoriser les versements programmés (niveau Approfondi)

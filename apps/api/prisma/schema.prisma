@@ -105,6 +105,7 @@ model ChildProfile {
   financeNotions  FinanceNotionProgress[]
   investPauses    InvestPause[]
   allowance       AllowanceSchedule?
+  pushSubscriptions PushSubscription[]
   financeTips     FinanceTipLog[]
 
   @@index([householdId])
@@ -735,8 +736,23 @@ model InvestSettings {
   /// Versements programmés dans l'observatoire (Approfondi) et plafond du capital école, départ compris.
   contributionsEnabled Boolean @default(false)
   contributionCap      Int     @default(300)
+  /// « Ton relevé est prêt. » : désactivé par défaut (FINANCIAL_EDUCATION §8.4), activé par le parent.
+  notifyStatement      Boolean @default(false)
   updatedById   String?
   updatedAt     DateTime @updatedAt
+}
+
+/// Abonnement aux notifications du navigateur (Web Push) d'un enfant sur un appareil.
+model PushSubscription {
+  id        String   @id @default(uuid())
+  childId   String
+  child     ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([childId])
 }
 
 /// Pause parentale (vacances) : les relevés prévus pendant la pause sont sautés, jamais rattrapés.
@@ -814,6 +830,8 @@ model SimulationSnapshot {
   performanceIndex Float
   priceIndex      Float
   seenAt          DateTime?
+  /// L'enfant a été prévenu que ce relevé est prêt (au plus une notification par relevé).
+  notifiedAt      DateTime?
   computedAt      DateTime @default(now())
 
   @@unique([runId, rendezVousIndex])

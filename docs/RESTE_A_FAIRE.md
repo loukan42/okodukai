@@ -9,7 +9,7 @@ sur `main`. Lire aussi `CLAUDE.md` (règles produit) et `AGENTS.md` (skills).
 
 ```bash
 git pull origin main
-npm install                 # dépendances ajoutées : three, express-async-errors
+npm install                 # dépendances ajoutées : three, express-async-errors, web-push
 npm run db:up               # Postgres Docker (si pas déjà lancé)
 npm run db:migrate          # applique les migrations (onboarding, coffre, placements, verger)
 npm run db:seed             # recrée le foyer de démo « Famille Martin » (Emma 8-9, Lucas 10-12)
@@ -18,7 +18,7 @@ npm run dev:web             # site : http://localhost:5173
 ```
 
 - En dev, le bouton **Démo** (en bas à droite) connecte en un clic un parent ou un enfant de démo.
-- Tests API : `cd apps/api && set -a && . ./.env && set +a && npx vitest run` (59 tests, tous verts
+- Tests API : `cd apps/api && set -a && . ./.env && set +a && npx vitest run` (67 tests, tous verts
   au 26/09). Types : `npx tsc --noEmit -p apps/api` et `npm run build --workspace apps/web`.
 - Pour voir des relevés de placements sans attendre : reculer `startedAt` de la partie en base, par
   exemple `UPDATE "SimulationRun" SET "startedAt" = now() - interval '4 days' WHERE "childId" = '…';`.
@@ -107,11 +107,22 @@ Suites possibles :
 
 ### P2 : mission financière (compléments)
 
-**Fait le 26/09** : 1 (encarts T01-T46, journal serveur, file de priorité), 2 (questions Q01-Q16 corrigées par le
-serveur, Q04 à l'onboarding, carnet dans la bibliothèque), 3 (fiche support), 4 (bilan final complet et « Mes
-parties »), 5 (versements programmés sous plafond parent), 7 (pause parentale), 9 (niveau pédagogique).
-**Reste** : 6 (vue parent des placements), 8 (patrimoine, « Mon mois en pièces »), 10 (argent régulier et
-cadeaux), 11 (objectifs liés à la boutique, réordonner), 12 (notification « Ton relevé est prêt »).
+**Tout P2 est fait (26/09)** : 1 encarts T01-T46 (journal serveur, file de priorité) · 2 questions Q01-Q16
+corrigées par le serveur, Q04 à l'onboarding, « Mon carnet » · 3 fiche support · 4 bilan final complet et « Mes
+parties » · 5 versements programmés sous plafond parent · 6 vue parent (« Ce que {prénom} sait expliquer »,
+dernier bilan, prochain échange, note assurance-vie) · 7 pause parentale · 8 « Tout ce que je possède » et « Mon mois
+en pièces » · 9 niveau pédagogique · 10 argent de poche automatique (rattrapage idempotent) et cadeaux · 11 objectifs
+reliés à la boutique (vérifié côté serveur) et réordonnables · 12 « Ton relevé est prêt. » (voir mise en service
+ci-dessous). La liste d'origine est gardée pour mémoire.
+
+**Mise en service des notifications (à faire par le propriétaire, projet API Vercel)** :
+1. `npx web-push generate-vapid-keys`, puis variables `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` et
+   `VAPID_SUBJECT` (une URL ou un `mailto:` de contact). Sans ces clés, rien n'est envoyé (la pastille
+   « Ton bilan est prêt » de l'app reste).
+2. Variable `CRON_SECRET` (chaîne aléatoire) : Vercel Cron appelle `/internal/cron/statements` avec ce secret.
+3. `apps/api/vercel.json` programme la tâche une fois par jour à 16 h 30 UTC (après le relevé de 17 h, avant
+   20 h, heure de Paris). Sur l'offre gratuite Vercel, une tâche par jour au plus ; le rythme Rapide
+   (4 relevés par jour) reste prévenu au plus une fois par jour, comme le demande la spec.
 
 Spécifications : `docs/INVESTMENT_UX.md`, `docs/FINANCIAL_EDUCATION.md`, `docs/INSURANCE_LIFE_SIMULATION.md`.
 

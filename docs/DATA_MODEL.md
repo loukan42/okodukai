@@ -45,6 +45,18 @@ Aucune table ne convertit, n'additionne ni ne transfère l'une dans l'autre. Sch
 - Les anciennes tables `SimulationScenario` / `SimulationPortfolio` / `SimulationTransaction`
   (simulateur « clic pour avancer ») ont été supprimées (migration `20260926082000_drop_legacy_simulator`).
 
+## Argent de poche, cadeaux, notifications
+
+- `WalletTransactionType` : `ALLOWANCE` (argent de poche) et `GIFT` (cadeau, avec sa raison), des entrées à part.
+- **`AllowanceSchedule`** (1 par enfant) : montant, jour de la semaine (8 h, heure de Paris), actif, `startsAt`.
+  Les versements dus sont créés à la lecture du compte, datés du jour dû, clé `allowance:{childId}:{date}`.
+- **`PushSubscription`** : abonnements Web Push d'un enfant ; `InvestSettings.notifyStatement` (désactivé par
+  défaut) ; `SimulationSnapshot.notifiedAt` : au plus une notification par relevé.
+- **`InvestPause`** : pauses parentales (`to` nul tant que dure la pause) ; `InvestSettings.contributionsEnabled`
+  et `contributionCap` pour les versements programmés de l'observatoire.
+- **`FinanceNotionProgress`** et **`FinanceTipLog`** : notions (rencontrée, expliquée, vérifiée) et feuillets vus.
+  `ChildProfile.pedagogyLevel` (AUTO, DECOUVERTE, APPROFONDI) prime sur la tranche d'âge.
+
 ## Connexion
 
 - **`AuthThrottle`** : compteur d'essais par clé (`parent:{email}`, `child-pin:{childId}`), en base
