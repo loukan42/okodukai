@@ -83,3 +83,32 @@ describe.skipIf(!process.env.DATABASE_URL)("limitation des tentatives de connexi
     }
   });
 });
+
+describe.skipIf(!process.env.DATABASE_URL)("limite par adresse (relais signé)", () => {
+  it("borne les essais répartis sur plusieurs comptes et ignore un en-tête non signé", async () => {
+    const { createHmac } = await import("node:crypto");
+    const previous = process.env.PROXY_SECRET;
+    process.env.PROXY_SECRET = "secret-du-relais";
+    const ip = `203.0.113.${Math.floor(Math.random() * 200) + 1}-${randomUUID()}`;
+    const signed = { "content-type": "application/json", "x-okodukai-client-ip": ip, "x-okodukai-client-ip-sig": createHmac("sha256", "secret-du-relais").update(ip).digest("hex") };
+    const forged = { ...signed, "x-okodukai-client-ip-sig": "0".repeat(64) };
+    const server = createApp().listen(0);
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    // Mot de passe trop court pour un compte inconnu : réponse 400 immédiate, sans rien créer.
+    const tryOnce = (headers: Record<string, string>) => fetch(`${base}/auth/continue`, { method: "POST", headers, body: JSON.stringify({ email: `x-${randomUUID()}@example.test`, password: "court" }) });
+    try {
+      for (let i = 0; i < 29; i++) expect((await tryOnce(signed)).status).toBe(400);
+      const last = await tryOnce(signed);
+      expect(last.status).toBe(400);
+      const blocked = await tryOnce(signed);
+      expect(blocked.status).toBe(429);
+      expect(((await blocked.json()) as { error: string }).error).toContain("depuis cet appareil");
+      expect((await tryOnce(forged)).status).toBe(400);
+    } finally {
+      await prisma.authThrottle.deleteMany({ where: { key: `ip:${ip}` } });
+      if (previous === undefined) delete process.env.PROXY_SECRET;
+      else process.env.PROXY_SECRET = previous;
+      server.close();
+    }
+  });
+});

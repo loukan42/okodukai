@@ -7,6 +7,13 @@
 // Configuration : variable d'environnement API_ORIGIN (ou VITE_API_URL déjà
 // posée) sur le projet web Vercel, par ex. https://okodukai-api.vercel.app
 
+import { createHmac } from "node:crypto";
+
+// Adresse du visiteur, transmise à l'API signée par un secret partagé (PROXY_SECRET, sur les deux
+// projets) : l'API limite les essais de connexion par adresse sans croire un en-tête non signé.
+const CLIENT_IP = "x-okodukai-client-ip";
+const CLIENT_IP_SIG = "x-okodukai-client-ip-sig";
+
 const DROP_REQUEST = new Set(["host", "connection", "keep-alive", "content-length", "transfer-encoding", "upgrade", "te", "trailer", "proxy-authorization", "proxy-authenticate"]);
 const DROP_RESPONSE = new Set(["content-encoding", "content-length", "transfer-encoding", "connection", "keep-alive", "set-cookie"]);
 
@@ -43,8 +50,16 @@ export default async function handler(req, res) {
 
   const headers = {};
   for (const [key, value] of Object.entries(req.headers)) {
-    if (value === undefined || DROP_REQUEST.has(key.toLowerCase())) continue;
+    // Un visiteur ne peut pas fournir lui-même les en-têtes réservés au relais.
+    if (value === undefined || DROP_REQUEST.has(key.toLowerCase()) || key.toLowerCase().startsWith("x-okodukai-")) continue;
     headers[key] = Array.isArray(value) ? value.join(", ") : value;
+  }
+
+  const secret = process.env.PROXY_SECRET;
+  const ip = String(req.headers["x-forwarded-for"] ?? "").split(",")[0].trim() || req.socket?.remoteAddress || "";
+  if (secret && ip) {
+    headers[CLIENT_IP] = ip;
+    headers[CLIENT_IP_SIG] = createHmac("sha256", secret).update(ip).digest("hex");
   }
 
   let upstream;

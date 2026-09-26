@@ -65,6 +65,8 @@ Aucune table ne convertit, n'additionne ni ne transfère l'une dans l'autre. Sch
   enfant partagent le compteur). PIN enfant : 5 essais par 15 min. Chaque blocage double le suivant
   (parent 15 min → 1 h, enfant 5 min → 1 h) ; les blocages sont oubliés un jour après le dernier.
   Réponse 429 avec `Retry-After`. Un e-mail inconnu ne crée pas de ligne.
+- Clé `ip:{adresse}` (30 essais par 15 min, succès compris) : seulement pour une adresse signée par le relais du
+  site (`PROXY_SECRET`). Cookie `okodukai_device` (foyer signé, 1 an) : exigé pour la liste des profils et le PIN.
 
 ## Isolation et autorité
 

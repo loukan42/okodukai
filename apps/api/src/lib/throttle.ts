@@ -25,7 +25,11 @@ export const CHILD_PIN: ThrottleRule = { maxAttempts: 5, windowMs: 15 * MINUTE, 
 /** Un jour après la fin du dernier blocage, les blocages passés sont oubliés. */
 const LOCKOUT_MEMORY_MS = 24 * 60 * MINUTE;
 
+/** Une adresse (via le relais signé) : les essais répartis sur beaucoup de comptes. Jamais remis à zéro par un succès. */
+export const IP_AUTH: ThrottleRule = { maxAttempts: 30, windowMs: 15 * MINUTE, lockMs: 15 * MINUTE, maxLockMs: 60 * MINUTE };
+
 export const parentThrottleKey = (email: string) => `parent:${email.trim().toLowerCase()}`;
+export const ipThrottleKey = (ip: string) => `ip:${ip}`;
 export const childPinThrottleKey = (childId: string) => `child-pin:${childId}`;
 
 type ThrottleState = Pick<AuthThrottle, "attempts" | "windowStartedAt" | "lockedUntil" | "lockouts">;
@@ -58,7 +62,7 @@ export function registerAttempt(state: ThrottleState, rule: ThrottleRule, now: D
   return { state: { attempts: 0, windowStartedAt: lockedUntil, lockedUntil, lockouts }, outcome: { allowed: true, lockedMs } };
 }
 
-async function takeAttempt(key: string, rule: ThrottleRule): Promise<AttemptOutcome> {
+export async function takeAttempt(key: string, rule: ThrottleRule): Promise<AttemptOutcome> {
   return prisma.$transaction(async (tx) => {
     await tx.authThrottle.createMany({ data: [{ key }], skipDuplicates: true });
     await tx.$queryRaw`SELECT "key" FROM "AuthThrottle" WHERE "key" = ${key} FOR UPDATE`;
@@ -93,6 +97,11 @@ function minutes(ms: number) {
 export function tooManyParentAttempts(res: Response, retryAfterMs: number) {
   res.setHeader("Retry-After", String(Math.ceil(retryAfterMs / 1000)));
   return res.status(429).json({ error: `Trop de tentatives pour ce compte. Réessayez dans ${minutes(retryAfterMs)}.` });
+}
+
+export function tooManyFromAddress(res: Response, retryAfterMs: number) {
+  res.setHeader("Retry-After", String(Math.ceil(retryAfterMs / 1000)));
+  return res.status(429).json({ error: `Trop de tentatives depuis cet appareil. Réessayez dans ${minutes(retryAfterMs)}.` });
 }
 
 export function tooManyPinAttempts(res: Response, retryAfterMs: number) {

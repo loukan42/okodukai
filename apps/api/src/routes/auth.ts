@@ -6,8 +6,13 @@ import { prisma } from "../lib/prisma.js";
 import { pedagogyBand } from "../lib/pedagogy.js";
 import { DEVICE_COOKIE, DEVICE_COOKIE_OPTIONS, signDevice, signSession, verifyDevice, SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from "../lib/auth.js";
 import { validateBody } from "../lib/validation.js";
+import { signedClientIp } from "../lib/clientIp.js";
 import {
   CHILD_PIN,
+  IP_AUTH,
+  ipThrottleKey,
+  takeAttempt,
+  tooManyFromAddress,
   PARENT_PASSWORD,
   childPinThrottleKey,
   parentThrottleKey,
@@ -26,6 +31,17 @@ const cookieOptions = SESSION_COOKIE_OPTIONS;
 function rememberDevice(res: import("express").Response, householdId: string) {
   res.cookie(DEVICE_COOKIE, signDevice(householdId), DEVICE_COOKIE_OPTIONS);
 }
+/**
+ * Limite par adresse (seulement derrière le relais signé) : chaque essai compte, succès compris,
+ * pour que des essais répartis sur beaucoup de comptes ou de PIN restent bornés. `null` : on continue.
+ */
+async function addressLimit(req: import("express").Request) {
+  const ip = signedClientIp(req);
+  if (!ip) return null;
+  const attempt = await takeAttempt(ipThrottleKey(ip), IP_AUTH);
+  return attempt.allowed ? null : attempt.retryAfterMs;
+}
+
 const DEVICE_REQUIRED = "Un parent doit d'abord se connecter sur cet appareil.";
 
 /** Les comptes créés avant la normalisation peuvent contenir des majuscules : recherche insensible à la casse. */
@@ -49,6 +65,8 @@ const continueSchema = z.object({
  */
 authRouter.post("/continue", validateBody(continueSchema), async (req, res) => {
   const { email, password } = req.body as z.infer<typeof continueSchema>;
+  const blocked = await addressLimit(req);
+  if (blocked) return tooManyFromAddress(res, blocked);
   const existing = await findUserByEmail(email);
 
   if (existing) {
@@ -168,6 +186,8 @@ authRouter.post(
   validateBody(childLoginSchema),
   async (req, res) => {
     if (verifyDevice(req.cookies?.[DEVICE_COOKIE]) !== req.params.householdId) return res.status(403).json({ error: DEVICE_REQUIRED });
+    const blocked = await addressLimit(req);
+    if (blocked) return tooManyPinAttempts(res, blocked);
     const child = await prisma.childProfile.findFirst({
       where: { id: req.params.childId, householdId: req.params.householdId },
     });
@@ -190,6 +210,8 @@ const exitChildModeSchema = z.object({ email: z.string().trim().toLowerCase().em
 
 authRouter.post("/exit-child-mode", validateBody(exitChildModeSchema), async (req, res) => {
   const { email, password } = req.body;
+  const blocked = await addressLimit(req);
+  if (blocked) return tooManyFromAddress(res, blocked);
   const user = await findUserByEmail(email);
   if (!user) return res.status(401).json({ error: "Identifiants invalides" });
   // Même compteur que la connexion : l'enfant sur l'appareil ne peut pas deviner le mot de passe.

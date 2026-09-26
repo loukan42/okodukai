@@ -94,14 +94,15 @@ Fait : limitation des essais en base (`AuthThrottle`, `lib/throttle.ts`, voir `D
 suppression des anciennes tables du simulateur. **Au prochain déploiement**, `migrate deploy` applique
 3 migrations, dont un `DROP TABLE` des tables `Simulation{Scenario,Portfolio,Transaction}` (inutilisées).
 
-Suites possibles :
+Suites faites le 26/09 :
 
-1. **Limite par IP** (essais répartis sur beaucoup de comptes) : pas faite, l'IP n'est pas fiable
-   derrière le relais `apps/web/api/proxy.js` (Vercel réécrit `x-forwarded-for`). Il faudrait que le
-   relais transmette l'IP dans un en-tête signé par un secret partagé.
-2. `GET /auth/households/:id/children` est public (prénoms et avatars d'un foyer à partir de son id,
-   pour l'écran de choix du profil). Acceptable tant que l'id reste un UUID non divulgué ; à revoir
-   si l'id circule (lien d'invitation, QR code…).
+1. **Limite par adresse** : le relais `apps/web/api/proxy.js` transmet l'adresse du visiteur signée
+   (HMAC, `PROXY_SECRET`) ; l'API limite à 30 essais par 15 min et par adresse (connexion, sortie du mode
+   enfant, PIN). **À faire par le propriétaire** : définir la même variable `PROXY_SECRET` (chaîne
+   aléatoire) sur les projets Vercel web **et** API ; sans elle, pas de limite par adresse.
+2. **Appareil familial** : la liste des profils et la connexion par PIN exigent un cookie signé posé quand
+   un parent se connecte sur l'appareil (et rafraîchi par `/auth/me` : rien à refaire pour un parent déjà
+   connecté). Un appareil jamais connecté en parent voit « Connectez-vous d'abord en tant que parent ».
 3. L'XP de première répartition est donnée à la validation ; quand Q04 existera (P2.2), la donner
    après Q04 comme le prévoit `FINANCIAL_EDUCATION.md` §7.1.
 
