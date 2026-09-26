@@ -356,3 +356,5 @@ body { background: var(--parchment); color: var(--ink); }
 .empty-state-art { width: 112px; height: 112px; object-fit: contain; filter: drop-shadow(0 12px 14px rgba(70, 45, 12, 0.25)); animation: empty-art-float 4.2s ease-in-out infinite; }
 @keyframes empty-art-float { 50% { transform: translateY(-6px) rotate(-2deg); } }
 @media (prefers-reduced-motion: reduce) { .empty-state-art { animation: none; } }
+/* En-tête de la boutique : l'échoppe 3D ; sur téléphone elle rétrécit à côté de la bourse. */
+@media (max-width: 540px) { .shop-header .page-scene-title--art { grid-template-columns: 72px 1fr; gap: 10px; } .shop-header .page-scene-title--art .object-art { width: 72px; height: 72px; } }

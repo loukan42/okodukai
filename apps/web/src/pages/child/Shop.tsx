@@ -4,6 +4,7 @@ import { CoinPill } from "../../components/CoinPill";
 import { EmptyState } from "../../components/EmptyState";
 import { GameIcon } from "../../components/GameIcon";
 import { useDialogFocus } from "../../lib/useDialogFocus";
+import { ObjectArt } from "../../art/ObjectArt";
 
 interface RewardRow {
   id: string;
@@ -55,7 +56,7 @@ export function Shop() {
 
   return (
     <div className="stack shop-page">
-      <header className="shop-header"><div className="page-scene-title"><span className="page-scene-icon"><GameIcon name="shop" size={30}/></span><div><p className="scene-kicker">Récompenses familiales</p><h1>Boutique</h1><p>Choisis ce que tu veux obtenir avec tes pièces.</p></div></div><div className="shop-wallet"><span>Ma bourse</span><CoinPill amount={balance}/></div></header>
+      <header className="shop-header"><div className="page-scene-title page-scene-title--art"><ObjectArt name="shop-stall" folder="shop" size={132} /><div><p className="scene-kicker">Récompenses familiales</p><h1>Boutique</h1><p>Choisis ce que tu veux obtenir avec tes pièces.</p></div></div><div className="shop-wallet"><span>Ma bourse</span><CoinPill amount={balance}/></div></header>
 
       {success && (
         <div className="card" style={{ background: "var(--forest-soft)", color: "var(--forest)" }}>

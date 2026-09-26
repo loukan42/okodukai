@@ -18,6 +18,8 @@ export const STUDIO_ASSETS = [
   ...["quest-scroll", "coin-pouch", "hourglass", "coin-sprout"].map((object) => ({ id: object, scene: "props", size: [512, 512], params: { object }, out: `objects/${object}`, widths: [128, 256, 512] })),
   // Tableau d'aventurier (Journal de quêtes).
   { id: "quest-board", scene: "board", size: [540, 540], params: {}, out: "quests/quest-board", widths: [180, 360, 540] },
+  // Échoppe de la boutique familiale (en-tête de la boutique).
+  { id: "shop-stall", scene: "shop", size: [540, 540], params: {}, out: "shop/shop-stall", widths: [180, 360, 540] },
   // Fonds plein cadre de la vallée : paysage (desktop) et portrait (mobile), deux ambiances.
   ...["golden", "dusk"].flatMap((mood) => [
     { id: `valley-${mood}-wide`, scene: "valley", size: [1920, 1080], supersample: 1.5, opaque: true, quality: 78, params: { mood }, out: `backgrounds/valley-${mood}-wide`, widths: [1280, 1920] },

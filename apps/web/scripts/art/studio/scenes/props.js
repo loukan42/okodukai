@@ -70,7 +70,7 @@ export function parchmentTexture(seed = 3) {
   });
 }
 
-function questScroll() {
+export function questScroll() {
   const g = new THREE.Group();
   const paper = new THREE.MeshStandardMaterial({ map: parchmentTexture(), roughness: 0.85, side: THREE.DoubleSide });
   // Feuille déroulée, légèrement ondulée, avec un rouleau à chaque extrémité.
@@ -129,7 +129,7 @@ function questScroll() {
   return g;
 }
 
-function coinPouch() {
+export function coinPouch() {
   const g = new THREE.Group();
   const n = makeNoise(21);
   const smooth = (a, b, x) => {
