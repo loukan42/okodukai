@@ -4,7 +4,7 @@ import { StoryScreen } from "./AppDemo";
 
 const CHAPTERS = [
   { title: "La chambre est rangée.", text: "Emma coche sa quête, son père vérifie et valide. Les 10 pièces sont à elle.", screen: "Démonstration : la quête « Ranger sa chambre » validée, 10 pièces gagnées." },
-  { title: "Le compte vient de bouger.", text: "Chaque pièce arrive avec sa date et sa raison. Emma lit son relevé comme un vrai relevé de compte.", screen: "Démonstration : Mon compte passe à 42 pièces, la nouvelle ligne en haut du relevé." },
+  { title: "Le compte vient de bouger.", text: "Chaque mouvement s'affiche avec sa date et sa raison, comme sur un relevé de banque.", screen: "Démonstration : Mon compte passe à 42 pièces, la nouvelle ligne en haut du relevé." },
   { title: "Elle en met une partie de côté.", text: "20 pièces passent dans son Coffre magique. Chaque lundi, le coffre lui donne une petite prime sur ce qu'elle a gardé.", screen: "Démonstration : 20 pièces vont du compte au Coffre magique, prime de lundi annoncée." },
   { title: "Elle économise pour samedi.", text: "Son objectif, c'est « Glace en famille », une récompense de votre boutique. Il lui manque 10 pièces.", screen: "Démonstration : l'objectif Glace en famille à 90 sur 100." },
   { title: "Elle découvre les placements.", text: "Elle place 20 pièces dans une partie simulée. Chaque soir, un relevé montre ce que le marché en a fait.", screen: "Démonstration : une partie de placement simulée, la courbe et les supports." },

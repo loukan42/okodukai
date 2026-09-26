@@ -4,9 +4,9 @@ import { ChestArt } from "../../art/ChestArt";
 import { CoinArt } from "../../art/CoinArt";
 
 const CHOICES = [
-  { verb: "Dépenser", where: "à la boutique familiale", text: "Une sortie, un film, un dessert : les récompenses et les prix, c'est vous qui les fixez.", art: "shop" },
-  { verb: "Garder", where: "dans son Coffre magique", text: "Pour un objectif plus grand. Et chaque lundi, le coffre ajoute une petite prime.", art: "chest" },
-  { verb: "Placer", where: "dans une partie simulée", text: "Pour voir ce que le temps fait à ses pièces, relevé après relevé.", art: "sprout" },
+  { verb: "Dépenser", where: "à la boutique familiale", text: "Un film à choisir, une sortie vélo : vous décidez des récompenses et de leur prix.", art: "shop" },
+  { verb: "Garder", where: "dans son Coffre magique", text: "Pour s'offrir plus tard quelque chose de plus grand. Chaque lundi, le coffre lui donne une petite prime.", art: "chest" },
+  { verb: "Placer", where: "dans une partie simulée", text: "Pour voir, relevé après relevé, ce que deviennent ses pièces.", art: "sprout" },
 ] as const;
 
 function ChoiceArt({ art }: { art: (typeof CHOICES)[number]["art"] }) {

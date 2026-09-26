@@ -28,7 +28,7 @@ export function QuestsScene() {
         <h2 id="lp-quests-title" className="lp-h2">
           Chez Okodukai, l'argent commence par <em>une action.</em>
         </h2>
-        <p>Vous proposez les quêtes : ranger, lire, aider, nourrir le chat. Il les fait, puis vous prévient. Vous validez, et seulement alors les pièces et l'XP arrivent.</p>
+        <p>Vous proposez les quêtes : ranger sa chambre, lire, nourrir le chat. Quand il a fini, il vous prévient. Les pièces et l'XP n'arrivent qu'une fois la quête validée par vous.</p>
         <p className="lp-quests-aside">Certaines quêtes rapportent aussi un booster de cartes.</p>
       </div>
 

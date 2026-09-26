@@ -61,7 +61,7 @@ export function CollectionScene() {
           <h2 id="lp-collection-title" className="lp-h2 lp-h2--light">
             Les bonnes habitudes méritent aussi <em>leurs trésors.</em>
           </h2>
-          <p>Des boosters gagnés avec les quêtes, jamais achetés. 14 univers, 105 cartes, cinq raretés. Vous choisissez les univers ouverts à votre enfant.</p>
+          <p>Les boosters se gagnent avec les quêtes et ne s'achètent jamais. La collection compte 105 cartes réparties en 14 univers, et c'est vous qui choisissez ceux que votre enfant peut ouvrir.</p>
         </div>
         <div className="lp-fan" aria-label="Sept cartes de la collection, de Commune à Légendaire" role="img">
           <motion.div className="lp-fan-glow" style={{ opacity: glow }} aria-hidden="true" />

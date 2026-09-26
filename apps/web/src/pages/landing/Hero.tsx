@@ -58,7 +58,7 @@ export function Hero({ ctas }: { ctas: Ctas }) {
             <span className="lp-display-soft">de votre enfant.</span>
           </motion.h1>
           <motion.p className="lp-hero-lead" {...enter(0.38)}>
-            Des quêtes, de l'argent de poche virtuel et de vraies décisions pour apprendre à gagner, économiser et investir.
+            Il gagne des pièces virtuelles avec les quêtes que vous lui proposez, puis apprend à les dépenser, les garder ou les placer.
           </motion.p>
           <motion.div className="lp-hero-actions" {...enter(0.5)}>
             <Link to={ctas.primary.to} className="lp-btn lp-btn--gold">

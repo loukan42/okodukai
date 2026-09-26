@@ -57,10 +57,10 @@ export function InvestScene() {
         <div className="lp-invest-inner">
           <div className="lp-invest-copy">
             <h2 id="lp-invest-title" className="lp-h2 lp-h2--light">
-              Et si 100 pièces pouvaient raconter <em>dix ans ?</em>
+              Que deviennent 100 pièces <em>en dix ans ?</em>
             </h2>
-            <p>Votre enfant place des pièces dans une partie. Chaque soir à 17 h, un relevé révèle six mois d'un marché simulé : ça monte, ça baisse, on répartit, on attend. À la fin de la partie, le montant revient sur son compte.</p>
-            <p className="lp-invest-note">Un marché simulé, pour apprendre. Aucun argent réel, aucun produit financier. Dix ans pour les 10-12 ans, cinq pour les 8-9 ans.</p>
+            <p>Votre enfant place des pièces dans une partie. Chaque soir à 17 h, un relevé montre six mois d'un marché simulé, qui monte et qui baisse. Il apprend à répartir ses pièces et à attendre. À la fin de la partie, le montant revient sur son compte.</p>
+            <p className="lp-invest-note">Le marché est une simulation pédagogique, sans argent réel ni produit financier. Une partie dure dix ans simulés pour les 10-12 ans, cinq pour les 8-9 ans.</p>
           </div>
 
           <figure className="lp-invest-panel">

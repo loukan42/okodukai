@@ -4,11 +4,11 @@ import { GameIcon, type GameIconName } from "../../components/GameIcon";
 /** Les vrais réglages de l'espace parent, avec leurs vraies options. */
 const CONTROLS: { icon: GameIconName; title: string; value: string }[] = [
   { icon: "quest", title: "Les quêtes", value: "Vous les créez, vous les validez." },
-  { icon: "shop", title: "La boutique", value: "Vos récompenses, vos prix." },
-  { icon: "vault", title: "Retraits du Coffre magique", value: "Libres, avec votre accord, après une durée ou à l'objectif." },
-  { icon: "coin", title: "Argent de poche", value: "Un montant, un jour, chaque semaine." },
-  { icon: "learn", title: "Placements", value: "Activés ou non, rythme des relevés, versements plafonnés." },
-  { icon: "collection", title: "Univers de cartes", value: "Vous choisissez lesquels." },
+  { icon: "shop", title: "La boutique", value: "Vous choisissez les récompenses et leur prix." },
+  { icon: "vault", title: "Retraits du Coffre magique", value: "Libres, soumis à votre accord, possibles après une durée ou une fois l'objectif atteint." },
+  { icon: "coin", title: "Argent de poche", value: "Un montant versé chaque semaine, le jour de votre choix." },
+  { icon: "learn", title: "Placements", value: "Vous les activez ou non, réglez le rythme des relevés et plafonnez les versements." },
+  { icon: "collection", title: "Univers de cartes", value: "Vous choisissez ceux qui sont ouverts." },
 ];
 
 /** Côté parents : plus calme. Le vrai tableau de bord, et les réglages qui restent entre vos mains. */
@@ -66,7 +66,7 @@ export function ParentsScene() {
           ))}
         </ul>
       </div>
-      <p className="lp-parents-foot">Vous suivez aussi ce qu'il a compris des placements, avec une idée de sujet pour en parler ensemble.</p>
+      <p className="lp-parents-foot">Vous voyez aussi ce qu'il a compris des placements, avec une idée de sujet pour en parler ensemble.</p>
     </section>
   );
 }

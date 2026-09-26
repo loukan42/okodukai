@@ -3,7 +3,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Logo } from "../../art/Logo";
 import type { Ctas } from "./ctas";
 
-const NOT = ["Pas d'argent réel.", "Pas de publicité.", "Pas de réseau social.", "Pas de chat."];
+const NOT = ["Pas d'argent réel,", "pas de publicité,", "pas de réseau social,", "pas de chat."];
 
 /** Confiance, en court : ce qu'Okodukai n'a pas, et ce qu'il a. */
 export function Trust() {
@@ -18,7 +18,7 @@ export function Trust() {
         ))}
       </ul>
       <p className="lp-trust-yes">
-        Des pièces virtuelles qui ne s'achètent pas et ne se convertissent pas en euros. <strong>Vous aux commandes, et des écrans pensés pour les 8-12 ans.</strong>
+        Les pièces sont virtuelles : elles ne s'achètent pas et ne se convertissent pas en euros. <strong>Vous fixez les règles, et les écrans sont pensés pour les 8-12 ans.</strong>
       </p>
     </section>
   );
@@ -40,7 +40,7 @@ export function Finale({ ctas }: { ctas: Ctas }) {
             <span>Sa première aventure</span>
             <span className="lp-display-soft">avec l'argent peut commencer ici.</span>
           </h2>
-          <p>Un e-mail, le nom de votre famille, un profil par enfant. Tout se règle ensuite.</p>
+          <p>Il suffit d'un e-mail et du nom de votre famille, puis d'un profil par enfant. Le reste se règle plus tard.</p>
           <div className="lp-hero-actions">
             <Link to={ctas.primary.to} className="lp-btn lp-btn--gold">
               {ctas.primary.label}
