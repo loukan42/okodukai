@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { attachSession, requireAnySession } from "../middleware/requireAuth.js";
+import { catchUpMoney } from "../lib/moneyCatchUp.js";
 
 export const notificationsRouter = Router();
 notificationsRouter.use(attachSession);
@@ -8,6 +9,8 @@ notificationsRouter.use(attachSession);
 notificationsRouter.get("/notifications", requireAnySession, async (req, res) => {
   const session = req.session!;
   const householdId = session.householdId;
+  // À l'ouverture de l'espace enfant : la prime du lundi est versée ici, pour être fêtée tout de suite.
+  if (session.kind === "child") await catchUpMoney(session.childId);
 
   const notifications =
     session.kind === "parent"

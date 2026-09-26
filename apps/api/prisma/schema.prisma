@@ -12,21 +12,21 @@ datasource db {
 // ---------------------------------------------------------------------------
 
 model Household {
-  id        String   @id @default(uuid())
-  name      String
-  currencyName String @default("Pièces")
+  id                    String    @id @default(uuid())
+  name                  String
+  currencyName          String    @default("Pièces")
   /// Renseigné quand le parent a terminé l'accueil (prénom, nom de la famille, enfants).
   onboardingCompletedAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
-  memberships   HouseholdMembership[]
-  children      ChildProfile[]
-  quests        Quest[]
-  rewards       Reward[]
+  memberships    HouseholdMembership[]
+  children       ChildProfile[]
+  quests         Quest[]
+  rewards        Reward[]
   universeGrants HouseholdUniverse[]
-  auditLogs     AuditLog[]
-  notifications Notification[]
+  auditLogs      AuditLog[]
+  notifications  Notification[]
 }
 
 model User {
@@ -37,9 +37,9 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  memberships HouseholdMembership[]
-  createdQuests Quest[] @relation("QuestCreator")
-  auditLogs   AuditLog[]
+  memberships   HouseholdMembership[]
+  createdQuests Quest[]               @relation("QuestCreator")
+  auditLogs     AuditLog[]
 }
 
 enum HouseholdRole {
@@ -72,41 +72,42 @@ enum PedagogyLevel {
 }
 
 model ChildProfile {
-  id          String   @id @default(uuid())
-  householdId String
-  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
-  displayName String
-  ageBand     AgeBand
+  id            String        @id @default(uuid())
+  householdId   String
+  household     Household     @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  displayName   String
+  ageBand       AgeBand
   /// AUTO : la tranche d'âge décide ; sinon Découverte (8-9) ou Approfondi (10-12).
   pedagogyLevel PedagogyLevel @default(AUTO)
-  avatarId    String
-  pinHash     String
-  currentXp   Int      @default(0)
-  currentLevel Int     @default(1)
-  activeGoalId String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  avatarId      String
+  pinHash       String
+  currentXp     Int           @default(0)
+  currentLevel  Int           @default(1)
+  activeGoalId  String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  wallet          Wallet?
-  quests          Quest[]
-  questCompletions QuestCompletion[]
-  redemptions     RewardRedemption[]
-  savingsGoals    SavingsGoal[]
-  xpTransactions  XpTransaction[]
-  childBadges     ChildBadge[]
-  boosterInstances BoosterInstance[]
-  childCards      ChildCard[]
-  learningProgress LearningProgress[]
-  notifications   Notification[]
-  vaultRule       VaultRule?
-  vaultRequests   VaultWithdrawalRequest[]
-  investSettings  InvestSettings?
-  simulationRuns  SimulationRun[]
-  financeNotions  FinanceNotionProgress[]
-  investPauses    InvestPause[]
-  allowance       AllowanceSchedule?
+  wallet            Wallet?
+  quests            Quest[]
+  questCompletions  QuestCompletion[]
+  redemptions       RewardRedemption[]
+  savingsGoals      SavingsGoal[]
+  xpTransactions    XpTransaction[]
+  childBadges       ChildBadge[]
+  boosterInstances  BoosterInstance[]
+  childCards        ChildCard[]
+  learningProgress  LearningProgress[]
+  notifications     Notification[]
+  vaultRule         VaultRule?
+  vaultPrime        VaultPrime?
+  vaultRequests     VaultWithdrawalRequest[]
+  investSettings    InvestSettings?
+  simulationRuns    SimulationRun[]
+  financeNotions    FinanceNotionProgress[]
+  investPauses      InvestPause[]
+  allowance         AllowanceSchedule?
   pushSubscriptions PushSubscription[]
-  financeTips     FinanceTipLog[]
+  financeTips       FinanceTipLog[]
 
   @@index([householdId])
 }
@@ -116,10 +117,10 @@ model ChildProfile {
 // ---------------------------------------------------------------------------
 
 model Wallet {
-  id        String   @id @default(uuid())
-  childId   String   @unique
+  id        String       @id @default(uuid())
+  childId   String       @unique
   child     ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  createdAt DateTime     @default(now())
 
   transactions WalletTransaction[]
 }
@@ -137,37 +138,43 @@ enum WalletTransactionType {
   ALLOWANCE
   /// Cadeau reçu (anniversaire, fête…) : la raison dit de qui et pourquoi.
   GIFT
+  /// Prime du coffre : chaque lundi, versée dans Mon coffre selon la règle du parent (VaultPrime).
+  VAULT_PRIME
+  /// Points transférés du solde disponible vers un placement pédagogique.
+  INVEST_LOCK
+  /// Points rendus au solde disponible après la fin d'un placement.
+  INVEST_RETURN
 }
 
 /// Argent de poche automatique : un versement chaque semaine, rattrapé à la lecture du compte
 /// (clé d'idempotence par date), jamais en double. Arrêtable par le parent.
 model AllowanceSchedule {
-  childId     String   @id
+  childId     String       @id
   child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
   amount      Int
   /// Jour de la semaine (1 = lundi … 7 = dimanche), à 8 h (heure de Paris).
   weekday     Int
-  active      Boolean  @default(true)
+  active      Boolean      @default(true)
   /// Premier versement possible : à partir de ce moment (pas de rattrapage avant).
-  startsAt    DateTime @default(now())
+  startsAt    DateTime     @default(now())
   updatedById String?
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime     @updatedAt
 }
 
 model WalletTransaction {
-  id             String   @id @default(uuid())
+  id             String                @id @default(uuid())
   walletId       String
-  wallet         Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  amount         Int      // toujours positif ; l'effet sur le solde disponible / le coffre est déterminé par `type` (voir lib/ledger.ts)
+  wallet         Wallet                @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  amount         Int // toujours positif ; l'effet sur le solde disponible / le coffre est déterminé par `type` (voir lib/ledger.ts)
   type           WalletTransactionType
   /// Uniquement significatif pour PARENT_ADJUSTMENT (les autres types ont un sens fixe) : "credit" ou "debit".
   direction      String?
-  sourceType     String?  // ex: "quest_completion", "reward_redemption", "savings_goal"
+  sourceType     String? // ex: "quest_completion", "reward_redemption", "savings_goal"
   sourceId       String?
-  actorId        String   // userId (parent) ou childId (enfant) à l'origine de l'action
+  actorId        String // userId (parent) ou childId (enfant) à l'origine de l'action
   reason         String?
-  idempotencyKey String   @unique
-  createdAt      DateTime @default(now())
+  idempotencyKey String                @unique
+  createdAt      DateTime              @default(now())
 
   @@index([walletId, createdAt])
 }
@@ -212,29 +219,29 @@ enum QuestStatus {
 }
 
 model Quest {
-  id                String   @id @default(uuid())
-  householdId       String
-  household         Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
-  creatorId         String
-  creator           User     @relation("QuestCreator", fields: [creatorId], references: [id])
-  childId           String
-  child             ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  id          String       @id @default(uuid())
+  householdId String
+  household   Household    @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  creatorId   String
+  creator     User         @relation("QuestCreator", fields: [creatorId], references: [id])
+  childId     String
+  child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
 
-  title             String
-  description       String?
-  category          QuestCategory
-  difficulty        QuestDifficulty @default(FACILE)
-  rewardCoins       Int      @default(0)
-  rewardXp          Int      @default(0)
+  title               String
+  description         String?
+  category            QuestCategory
+  difficulty          QuestDifficulty    @default(FACILE)
+  rewardCoins         Int                @default(0)
+  rewardXp            Int                @default(0)
   boosterDefinitionId String?
-  boosterDefinition BoosterDefinition? @relation(fields: [boosterDefinitionId], references: [id])
-  recurrence        QuestRecurrence @default(UNIQUE)
-  dueAt             DateTime?
-  validationRequired Boolean @default(true)
-  active            Boolean  @default(true)
-  status            QuestStatus @default(DISPONIBLE)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  boosterDefinition   BoosterDefinition? @relation(fields: [boosterDefinitionId], references: [id])
+  recurrence          QuestRecurrence    @default(UNIQUE)
+  dueAt               DateTime?
+  validationRequired  Boolean            @default(true)
+  active              Boolean            @default(true)
+  status              QuestStatus        @default(DISPONIBLE)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 
   completions QuestCompletion[]
 
@@ -250,12 +257,12 @@ enum QuestCompletionStatus {
 }
 
 model QuestCompletion {
-  id           String   @id @default(uuid())
+  id           String                @id @default(uuid())
   questId      String
-  quest        Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
+  quest        Quest                 @relation(fields: [questId], references: [id], onDelete: Cascade)
   childId      String
-  child        ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
-  declaredAt   DateTime @default(now())
+  child        ChildProfile          @relation(fields: [childId], references: [id], onDelete: Cascade)
+  declaredAt   DateTime              @default(now())
   reviewedAt   DateTime?
   reviewedById String?
   status       QuestCompletionStatus @default(EN_ATTENTE)
@@ -275,21 +282,21 @@ enum RewardCategory {
 }
 
 model Reward {
-  id                 String   @id @default(uuid())
-  householdId        String
-  household          Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
-  title              String
-  description        String?
-  imageUrl           String?
-  category           RewardCategory
-  priceCoins         Int
-  allowedChildIds     String[] // vide = tous les enfants du foyer
-  quantityAvailable  Int?     // null = illimité
-  cooldownHours      Int?
-  active             Boolean  @default(true)
-  expiresAt          DateTime?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                String         @id @default(uuid())
+  householdId       String
+  household         Household      @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  title             String
+  description       String?
+  imageUrl          String?
+  category          RewardCategory
+  priceCoins        Int
+  allowedChildIds   String[] // vide = tous les enfants du foyer
+  quantityAvailable Int? // null = illimité
+  cooldownHours     Int?
+  active            Boolean        @default(true)
+  expiresAt         DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
   redemptions RewardRedemption[]
 
@@ -305,17 +312,17 @@ enum RedemptionStatus {
 }
 
 model RewardRedemption {
-  id           String   @id @default(uuid())
-  rewardId     String
-  reward       Reward   @relation(fields: [rewardId], references: [id], onDelete: Cascade)
-  childId      String
-  child        ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  id                   String           @id @default(uuid())
+  rewardId             String
+  reward               Reward           @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+  childId              String
+  child                ChildProfile     @relation(fields: [childId], references: [id], onDelete: Cascade)
   priceCoinsAtPurchase Int
-  status       RedemptionStatus @default(DEMANDEE)
-  requestedAt  DateTime @default(now())
-  reviewedAt   DateTime?
-  reviewedById String?
-  usedAt       DateTime?
+  status               RedemptionStatus @default(DEMANDEE)
+  requestedAt          DateTime         @default(now())
+  reviewedAt           DateTime?
+  reviewedById         String?
+  usedAt               DateTime?
 
   @@index([rewardId])
   @@index([childId, status])
@@ -326,18 +333,18 @@ model RewardRedemption {
 // ---------------------------------------------------------------------------
 
 model SavingsGoal {
-  id           String   @id @default(uuid())
-  childId      String
-  child        ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
-  title        String
-  targetCoins  Int
-  rewardId     String?
+  id          String       @id @default(uuid())
+  childId     String
+  child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  title       String
+  targetCoins Int
+  rewardId    String?
   /// Ordre de remplissage : Mon coffre remplit les objectifs l'un après l'autre (le plus petit d'abord).
-  position     Int      @default(0)
-  achievedAt   DateTime?
+  position    Int          @default(0)
+  achievedAt  DateTime?
   /// Objectif rangé par l'enfant (utilisé ou abandonné) : il ne compte plus dans le remplissage.
-  archivedAt   DateTime?
-  createdAt    DateTime @default(now())
+  archivedAt  DateTime?
+  createdAt   DateTime     @default(now())
 
   @@index([childId])
 }
@@ -350,16 +357,35 @@ enum VaultRuleMode {
   GOAL_ONLY
 }
 
+/// Prime du coffre : chaque lundi à 8 h (Paris), une pièce pour chaque tranche de `step` pièces restées
+/// dans Mon coffre toute la semaine (plus petit solde de la semaine), au plus `weeklyCap`, versée dans
+/// Mon coffre. Rattrapée à la lecture, clé d'idempotence par date. Sans ligne : active par défaut.
+model VaultPrime {
+  childId      String       @id
+  child        ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  active       Boolean      @default(true)
+  /// Pièces à garder pour gagner une pièce (10 = « 1 pièce pour 10 pièces »).
+  step         Int          @default(10)
+  /// Prime maximale par semaine.
+  weeklyCap    Int          @default(10)
+  /// Début de la première semaine comptée (remis à maintenant quand la prime est réactivée).
+  since        DateTime     @default(now())
+  /// Lundis déjà examinés jusqu'à cette date : pas de recalcul à chaque lecture.
+  checkedUntil DateTime?
+  updatedById  String?
+  updatedAt    DateTime     @updatedAt
+}
+
 model VaultRule {
-  childId     String   @id
-  child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  childId     String        @id
+  child       ChildProfile  @relation(fields: [childId], references: [id], onDelete: Cascade)
   mode        VaultRuleMode @default(FREE)
   /// Pour MIN_DAYS : nombre de jours pendant lesquels chaque dépôt reste dans le coffre.
   minDays     Int?
   /// Entrée en vigueur : les pièces déposées avant restent libres (on ne change pas les règles d'un dépôt déjà fait).
-  since       DateTime @default(now())
+  since       DateTime      @default(now())
   updatedById String?
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime      @updatedAt
 }
 
 enum VaultRequestStatus {
@@ -370,13 +396,13 @@ enum VaultRequestStatus {
 
 /// Demande de retrait du coffre, quand la règle demande la validation d'un parent.
 model VaultWithdrawalRequest {
-  id             String   @id @default(uuid())
+  id             String             @id @default(uuid())
   childId        String
-  child          ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  child          ChildProfile       @relation(fields: [childId], references: [id], onDelete: Cascade)
   amount         Int
   status         VaultRequestStatus @default(PENDING)
-  idempotencyKey String   @unique
-  createdAt      DateTime @default(now())
+  idempotencyKey String             @unique
+  createdAt      DateTime           @default(now())
   decidedAt      DateTime?
   decidedById    String?
 
@@ -399,14 +425,14 @@ enum XpSourceType {
 }
 
 model XpTransaction {
-  id         String   @id @default(uuid())
-  childId    String
-  child      ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
-  amount     Int
-  sourceType XpSourceType
-  sourceId   String?
-  idempotencyKey String @unique
-  createdAt  DateTime @default(now())
+  id             String       @id @default(uuid())
+  childId        String
+  child          ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  amount         Int
+  sourceType     XpSourceType
+  sourceId       String?
+  idempotencyKey String       @unique
+  createdAt      DateTime     @default(now())
 
   @@index([childId, createdAt])
 }
@@ -423,12 +449,12 @@ model Badge {
 }
 
 model ChildBadge {
-  id        String   @id @default(uuid())
-  childId   String
-  child     ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
-  badgeId   String
-  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
-  earnedAt  DateTime @default(now())
+  id       String       @id @default(uuid())
+  childId  String
+  child    ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  badgeId  String
+  badge    Badge        @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  earnedAt DateTime     @default(now())
 
   @@unique([childId, badgeId])
 }
@@ -438,32 +464,32 @@ model ChildBadge {
 // ---------------------------------------------------------------------------
 
 model Universe {
-  id           String   @id @default(uuid())
-  code         String   @unique
-  title        String
-  description  String?
-  coverImageUrl String?
-  isLicensed   Boolean  @default(false)
-  licensor     String?
-  licenseId    String?
+  id              String    @id @default(uuid())
+  code            String    @unique
+  title           String
+  description     String?
+  coverImageUrl   String?
+  isLicensed      Boolean   @default(false)
+  licensor        String?
+  licenseId       String?
   licenseStartsAt DateTime?
   licenseEndsAt   DateTime?
-  active       Boolean  @default(true)
-  sortOrder    Int      @default(0)
+  active          Boolean   @default(true)
+  sortOrder       Int       @default(0)
 
-  series   CollectionSeries[]
-  cards    Card[]
+  series             CollectionSeries[]
+  cards              Card[]
   boosterDefinitions BoosterDefinition[]
-  householdGrants HouseholdUniverse[]
+  householdGrants    HouseholdUniverse[]
 }
 
 model HouseholdUniverse {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   householdId String
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
   universeId  String
-  universe    Universe @relation(fields: [universeId], references: [id], onDelete: Cascade)
-  enabledAt   DateTime @default(now())
+  universe    Universe  @relation(fields: [universeId], references: [id], onDelete: Cascade)
+  enabledAt   DateTime  @default(now())
 
   @@unique([householdId, universeId])
 }
@@ -487,9 +513,9 @@ enum CardRarity {
 }
 
 model Card {
-  id              String   @id @default(uuid())
+  id              String            @id @default(uuid())
   universeId      String
-  universe        Universe @relation(fields: [universeId], references: [id], onDelete: Cascade)
+  universe        Universe          @relation(fields: [universeId], references: [id], onDelete: Cascade)
   seriesId        String?
   series          CollectionSeries? @relation(fields: [seriesId], references: [id])
   cardNumber      Int
@@ -499,7 +525,7 @@ model Card {
   description     String?
   educationalFact String?
   artworkUrl      String?
-  active          Boolean  @default(true)
+  active          Boolean           @default(true)
 
   childCards ChildCard[]
 
@@ -508,31 +534,31 @@ model Card {
 }
 
 model ChildCard {
-  id          String   @id @default(uuid())
-  childId     String
-  child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
-  cardId      String
-  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  quantity    Int      @default(1)
-  firstObtainedAt DateTime @default(now())
-  lastObtainedAt  DateTime @default(now())
+  id              String       @id @default(uuid())
+  childId         String
+  child           ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  cardId          String
+  card            Card         @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  quantity        Int          @default(1)
+  firstObtainedAt DateTime     @default(now())
+  lastObtainedAt  DateTime     @default(now())
 
   @@unique([childId, cardId])
   @@index([childId])
 }
 
 model BoosterDefinition {
-  id            String   @id @default(uuid())
-  universeId    String
-  universe      Universe @relation(fields: [universeId], references: [id], onDelete: Cascade)
-  code          String   @unique
-  title         String
-  cardCount     Int      @default(5)
-  rngVersion    String   @default("v1")
+  id         String   @id @default(uuid())
+  universeId String
+  universe   Universe @relation(fields: [universeId], references: [id], onDelete: Cascade)
+  code       String   @unique
+  title      String
+  cardCount  Int      @default(5)
+  rngVersion String   @default("v1")
   // configuration des probabilités par emplacement, versionnée et sérialisée en JSON
-  slotConfig    Json
+  slotConfig Json
 
-  quests   Quest[]
+  quests    Quest[]
   instances BoosterInstance[]
 }
 
@@ -542,15 +568,15 @@ enum BoosterInstanceStatus {
 }
 
 model BoosterInstance {
-  id           String   @id @default(uuid())
+  id           String                @id @default(uuid())
   childId      String
-  child        ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  child        ChildProfile          @relation(fields: [childId], references: [id], onDelete: Cascade)
   definitionId String
-  definition   BoosterDefinition @relation(fields: [definitionId], references: [id])
-  sourceType   String   // "quest_reward" | "level_up" | "savings_goal" | "badge" | "parent_grant"
+  definition   BoosterDefinition     @relation(fields: [definitionId], references: [id])
+  sourceType   String // "quest_reward" | "level_up" | "savings_goal" | "badge" | "parent_grant"
   sourceId     String?
   status       BoosterInstanceStatus @default(NON_OUVERT)
-  grantedAt    DateTime @default(now())
+  grantedAt    DateTime              @default(now())
   openedAt     DateTime?
 
   opening BoosterOpening?
@@ -559,14 +585,14 @@ model BoosterInstance {
 }
 
 model BoosterOpening {
-  id           String   @id @default(uuid())
-  boosterInstanceId String @unique
-  boosterInstance BoosterInstance @relation(fields: [boosterInstanceId], references: [id], onDelete: Cascade)
-  childId      String
-  rngVersion   String
-  rngSeed      String
-  resultCardIds String[]
-  createdAt    DateTime @default(now())
+  id                String          @id @default(uuid())
+  boosterInstanceId String          @unique
+  boosterInstance   BoosterInstance @relation(fields: [boosterInstanceId], references: [id], onDelete: Cascade)
+  childId           String
+  rngVersion        String
+  rngSeed           String
+  resultCardIds     String[]
+  createdAt         DateTime        @default(now())
 }
 
 // ---------------------------------------------------------------------------
@@ -580,15 +606,15 @@ enum LearningAgeBand {
 }
 
 model LearningModule {
-  id          String   @id @default(uuid())
-  code        String   @unique
-  order       Int
-  title       String
-  subtitle    String
-  ageBand     LearningAgeBand @default(ALL)
-  content     Json     // situation / choix / conséquence / explication / mini-question
-  rewardXp    Int      @default(20)
-  active      Boolean  @default(true)
+  id       String          @id @default(uuid())
+  code     String          @unique
+  order    Int
+  title    String
+  subtitle String
+  ageBand  LearningAgeBand @default(ALL)
+  content  Json // situation / choix / conséquence / explication / mini-question
+  rewardXp Int             @default(20)
+  active   Boolean         @default(true)
 
   progress LearningProgress[]
 }
@@ -600,11 +626,11 @@ enum LearningProgressStatus {
 }
 
 model LearningProgress {
-  id          String   @id @default(uuid())
+  id          String                 @id @default(uuid())
   childId     String
-  child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  child       ChildProfile           @relation(fields: [childId], references: [id], onDelete: Cascade)
   moduleId    String
-  module      LearningModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  module      LearningModule         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   status      LearningProgressStatus @default(NON_COMMENCE)
   completedAt DateTime?
 
@@ -624,10 +650,10 @@ enum FinanceNotionState {
 /// Progression d'une notion : rencontrée (événement vécu) → expliquée (encart lu) → vérifiée (bonne réponse).
 model FinanceNotionProgress {
   childId       String
-  child         ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  child         ChildProfile       @relation(fields: [childId], references: [id], onDelete: Cascade)
   notionCode    String
   state         FinanceNotionState @default(RENCONTREE)
-  encounteredAt DateTime @default(now())
+  encounteredAt DateTime           @default(now())
   explainedAt   DateTime?
   verifiedAt    DateTime?
   /// Souvenir personnel affiché dans le carnet (« Relevé de l'année 2 : Entreprises −6 »).
@@ -638,14 +664,14 @@ model FinanceNotionProgress {
 
 /// Journal des encarts : chacun ne s'affiche qu'une fois par enfant, puis reste relisible (§5.1).
 model FinanceTipLog {
-  childId  String
-  child    ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
-  tipCode  String
+  childId String
+  child   ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  tipCode String
   /// « compris » ou « plus_tard ».
-  outcome  String
-  title    String?
-  message  String
-  shownAt  DateTime @default(now())
+  outcome String
+  title   String?
+  message String
+  shownAt DateTime     @default(now())
 
   @@id([childId, tipCode])
 }
@@ -660,31 +686,31 @@ enum NotificationAudience {
 }
 
 model Notification {
-  id          String   @id @default(uuid())
+  id          String               @id @default(uuid())
   householdId String
-  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  household   Household            @relation(fields: [householdId], references: [id], onDelete: Cascade)
   audience    NotificationAudience
   childId     String?
-  child       ChildProfile? @relation(fields: [childId], references: [id], onDelete: Cascade)
+  child       ChildProfile?        @relation(fields: [childId], references: [id], onDelete: Cascade)
   type        String
   payload     Json
   readAt      DateTime?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime             @default(now())
 
   @@index([householdId, audience, childId])
 }
 
 model AuditLog {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   householdId String
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
   actorUserId String?
-  actor       User?    @relation(fields: [actorUserId], references: [id])
+  actor       User?     @relation(fields: [actorUserId], references: [id])
   action      String
   targetType  String?
   targetId    String?
   metadata    Json?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
 
   @@index([householdId, createdAt])
 }
@@ -727,40 +753,40 @@ enum SimMode {
 
 /// Réglages parent des placements école d'un enfant.
 model InvestSettings {
-  childId       String   @id
-  child         ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
-  enabled       Boolean  @default(true)
-  rhythm        SimRhythm @default(STANDARD)
+  childId              String       @id
+  child                ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  enabled              Boolean      @default(true)
+  rhythm               SimRhythm    @default(STANDARD)
   /// Durée d'une partie en mois simulés (24 à 120).
-  horizonMonths Int      @default(60)
+  horizonMonths        Int          @default(60)
   /// Versements programmés dans l'observatoire (Approfondi) et plafond du capital école, départ compris.
-  contributionsEnabled Boolean @default(false)
-  contributionCap      Int     @default(300)
+  contributionsEnabled Boolean      @default(false)
+  contributionCap      Int          @default(300)
   /// « Ton relevé est prêt. » : désactivé par défaut (FINANCIAL_EDUCATION §8.4), activé par le parent.
-  notifyStatement      Boolean @default(false)
-  updatedById   String?
-  updatedAt     DateTime @updatedAt
+  notifyStatement      Boolean      @default(false)
+  updatedById          String?
+  updatedAt            DateTime     @updatedAt
 }
 
 /// Abonnement aux notifications du navigateur (Web Push) d'un enfant sur un appareil.
 model PushSubscription {
-  id        String   @id @default(uuid())
+  id        String       @id @default(uuid())
   childId   String
   child     ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
-  endpoint  String   @unique
+  endpoint  String       @unique
   p256dh    String
   auth      String
-  createdAt DateTime @default(now())
+  createdAt DateTime     @default(now())
 
   @@index([childId])
 }
 
 /// Pause parentale (vacances) : les relevés prévus pendant la pause sont sautés, jamais rattrapés.
 model InvestPause {
-  id          String   @id @default(uuid())
+  id          String       @id @default(uuid())
   childId     String
   child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
-  from        DateTime @default(now())
+  from        DateTime     @default(now())
   /// Fin de la pause ; nulle tant que l'observatoire est en pause.
   to          DateTime?
   createdById String?
@@ -770,11 +796,16 @@ model InvestPause {
 
 /// Une partie de simulation : trajectoire de marché figée à la création (jamais envoyée au client).
 model SimulationRun {
-  id                    String   @id @default(uuid())
+  id                    String       @id @default(uuid())
   childId               String
   child                 ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
   householdId           String
-  mode                  SimMode  @default(MIROIR)
+  mode                  SimMode      @default(MIROIR)
+  /// Capital initial réellement transféré du portefeuille ; null pour les anciennes parties école.
+  fundedAmount          Int?
+  /// Retour au compte de la valeur finale arrondie à une pièce ; 0 reste un règlement effectué.
+  settledAmount         Int?
+  settledAt             DateTime?
   /// Plafond de capital école (versements cumulés), ASSURANCE_VIE uniquement.
   contributionCap       Int?
   engineVersion         String
@@ -783,15 +814,15 @@ model SimulationRun {
   scenario              String
   horizonMonths         Int
   rhythm                SimRhythm
-  timeZone              String   @default("Europe/Paris")
-  startedAt             DateTime @default(now())
+  timeZone              String       @default("Europe/Paris")
+  startedAt             DateTime     @default(now())
   fees                  Json
   marketPath            Json
   status                SimRunStatus @default(EN_COURS)
   finishedAt            DateTime?
   /// Clé d'idempotence de la validation de la première répartition.
-  idempotencyKey        String   @unique
-  createdAt             DateTime @default(now())
+  idempotencyKey        String       @unique
+  createdAt             DateTime     @default(now())
 
   operations SimulationOperation[]
   snapshots  SimulationSnapshot[]
@@ -801,7 +832,7 @@ model SimulationRun {
 
 /// Journal immuable des décisions de l'enfant (versement initial, arbitrages…).
 model SimulationOperation {
-  id             String   @id @default(uuid())
+  id             String        @id @default(uuid())
   runId          String
   run            SimulationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
   step           Int
@@ -810,30 +841,29 @@ model SimulationOperation {
   amountPerMonth Float?
   allocation     Json?
   actorId        String
-  idempotencyKey String   @unique
-  createdAt      DateTime @default(now())
+  idempotencyKey String        @unique
+  createdAt      DateTime      @default(now())
 
   @@index([runId, step])
 }
 
 /// Relevé : ce que l'enfant a découvert à un rendez-vous. Jamais recalculé ni réécrit.
 model SimulationSnapshot {
-  id              String   @id @default(uuid())
-  runId           String
-  run             SimulationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
-  rendezVousIndex Int
-  step            Int
-  scheduledAt     DateTime
-  valueAtReveal   Float
-  bySupport       Json
-  contributed     Float
+  id               String        @id @default(uuid())
+  runId            String
+  run              SimulationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  rendezVousIndex  Int
+  step             Int
+  scheduledAt      DateTime
+  valueAtReveal    Float
+  bySupport        Json
+  contributed      Float
   performanceIndex Float
-  priceIndex      Float
-  seenAt          DateTime?
+  priceIndex       Float
+  seenAt           DateTime?
   /// L'enfant a été prévenu que ce relevé est prêt (au plus une notification par relevé).
-  notifiedAt      DateTime?
-  computedAt      DateTime @default(now())
+  notifiedAt       DateTime?
+  computedAt       DateTime      @default(now())
 
   @@unique([runId, rendezVousIndex])
 }
-

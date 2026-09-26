@@ -13,6 +13,7 @@ interface Settings {
 interface RunSummary {
   status: "EN_COURS" | "TERMINEE";
   value: number;
+  fundedAmount: number | null;
   horizonMonths: number;
   clock: { revealedSteps: number };
 }
@@ -25,7 +26,7 @@ const RHYTHMS: { value: Rhythm; label: string; help: string }[] = [
 
 const UNITS = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2, minimumFractionDigits: 2 });
 
-/** Réglages parent des placements école (unités école, jamais des pièces). */
+/** Réglages parent des placements ; les nouvelles parties utilisent des pièces du portefeuille. */
 export function InvestSettingsEditor({ childId }: { childId: string }) {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [saved, setSaved] = useState<Settings | null>(null);
@@ -73,14 +74,14 @@ export function InvestSettingsEditor({ childId }: { childId: string }) {
   const name = `invest-${childId}`;
   return (
     <fieldset className="vault-rule">
-      <legend>Placements école</legend>
+      <legend>Placements</legend>
       <p className="money-hint">
-        Un simulateur avec 100 unités école, sans lien avec les pièces : elles ne s'achètent pas et ne se convertissent jamais.
-        {run && ` Partie en cours : ${UNITS.format(run.value)} unités, année ${Math.floor(Math.max(0, run.clock.revealedSteps - 1) / 12) + 1} sur ${run.horizonMonths / 12}.`}
+        Votre enfant transfère des pièces gagnées vers un placement. Leur valeur peut monter ou baisser. À la fin de la partie, sa valeur finale revient sur son compte.
+        {run && ` Partie en cours : ${UNITS.format(run.value)} ${run.fundedAmount === null ? "unités école" : "pièces placées"}, année ${Math.floor(Math.max(0, run.clock.revealedSteps - 1) / 12) + 1} sur ${run.horizonMonths / 12}.`}
       </p>
       <label className="vault-rule-toggle">
         <input type="checkbox" checked={settings.enabled} onChange={(e) => setSettings({ ...settings, enabled: e.target.checked })} />
-        Activer les placements école
+        Activer les placements
       </label>
       <div className="vault-rule-options" role="radiogroup" aria-label="Rythme des relevés">
         {RHYTHMS.map((r) => (
@@ -93,6 +94,7 @@ export function InvestSettingsEditor({ childId }: { childId: string }) {
           </label>
         ))}
       </div>
+      <p className="money-hint">Un relevé est un point d'étape : l'enfant y voit la valeur de son placement et ce qui a changé depuis le précédent. Le rythme choisi règle la fréquence de ces rendez-vous, pas la vitesse du marché réel.</p>
       <div className="segmented" role="radiogroup" aria-label="Durée d'une partie" style={{ maxWidth: 360 }}>
         {([60, 120] as const).map((m) => (
           <label key={m} className={`segmented-option${settings.horizonMonths === m ? " segmented-option--on" : ""}`}>
@@ -105,17 +107,19 @@ export function InvestSettingsEditor({ childId }: { childId: string }) {
         <input type="checkbox" checked={settings.notifyStatement} onChange={(e) => setSettings({ ...settings, notifyStatement: e.target.checked })} />
         Prévenir votre enfant quand un relevé est prêt (message : « Ton relevé est prêt. », jamais de chiffre, jamais la nuit)
       </label>
+      <p className="money-hint">Si vous activez cette option, l'enfant reçoit uniquement ce message lorsqu'un nouveau relevé est consultable. La notification ne dévoile aucun résultat et n'arrive pas la nuit.</p>
       <label className="vault-rule-toggle">
         <input type="checkbox" checked={settings.contributionsEnabled} onChange={(e) => setSettings({ ...settings, contributionsEnabled: e.target.checked })} />
         Autoriser les versements programmés (niveau Approfondi)
       </label>
+      <p className="money-hint">Un versement programmé transfère automatiquement des pièces du solde disponible vers le placement à chaque mois simulé. L'enfant choisit le montant et sa répartition, dans la limite que vous fixez. Si son solde est insuffisant, le versement de ce mois est sauté.</p>
       {settings.contributionsEnabled && (
         <label className="vault-rule-toggle">
-          Plafond du capital école, départ compris :
-          <input type="number" min={100} max={2000} step={50} value={settings.contributionCap} onChange={(e) => setSettings({ ...settings, contributionCap: Math.max(100, Math.min(2000, Number(e.target.value) || 100)) })} style={{ width: 90 }} /> unités
+          Plafond des pièces placées, transfert initial compris :
+          <input type="number" min={100} max={2000} step={50} value={settings.contributionCap} onChange={(e) => setSettings({ ...settings, contributionCap: Math.max(100, Math.min(2000, Number(e.target.value) || 100)) })} style={{ width: 90 }} /> pièces
         </label>
       )}
-      <p className="money-hint">Les scénarios sont choisis pour faire vivre toutes les situations (hausses, baisses, crises, reprises), pas pour imiter leur fréquence réelle.</p>
+      <p className="money-hint">Les scénarios font découvrir les hausses et les baisses. Leur fréquence ne représente pas celle des marchés réels.</p>
       {status && (
         <p className={`money-message money-message--${status.tone}`} role={status.tone === "error" ? "alert" : "status"}>
           {status.text}

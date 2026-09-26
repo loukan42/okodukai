@@ -89,7 +89,7 @@ describe.skipIf(!process.env.DATABASE_URL)("Mon argent : compte, coffre, règles
       // Relevé de Mon compte : le plus récent d'abord, signé, avec le solde après.
       const history = (await (await fetch(`${base}/child/money/history?place=account`, { headers: kid })).json()) as { items: Line[]; balance: number };
       expect(history.balance).toBe(95);
-      expect(history.items[0]).toMatchObject({ label: "Depuis Mon coffre", kind: "transfert", amount: 20, balanceBefore: 75, balanceAfter: 95 });
+      expect(history.items[0]).toMatchObject({ label: "Depuis le Coffre magique", kind: "transfert", amount: 20, balanceBefore: 75, balanceAfter: 95 });
       expect(history.items.at(-1)).toMatchObject({ label: "Correction de Maman", kind: "correction", amount: 100, balanceAfter: 100 });
       const incoming = (await (await fetch(`${base}/child/money/history?place=account&filter=in`, { headers: kid })).json()) as { items: Line[] };
       expect(incoming.items.map((l) => l.amount)).toEqual([100]);

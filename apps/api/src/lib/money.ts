@@ -8,7 +8,7 @@ import { prisma } from "./prisma.js";
 type Client = Prisma.TransactionClient | typeof prisma;
 
 export type Place = "account" | "vault";
-export type LineKind = "entree" | "sortie" | "transfert" | "remboursement" | "correction" | "bonus_epargne";
+export type LineKind = "entree" | "sortie" | "transfert" | "remboursement" | "correction" | "bonus_epargne" | "prime_coffre";
 
 export interface MoneyLine {
   id: string;
@@ -68,13 +68,13 @@ function effects(t: WalletTransaction, s: Sources): { place: Place; amount: numb
       return [{ place: "account", amount: t.amount, kind: "remboursement", label: reward ? `Remboursement « ${reward.title} »` : "Remboursement" }];
     case "SAVINGS_LOCK":
       return [
-        { place: "account", amount: -t.amount, kind: "transfert", label: "Vers Mon coffre" },
-        { place: "vault", amount: t.amount, kind: "transfert", label: "Depuis Mon compte" },
+        { place: "account", amount: -t.amount, kind: "transfert", label: "Vers le Coffre magique" },
+        { place: "vault", amount: t.amount, kind: "transfert", label: "Depuis ton compte" },
       ];
     case "SAVINGS_UNLOCK":
       return [
-        { place: "vault", amount: -t.amount, kind: "transfert", label: "Vers Mon compte" },
-        { place: "account", amount: t.amount, kind: "transfert", label: "Depuis Mon coffre" },
+        { place: "vault", amount: -t.amount, kind: "transfert", label: "Vers ton compte" },
+        { place: "account", amount: t.amount, kind: "transfert", label: "Depuis le Coffre magique" },
       ];
     case "ALLOWANCE":
       return [{ place: "account", amount: t.amount, kind: "entree", label: parent ? `Argent de poche de ${parent}` : "Argent de poche" }];
@@ -82,6 +82,12 @@ function effects(t: WalletTransaction, s: Sources): { place: Place; amount: numb
       return [{ place: "account", amount: t.amount, kind: "entree", label: t.reason ? `Cadeau : ${t.reason}` : "Cadeau" }];
     case "SAVINGS_BONUS":
       return [{ place: "vault", amount: t.amount, kind: "bonus_epargne", label: parent ? `Bonus d'épargne de ${parent}` : "Bonus d'épargne" }];
+    case "VAULT_PRIME":
+      return [{ place: "vault", amount: t.amount, kind: "prime_coffre", label: "Prime du coffre" }];
+    case "INVEST_LOCK":
+      return [{ place: "account", amount: -t.amount, kind: "transfert", label: "Vers les placements" }];
+    case "INVEST_RETURN":
+      return [{ place: "account", amount: t.amount, kind: "transfert", label: "Depuis les placements" }];
   }
 }
 

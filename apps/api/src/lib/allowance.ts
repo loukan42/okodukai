@@ -22,11 +22,23 @@ const weeklyRhythm = (weekday: number): RhythmDefinition => ({
   minLeadMinutes: 0,
 });
 
-export function allowanceDueDates(weekday: number, startsAt: Date, now: Date) {
-  const weeks = Math.min(MAX_CATCH_UP, Math.ceil((now.getTime() - startsAt.getTime()) / WEEK) + 1);
+/**
+ * Rendez-vous hebdomadaires (8 h, Paris) passés entre `startsAt` et `now`. Le rattrapage part au plus
+ * de deux ans avant `now` : partir de `startsAt` bloquerait la liste sur les deux premières années.
+ */
+export function weeklyDueDates(weekday: number, startsAt: Date, now: Date) {
+  const from = new Date(Math.max(startsAt.getTime(), now.getTime() - MAX_CATCH_UP * WEEK));
+  const weeks = Math.ceil((now.getTime() - from.getTime()) / WEEK) + 1;
   if (weeks <= 0) return [];
-  return listRendezVous(weeklyRhythm(weekday), startsAt, weeks, { timeZone: TIME_ZONE }).filter((d) => d.getTime() <= now.getTime());
+  return listRendezVous(weeklyRhythm(weekday), from, weeks, { timeZone: TIME_ZONE }).filter((d) => d.getTime() <= now.getTime());
 }
+
+/** Les `count` prochains rendez-vous hebdomadaires après `after`. */
+export function nextWeeklyDates(weekday: number, after: Date, count: number) {
+  return listRendezVous(weeklyRhythm(weekday), after, count, { timeZone: TIME_ZONE });
+}
+
+export const allowanceDueDates = weeklyDueDates;
 
 export const allowanceKey = (childId: string, due: Date) => `allowance:${childId}:${due.toISOString().slice(0, 10)}`;
 

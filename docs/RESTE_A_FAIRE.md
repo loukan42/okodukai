@@ -192,8 +192,9 @@ Spécifications : `docs/INVESTMENT_UX.md`, `docs/FINANCIAL_EDUCATION.md`, `docs/
 
 ## 6. Points de vigilance
 
-- Les unités école ne sont **jamais** additionnées, converties ni comparées aux pièces (ni en code, ni
-  en texte).
+- Les nouvelles parties miroir sont financées par des pièces virtuelles transférées du compte de
+  l'enfant. Les unités école des anciennes parties et du verger restent séparées ; ne pas les
+  additionner aux pièces. Aucun euro ni vrai placement financier n'entre dans l'application.
 - Toute valeur financière affichée vient du serveur ; ne jamais envoyer `seed`, `scenario` ou
   `marketPath` au client avant la fin d'une partie (test : `invest.e2e.test.ts`).
 - Toute écriture au ledger passe par `recordWalletTransaction` (verrou `FOR UPDATE` + clé d'idempotence).

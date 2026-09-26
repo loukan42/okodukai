@@ -4,12 +4,22 @@ import { prisma } from "./prisma.js";
 type Tx = Prisma.TransactionClient;
 
 /** Types dont le montant s'applique au solde disponible (bourse). */
-const AVAILABLE_CREDIT: WalletTransactionType[] = ["QUEST_REWARD", "PARENT_BONUS", "REWARD_REFUND", "SAVINGS_UNLOCK", "ALLOWANCE", "GIFT"];
-const AVAILABLE_DEBIT: WalletTransactionType[] = ["REWARD_PURCHASE", "SAVINGS_LOCK"];
+const AVAILABLE_CREDIT: WalletTransactionType[] = ["QUEST_REWARD", "PARENT_BONUS", "REWARD_REFUND", "SAVINGS_UNLOCK", "ALLOWANCE", "GIFT", "INVEST_RETURN"];
+const AVAILABLE_DEBIT: WalletTransactionType[] = ["REWARD_PURCHASE", "SAVINGS_LOCK", "INVEST_LOCK"];
 
 /** Types dont le montant s'applique au coffre (épargne). */
-const VAULT_CREDIT: WalletTransactionType[] = ["SAVINGS_LOCK", "SAVINGS_BONUS"];
+const VAULT_CREDIT: WalletTransactionType[] = ["SAVINGS_LOCK", "SAVINGS_BONUS", "VAULT_PRIME"];
 const VAULT_DEBIT: WalletTransactionType[] = ["SAVINGS_UNLOCK"];
+
+/** Types qui font bouger Mon coffre. */
+export const VAULT_TYPES: WalletTransactionType[] = [...VAULT_CREDIT, ...VAULT_DEBIT];
+
+/** Effet signé d'une transaction sur Mon coffre. */
+export function vaultDelta(t: { type: WalletTransactionType; amount: number }) {
+  if (VAULT_CREDIT.includes(t.type)) return t.amount;
+  if (VAULT_DEBIT.includes(t.type)) return -t.amount;
+  return 0;
+}
 
 export class InsufficientFundsError extends Error {
   constructor() {

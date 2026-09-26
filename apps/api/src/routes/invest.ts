@@ -23,7 +23,8 @@ import {
   validateAllocation,
 } from "../lib/invest.js";
 import { grantXp } from "../lib/xp.js";
-import { getBalances } from "../lib/ledger.js";
+import { getBalances, InsufficientFundsError, recordWalletTransaction } from "../lib/ledger.js";
+import { catchUpMoney } from "../lib/moneyCatchUp.js";
 import type { AgeBand, SimMode, SimulationRun } from "@prisma/client";
 
 export const investRouter = Router();
@@ -59,10 +60,13 @@ async function orchardState(childId: string, ageBand: AgeBand, mirror: Simulatio
 
 async function investState(childId: string) {
   const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId } });
+  const wallet = await prisma.wallet.findUnique({ where: { childId } });
+  const availablePoints = wallet ? (await getBalances(prisma, wallet.id)).available : 0;
   const settings = await investSettingsFor(prisma, childId, pedagogyBand(child));
   const run = await activeRun(prisma, childId);
   const base = {
     ageBand: pedagogyBand(child),
+    availablePoints,
     settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths, contributionsEnabled: settings.contributionsEnabled, contributionCap: settings.contributionCap, notifyStatement: settings.notifyStatement },
     allocationStep: allocationStep(pedagogyBand(child)),
   };
@@ -85,7 +89,9 @@ function modeOf(value: unknown): SimMode {
 }
 
 investRouter.get("/child/invest", requireChild, async (req, res) => {
-  res.json(await investState(childSession(req).childId));
+  const childId = childSession(req).childId;
+  await catchUpMoney(childId);
+  res.json(await investState(childId));
 });
 
 const allocationSchema = z.record(z.string(), z.number().int());
@@ -100,29 +106,37 @@ investRouter.post("/child/invest/risk", requireChild, validateBody(z.object({ al
   const scaled = Object.fromEntries(codes.map((c) => [c, (Math.max(0, draft[c] ?? 0) / total) * 100])) as Record<(typeof codes)[number], number>;
   res.json({ riskLevel: portfolioRiskLevel(scaled) });
 });
-const startSchema = z.object({ allocation: allocationSchema, idempotencyKey: z.string().uuid() });
+const startSchema = z.object({ allocation: allocationSchema, amount: z.number().int().min(1).max(100000), idempotencyKey: z.string().uuid() });
 
 investRouter.post("/child/invest/start", requireChild, validateBody(startSchema), async (req, res) => {
   const { childId, householdId } = childSession(req);
+  await catchUpMoney(childId);
   const key = `sim-run:${childId}:${req.body.idempotencyKey}`;
   const replay = await prisma.simulationRun.findUnique({ where: { idempotencyKey: key } });
   if (replay) return res.json({ ...(await investState(childId)), xpAwarded: await firstAllocationXp(childId, replay.id) });
 
   const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId } });
   const settings = await investSettingsFor(prisma, childId, pedagogyBand(child));
-  if (!settings.enabled) return res.status(409).json({ error: "Mes placements école ne sont pas ouverts pour l'instant." });
-  if (!(await hasSaved(childId))) return res.status(409).json({ error: "L'observatoire s'ouvre quand tu as mis des pièces dans Mon coffre au moins une fois." });
+  if (!settings.enabled) return res.status(409).json({ error: "Tes placements ne sont pas ouverts pour l'instant." });
+  if (!(await hasSaved(childId))) return res.status(409).json({ error: "L'observatoire s'ouvre après ton premier dépôt dans le coffre." });
   if (await activeRun(prisma, childId)) return res.status(409).json({ error: "Tu as déjà une partie." });
+  const wallet = await prisma.wallet.findUniqueOrThrow({ where: { childId } });
+  if ((await getBalances(prisma, wallet.id)).available < req.body.amount) return res.status(409).json({ error: "Tu n'as pas assez de pièces disponibles pour ce placement." });
 
   const allocation = validateAllocation(req.body.allocation, pedagogyBand(child), supportsFor(pedagogyBand(child), false));
-  if (!allocation) return res.status(400).json({ error: "Ta répartition n'a pas été enregistrée : il faut placer exactement 100 unités." });
+  if (!allocation) return res.status(400).json({ error: "Ta répartition n'a pas été enregistrée : les parts doivent faire exactement 100 %." });
 
   try {
     await prisma.$transaction(async (tx) => {
-      const run = await createRun(tx, { childId, householdId, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths, allocation, idempotencyKey: key });
+      await tx.$queryRaw`SELECT "id" FROM "Wallet" WHERE "id" = ${wallet.id} FOR UPDATE`;
+      if (await activeRun(tx, childId)) throw new Error("INVEST_ALREADY_ACTIVE");
+      const run = await createRun(tx, { childId, householdId, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths, allocation, fundedAmount: req.body.amount, idempotencyKey: key });
+      await recordWalletTransaction(tx, { walletId: wallet.id, amount: req.body.amount, type: "INVEST_LOCK", actorId: childId, sourceType: "simulation_run", sourceId: run.id, idempotencyKey: `invest-lock:${run.id}` });
       await grantXp(tx, { childId, amount: FINANCE_XP.firstAllocation, sourceType: "FINANCE_LEARNING", sourceId: run.id, idempotencyKey: financeXpKey.onboarding(childId) });
     });
   } catch (err) {
+    if (err instanceof InsufficientFundsError) return res.status(409).json({ error: "Tu n'as pas assez de pièces disponibles pour ce placement." });
+    if (err instanceof Error && err.message === "INVEST_ALREADY_ACTIVE") return res.status(409).json({ error: "Tu as déjà une partie." });
     if (!(err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002")) throw err;
   }
   // Après un conflit, la partie est soit celle d'un envoi identique, soit absente (autre envoi gagnant).
@@ -301,6 +315,7 @@ investRouter.get("/child/invest/supports/:code", requireChild, async (req, res) 
   const managementRate = typeof fees.managementRateAnnual === "number" ? fees.managementRateAnnual : fees.managementRateAnnual[code];
   res.json({
     ...base,
+    funded: view.fundedAmount !== null,
     held: (view.bySupport[code] ?? 0) > 0.005,
     units: view.bySupport[code] ?? 0,
     actualPercent: view.actualAllocation[code] ?? 0,
@@ -367,11 +382,11 @@ investRouter.post("/child/invest/contributions", requireChild, validateBody(cont
   const { clock, operations, valuation, paused } = await syncRun(prisma, run);
   if (clock.finished) return res.status(409).json({ error: "Ta partie est terminée." });
   if (paused) return res.status(409).json({ error: "L'observatoire est en pause." });
-  if (operations.some((o) => o.step > clock.revealedSteps && o.type === "VERSEMENTS_PROGRAMMES")) return res.status(409).json({ error: "Un changement de versements est déjà prévu pour le prochain relevé." });
+  if (operations.some((o) => o.step > clock.revealedSteps && (o.type === "VERSEMENTS_PROGRAMMES" || o.type === "WALLET_PLAN"))) return res.status(409).json({ error: "Un changement de versements est déjà prévu pour le prochain relevé." });
 
   const contributed = valuation.points[clock.revealedSteps].contributed;
   if (req.body.amountPerMonth > 0 && contributed >= settings.contributionCap - 0.005) {
-    return res.status(409).json({ error: `Tu as placé tout ton capital école : ${settings.contributionCap} unités. Les versements s'arrêtent. Tes placements continuent d'évoluer.` });
+    return res.status(409).json({ error: run.fundedAmount === null ? `Tu as placé les ${settings.contributionCap} unités prévues pour cette partie. Les versements s'arrêtent.` : `Tu as atteint la limite de ${settings.contributionCap} pièces placées pour cette partie. Les versements s'arrêtent.` });
   }
   let allocation: Record<string, number> | null = null;
   if (req.body.amountPerMonth > 0) {
@@ -387,7 +402,7 @@ investRouter.post("/child/invest/contributions", requireChild, validateBody(cont
       data: {
         runId: run.id,
         step: nextStep,
-        type: "VERSEMENTS_PROGRAMMES",
+        type: run.fundedAmount === null ? "VERSEMENTS_PROGRAMMES" : "WALLET_PLAN",
         amountPerMonth: req.body.amountPerMonth,
         allocation: (allocation ?? undefined) as Prisma.InputJsonValue | undefined,
         actorId: childId,
@@ -419,7 +434,7 @@ investRouter.post("/household/children/:childId/invest-pause", requireParent, va
 /** Les huit phrases du test (FINANCIAL_EDUCATION §2.1) et les notions qui les vérifient. */
 const SENTENCES: { code: string; text: string; notions: string[]; old?: true }[] = [
   { code: "P1", text: "Mon compte, c'est ce que je peux utiliser.", notions: ["compte"] },
-  { code: "P2", text: "Mon coffre, c'est ce que j'ai décidé de mettre de côté.", notions: ["transfert"] },
+  { code: "P2", text: "Dans mon coffre, je garde des pièces pour plus tard.", notions: ["transfert"] },
   { code: "P3", text: "Mes placements peuvent monter ou descendre.", notions: ["unites_ecole", "hausse_baisse"] },
   { code: "P4", text: "Je peux répartir mon argent.", notions: ["repartition", "pourcentage"] },
   { code: "P5", text: "Mettre tout au même endroit peut augmenter certains risques.", notions: ["concentration", "diversification"] },
@@ -451,7 +466,7 @@ function nextTalk(name: string, view: Awaited<ReturnType<typeof runView>> | null
   if (view && view.feesPaid > 0) return `Demandez à ${name} ce que les frais ont changé depuis le départ.`;
   if (down) return `Demandez à ${name} : « Que ferais-tu si tu avais besoin de tes unités l'an prochain ? »`;
   if (view && view.statements.length > 0) return `Demandez à ${name} ce qui a changé au dernier relevé, et quand aura lieu le prochain.`;
-  return `Demandez à ${name} : « Comment as-tu choisi de répartir tes 100 unités école ? »`;
+  return `Demandez à ${name} : « Comment as-tu choisi de répartir tes pièces entre les supports ? »`;
 }
 
 investRouter.get("/household/children/:childId/invest/overview", requireParent, async (req, res) => {
@@ -473,7 +488,7 @@ investRouter.get("/household/children/:childId/invest/overview", requireParent, 
 });
 
 // ---------------------------------------------------------------------------
-// Tout ce que je possède (INVESTMENT_UX E2, Approfondi) : deux totaux, jamais additionnés
+// Tout ce que je possède : les pièces placées restent dans le patrimoine, distinctes des unités école historiques.
 // ---------------------------------------------------------------------------
 
 investRouter.get("/child/invest/possessions", requireChild, async (req, res) => {
@@ -481,25 +496,27 @@ investRouter.get("/child/invest/possessions", requireChild, async (req, res) => 
   const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId } });
   const band = pedagogyBand(child);
   if (band !== "AGE_10_12") return res.status(404).json({ error: "Cet écran s'ouvre en niveau Approfondi." });
+  await catchUpMoney(childId);
   const wallet = await prisma.wallet.findUnique({ where: { childId } });
   const coins = wallet ? await getBalances(prisma, wallet.id) : { available: 0, vault: 0 };
   const settings = await investSettingsFor(prisma, childId, band);
   const [mirror, orchard] = await Promise.all([activeRun(prisma, childId), activeRun(prisma, childId, "ASSURANCE_VIE")]);
   const mirrorView = mirror ? await runView(prisma, mirror, band) : null;
   const orchardView = orchard ? await runView(prisma, orchard, band) : null;
+  const fundedValue = mirrorView?.fundedAmount !== null && mirrorView?.fundedAmount !== undefined && mirrorView.settledAt === null ? mirrorView.value : null;
   // Capital école pas encore placé : ce que le plafond permet encore de verser, partie par partie.
   const notYetPlaced =
-    (mirrorView && settings.contributionsEnabled ? Math.max(0, (mirrorView.contributionCap ?? settings.contributionCap) - mirrorView.contributed) : 0) +
+    (mirrorView && mirrorView.fundedAmount === null && settings.contributionsEnabled ? Math.max(0, (mirrorView.contributionCap ?? settings.contributionCap) - mirrorView.contributed) : 0) +
     (orchardView && orchardView.contributionCap !== null ? Math.max(0, orchardView.contributionCap - orchardView.contributed) : 0);
   // Première ouverture de l'outil : +5 XP d'exploration (FINANCIAL_EDUCATION §7.1).
   const xp = await prisma.$transaction((tx) => grantXp(tx, { childId, amount: 5, sourceType: "FINANCE_LEARNING", sourceId: "patrimoine", idempotencyKey: `fin:explore:${childId}:tool:patrimoine` }));
   res.json({
-    coins: { account: coins.available, vault: coins.vault, total: coins.available + coins.vault },
+    coins: { account: coins.available, vault: coins.vault, investments: fundedValue, total: coins.available + coins.vault + (fundedValue ?? 0) },
     units: {
-      investments: mirrorView?.value ?? null,
+      investments: mirrorView?.fundedAmount === null ? mirrorView.value : null,
       orchard: orchardView?.value ?? null,
       notYetPlaced: notYetPlaced > 0.005 ? notYetPlaced : null,
-      total: (mirrorView?.value ?? 0) + (orchardView?.value ?? 0) + notYetPlaced,
+      total: (mirrorView?.fundedAmount === null ? mirrorView.value : 0) + (orchardView?.value ?? 0) + notYetPlaced,
     },
     xpAwarded: xp ? 5 : 0,
   });

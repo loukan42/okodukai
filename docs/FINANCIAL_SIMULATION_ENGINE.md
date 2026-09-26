@@ -31,8 +31,10 @@ constituent en aucun cas une prévision.
 - **Reproductible au bit près** : seed + version ⇒ même trajectoire. Les trajectoires n'utilisent
   que +, −, ×, ÷ et √, exactement arrondis par IEEE 754, donc identiques sur toute machine.
   L'empreinte de tous les paramètres est épinglée dans les tests.
-- **Jamais** : de conversion unités école ↔ pièces, d'effet sur le ledger `WalletTransaction`,
-  d'XP, de booster ou de carte liés à la performance d'un placement.
+- **Moteur pur** : aucune écriture au ledger dans `financeSim`. La couche API des nouvelles parties
+  miroir transfère les pièces virtuelles du portefeuille dans le placement avant d'appeler le moteur.
+  Le verger et les anciennes parties conservent leurs unités école. Aucun XP, booster ou carte n'est
+  lié à la performance d'un placement.
 
 ---
 
@@ -40,8 +42,8 @@ constituent en aucun cas une prévision.
 
 | Invariant | Comment le moteur le garantit |
 |---|---|
-| Deux monnaies séparées | Le module ne connaît que des « unités école ». Un test vérifie qu'il n'importe rien hors de son dossier (ni Prisma, ni ledger, ni Express). |
-| Une perte simulée ne touche jamais les pièces | Aucune fonction ne produit de mouvement de pièces. En « simulation miroir », l'API peut **lire** le solde de pièces pour borner le montant simulé, mais n'écrit jamais dans le wallet. |
+| Moteur indépendant du portefeuille | Le module ne connaît que des valeurs simulées. Un test vérifie qu'il n'importe rien hors de son dossier (ni Prisma, ni ledger, ni Express). |
+| Transfert explicite | La couche API débite les pièces virtuelles lors du lancement et des versements programmés des nouvelles parties miroir ; le moteur reste sans effet de bord. |
 | Serveur = autorité | Les valeurs sont calculées côté API ; le client ne reçoit que la partie révélée (`revealMarket`), jamais la seed, le scénario ni les mois futurs. |
 | Pas de récompense de la chance | Aucune sortie du moteur n'est un « gain » attribuable en XP. Règle d'intégration : l'XP ne peut récompenser qu'une action pédagogique (faire un bilan, expliquer un choix), jamais un résultat. |
 | Pas de produit réel | Supports génériques et fictifs, sans nom d'indice, d'entreprise, d'assureur ou de fonds. |

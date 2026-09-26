@@ -71,7 +71,7 @@ export function MoneyHistory() {
           {older && <p>Ton relevé de compte</p>}
         </div>
         <p className="money-history-balance">
-          {place === "account" ? "Mon compte" : "Mon coffre"} : <strong>{balance}</strong>
+          {place === "account" ? "Ton compte" : "Coffre magique"} : <strong>{balance}</strong>
         </p>
       </header>
 
@@ -81,7 +81,7 @@ export function MoneyHistory() {
         {(["account", "vault"] as const).map((p) => (
           <label key={p} className={`segmented-option${place === p ? " segmented-option--on" : ""}`}>
             <input type="radio" name="history-place" checked={place === p} onChange={() => setPlace(p)} />
-            {p === "account" ? "Mon compte" : "Mon coffre"}
+            {p === "account" ? "Ton compte" : "Coffre magique"}
           </label>
         ))}
       </div>

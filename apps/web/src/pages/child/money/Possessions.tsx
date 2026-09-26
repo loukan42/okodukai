@@ -7,14 +7,14 @@ import { XpEarned } from "../../../components/invest/XpEarned";
 import { GameIcon } from "../../../components/GameIcon";
 
 interface Possessions {
-  coins: { account: number; vault: number; total: number };
+  coins: { account: number; vault: number; investments: number | null; total: number };
   units: { investments: number | null; orchard: number | null; notYetPlaced: number | null; total: number };
   xpAwarded: number;
 }
 
 /**
- * Tout ce que je possède (docs/INVESTMENT_UX.md E2, Approfondi) : les pièces et les unités école dans
- * deux groupes, deux totaux qui ne s'additionnent jamais. Pas de total général, pas de camembert.
+ * Les pièces transférées vers un placement restent visibles dans le patrimoine familial.
+ * Le verger fictif conserve ses unités école dans un groupe séparé.
  */
 export function PossessionsPage() {
   const [data, setData] = useState<Possessions | null>(null);
@@ -39,27 +39,26 @@ export function PossessionsPage() {
       <XpEarned amount={data.xpAwarded} reason="Nouvel outil" />
 
       <section className="possessions-group" aria-labelledby="coins-title">
-        <h2 id="coins-title">En pièces, pour utiliser en famille</h2>
+        <h2 id="coins-title">Tes pièces</h2>
         <dl>
           <div><dt>Mon compte</dt><dd>{data.coins.account}</dd></div>
-          <div><dt>Mon coffre</dt><dd>{data.coins.vault}</dd></div>
-          <div className="possessions-total"><dt>Total en pièces</dt><dd>{data.coins.total}</dd></div>
+          <div><dt>Coffre magique</dt><dd>{data.coins.vault}</dd></div>
+          {data.coins.investments !== null && <div><dt>Mes placements (valeur actuelle)</dt><dd>{units(data.coins.investments, false)}</dd></div>}
+          <div className="possessions-total"><dt>Total en pièces, selon la valeur actuelle</dt><dd>{units(data.coins.total, false)}</dd></div>
         </dl>
       </section>
 
       <section className="possessions-group possessions-group--school" aria-labelledby="units-title">
-        <h2 id="units-title">En unités école, pour apprendre</h2>
+        <h2 id="units-title">Tes unités école</h2>
         <dl>
-          <div><dt>Mes placements</dt><dd>{data.units.investments === null ? "—" : units(data.units.investments, false)}</dd></div>
+          {data.units.investments !== null && <div><dt>Ancienne partie de placement</dt><dd>{units(data.units.investments, false)}</dd></div>}
           {data.units.orchard !== null && <div><dt>Le verger (assurance-vie)</dt><dd>{units(data.units.orchard, false)}</dd></div>}
           {data.units.notYetPlaced !== null && <div><dt>Capital école pas encore placé</dt><dd>{units(data.units.notYetPlaced, false)}</dd></div>}
           <div className="possessions-total"><dt>Total en unités école</dt><dd>{units(data.units.total, false)}</dd></div>
         </dl>
       </section>
 
-      <p className="library-note" role="note">
-        Ces deux totaux ne s'additionnent pas : ce ne sont pas les mêmes unités. Les unités école ne deviennent jamais des pièces.
-      </p>
+      <p className="library-note" role="note">Les pièces de tes placements peuvent changer de valeur. Le verger utilise des unités école fictives, affichées à part.</p>
       <FinanceTip screen="patrimoine" />
     </div>
   );

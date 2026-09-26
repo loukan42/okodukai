@@ -54,7 +54,7 @@ export function Collection() {
   const totalCards = universes.reduce((sum, u) => sum + u.total, 0);
 
   return <div className="collection-page">
-    <header className="collection-header"><div><p className="scene-kicker">Ton album</p><h1>Ma collection</h1><p>Explore tes univers et retrouve les cartes gagnées.</p></div><div className="collection-total"><GameIcon name="collection" size={26}/><strong>{totalOwned} / {totalCards}</strong><span>cartes trouvées</span></div></header>
+    <header className="collection-header"><div><p className="scene-kicker">Ton album</p><h1>Ma collection</h1><p>Retrouve ici les cartes que tu as gagnées.</p></div><div className="collection-total"><GameIcon name="collection" size={26}/><strong>{totalOwned} / {totalCards}</strong><span>cartes trouvées</span></div></header>
     <section className="booster-inventory" aria-labelledby="inventory-title"><div className="booster-inventory-heading"><div><p className="scene-kicker">À ouvrir quand tu veux</p><h2 id="inventory-title">Mes boosters <span>{boosters.length}</span></h2></div><GameIcon name="gift" size={28}/></div>
       {boosters.length === 0 ? <div className="booster-inventory-empty"><BoosterPack className="booster-pack--resting"/><div><strong>Aucun booster pour le moment</strong><p>Termine une quête et fais-la valider par un parent. Tu recevras un booster à garder ici.</p><Link to="/enfant/quetes" className="btn btn-gold">Voir mes quêtes <GameIcon name="arrow" size={17}/></Link></div></div>
         : <div className="booster-altar">

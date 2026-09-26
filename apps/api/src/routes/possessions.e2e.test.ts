@@ -32,12 +32,12 @@ describe.skipIf(!process.env.DATABASE_URL)("Mon mois en pièces et Tout ce que j
       // Le mois « il y a 40 jours » est au moins le mois précédent ; s'il est plus ancien, pas de volet.
       const month = (await (await fetch(`${base}/child/money/month-summary`, { headers: kid })).json()) as { summary: null | { text: string } };
       if (month.summary) {
-        expect(month.summary.text).toMatch(/30 pièces sont entrées, 0 pièce est sortie, 10 pièces sont allées dans Mon coffre\.$/);
+        expect(month.summary.text).toMatch(/tu as reçu 30 pièces, dépensé 0 pièce et mis 10 pièces dans ton coffre\.$/);
         expect(((await (await fetch(`${base}/child/money/month-summary`, { headers: kid })).json()) as { summary: unknown }).summary).toBeNull();
       }
 
-      const mine = (await (await fetch(`${base}/child/invest/possessions`, { headers: kid })).json()) as { coins: { account: number; vault: number; total: number }; units: { investments: number | null; total: number }; xpAwarded: number };
-      expect(mine.coins).toEqual({ account: 21, vault: 10, total: 31 });
+      const mine = (await (await fetch(`${base}/child/invest/possessions`, { headers: kid })).json()) as { coins: { account: number; vault: number; investments: number | null; total: number }; units: { investments: number | null; total: number }; xpAwarded: number };
+      expect(mine.coins).toEqual({ account: 21, vault: 10, investments: null, total: 31 });
       expect(mine.units).toMatchObject({ investments: null, total: 0 });
       expect(mine).not.toHaveProperty("total");
       expect(mine.xpAwarded).toBe(5);

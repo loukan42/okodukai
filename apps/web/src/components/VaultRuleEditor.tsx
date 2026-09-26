@@ -52,7 +52,8 @@ export function VaultRuleEditor({ childId, childName }: { childId: string; child
   const name = `vault-rule-${childId}`;
   return (
     <fieldset className="vault-rule">
-      <legend>Retraits du coffre {ofName(childName)}</legend>
+      <legend>Coffre magique {ofName(childName)}</legend>
+      <p className="money-hint">{childName} peut y garder des pièces pour un objectif. Pour les dépenser dans la boutique, il faut d'abord les reprendre sur son compte. Choisissez ici quand ce retrait est possible.</p>
       <div className="vault-rule-options">
         {MODES.map((m) => (
           <label key={m.value} className={`vault-rule-option${mode === m.value ? " vault-rule-option--on" : ""}`}>

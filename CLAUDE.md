@@ -42,9 +42,11 @@ notification culpabilisante ("tu ne t'es pas connecté !").
   de booster) pour empêcher double-clic / double validation / requête rejouée.
 - **Isolation stricte par household** : un utilisateur du foyer A ne doit jamais pouvoir lire une
   ressource du foyer B. Vérifier l'appartenance au foyer sur chaque endpoint enfant/parent.
-- **Deux monnaies séparées** : les "pièces" familiales (réelles dans l'économie du foyer) et les "unités
-  école" du simulateur pédagogique (fictives, jamais convertibles entre elles, jamais liées à un
-  vrai résultat financier).
+- **Placements financés par le portefeuille familial** : depuis la décision produit de septembre 2026,
+  une nouvelle partie miroir transfère des pièces virtuelles du solde disponible vers le placement.
+  Chaque versement programmé transfère aussi des pièces lors du mois simulé. Les anciennes parties et
+  le verger conservent leurs unités école fictives. Aucune équivalence avec des euros ni avec un vrai
+  produit financier ; le moteur de marché reste purement pédagogique.
 - Ouverture de booster : transaction atomique côté serveur (vérifier propriété + non-ouvert, tirer les
   cartes via RNG serveur versionné, enregistrer, créditer les cartes, marquer ouvert). Deuxième appel
   sur un booster déjà ouvert = sans effet.

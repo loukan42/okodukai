@@ -29,6 +29,7 @@ async function runFacts(childId: string, mode: "MIROIR" | "ASSURANCE_VIE"): Prom
   const latest = await prisma.simulationSnapshot.findFirst({ where: { runId: run.id }, orderBy: { rendezVousIndex: "desc" }, select: { priceIndex: true } });
   return {
     mode,
+    fundedAmount: view.fundedAmount,
     finished: view.status === "TERMINEE",
     value: view.value,
     contributed: view.contributed,

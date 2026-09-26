@@ -12,6 +12,7 @@ const RISKS: Record<SupportCode, number> = { SECURISE: 1, PRETER: 2, MONDE: 4, E
  * chaque mois simulé, pris dans le capital école fixé par le parent. Versé et valeur restent séparés.
  */
 export function Contributions({ run, cap, onChanged }: { run: InvestRun; cap: number; onChanged: () => Promise<void> }) {
+  const funded = run.fundedAmount !== null;
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState<number | null>(null);
   const [draft, setDraft] = useState<Allocation>(EMPTY_ALLOCATION);
@@ -30,7 +31,7 @@ export function Contributions({ run, cap, onChanged }: { run: InvestRun; cap: nu
       setOpen(false);
       setMessage({
         tone: "ok",
-        text: amount > 0 ? `À partir du prochain relevé, ${amount} unités seront ajoutées chaque mois simulé, selon cette répartition.` : "Les versements s'arrêteront au prochain relevé. Tes placements continuent d'évoluer.",
+        text: amount > 0 ? `À partir du prochain relevé, ${amount} ${funded ? "pièces seront transférées de ton compte" : "unités seront ajoutées"} chaque mois simulé, selon cette répartition.` : "Les versements s'arrêteront au prochain relevé. Tes placements continuent d'évoluer.",
       });
       await onChanged();
     } catch (err) {
@@ -41,14 +42,14 @@ export function Contributions({ run, cap, onChanged }: { run: InvestRun; cap: nu
   return (
     <section className="support-sheet-block contributions" aria-labelledby="contributions-title">
       <h2 id="contributions-title">Versements programmés</h2>
-      <p>Chaque mois simulé, tu peux ajouter des unités école de ton capital. Tu choisis combien et où elles vont.</p>
+      <p>{funded ? "Chaque mois simulé, le montant choisi sera transféré de ton compte vers tes placements. Si ton solde est insuffisant ce mois-là, le versement sera sauté." : "Chaque mois simulé, tu peux ajouter des unités école de ton capital. Tu choisis combien et où elles vont."}</p>
       <p className="money-hint">
-        Capital école pas encore placé : <b>{units(remaining, false)}</b> unités · Versé jusqu'ici : {units(run.contributed, false)}
-        {run.monthlyPlan > 0 && ` · En ce moment : ${run.monthlyPlan} unités par mois`}
+        {funded ? "Encore possible selon le plafond :" : "Capital école pas encore placé :"} <b>{units(remaining, false)}</b> {funded ? "pièces" : "unités"} · Versé jusqu'ici : {units(run.contributed, false)}
+        {run.monthlyPlan > 0 && ` · En ce moment : ${run.monthlyPlan} ${funded ? "pièces" : "unités"} par mois`}
       </p>
       {remaining <= 0.005 ? (
         <p className="library-note" role="note">
-          Tu as placé tout ton capital école : {cap} unités. Les versements s'arrêtent. Tes placements continuent d'évoluer.
+          Tu as atteint le plafond de {cap} {funded ? "pièces" : "unités"}. Les versements s'arrêtent. Tes placements continuent d'évoluer.
         </p>
       ) : !open ? (
         <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(true)}>
@@ -60,7 +61,7 @@ export function Contributions({ run, cap, onChanged }: { run: InvestRun; cap: nu
             {AMOUNTS.map((a) => (
               <label key={a} className={`segmented-option${amount === a ? " segmented-option--on" : ""}`}>
                 <input type="radio" name="contribution-amount" checked={amount === a} onChange={() => setAmount(a)} />
-                {a === 0 ? "Arrêter" : `${a} unités`}
+                {a === 0 ? "Arrêter" : `${a} ${funded ? "pièces" : "unités"}`}
               </label>
             ))}
           </div>

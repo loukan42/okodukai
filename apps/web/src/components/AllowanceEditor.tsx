@@ -15,7 +15,7 @@ const DAYS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dima
  * « Cadeau : … »), plutôt que des corrections. L'argent de poche automatique tombe chaque semaine à 8 h.
  */
 export function AllowanceEditor({ childId, childName }: { childId: string; childName: string }) {
-  const [allowance, setAllowance] = useState<Allowance>({ amount: 10, weekday: 3, active: false });
+  const [allowance, setAllowance] = useState<Allowance>({ amount: 500, weekday: 3, active: false });
   const [saved, setSaved] = useState<Allowance | null>(null);
   const [giftAmount, setGiftAmount] = useState(20);
   const [giftReason, setGiftReason] = useState("");
@@ -64,6 +64,7 @@ export function AllowanceEditor({ childId, childName }: { childId: string; child
   return (
     <fieldset className="vault-rule">
       <legend>Argent de poche et cadeaux</legend>
+      <p className="money-hint">Choisissez un versement régulier, par exemple 500 pièces chaque semaine. Il s'ajoute aux pièces gagnées en réussissant des missions.</p>
       <label className="vault-rule-toggle">
         <input type="checkbox" checked={allowance.active} onChange={(e) => setAllowance({ ...allowance, active: e.target.checked })} />
         Verser de l'argent de poche chaque semaine
@@ -88,13 +89,14 @@ export function AllowanceEditor({ childId, childName }: { childId: string; child
           </label>
         </div>
       )}
-      <p className="money-hint">Il apparaît comme « Argent de poche » dans l'historique. Rien n'est versé pour les semaines passées.</p>
+      <p className="money-hint">Le prochain versement arrivera le jour choisi à 8 h. Il apparaîtra comme « Argent de poche » dans l'historique. Les semaines passées ne sont pas rattrapées.</p>
       <button type="button" className="btn btn-primary btn-sm" onClick={() => void saveAllowance()} disabled={!dirty}>
         Enregistrer l'argent de poche
       </button>
 
       <form className="allowance-gift" onSubmit={sendGift}>
         <label htmlFor={`gift-reason-${childId}`}>Un cadeau (anniversaire, fête…)</label>
+        <p className="money-hint">Pour ajouter des pièces une seule fois, indépendamment du versement hebdomadaire et des missions.</p>
         <div className="allowance-row">
           <input type="number" min={1} max={100000} value={giftAmount} onChange={(e) => setGiftAmount(Math.max(1, Number(e.target.value) || 1))} aria-label="Montant du cadeau en pièces" />
           <input id={`gift-reason-${childId}`} value={giftReason} onChange={(e) => setGiftReason(e.target.value)} maxLength={120} placeholder="Anniversaire, de Mamie" required />

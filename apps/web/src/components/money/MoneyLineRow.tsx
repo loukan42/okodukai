@@ -24,6 +24,13 @@ export function KindIcon({ kind, amount }: { kind: LineKind; amount: number }) {
           <path d="m13 7 4 4" />
         </svg>
       );
+    case "prime_coffre":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="8" />
+          <path d="M12 8v8M8 12h8" />
+        </svg>
+      );
     case "bonus_epargne":
       return (
         <svg {...common}>

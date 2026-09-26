@@ -847,3 +847,10 @@ La validation de répartition utilise `checkAllocation` côté serveur. Les code
 | `SimulationScenario.returnSeries` (5 rendements fixes) | Les trajectoires du moteur (`generateMarketPath`, `pickScenario`). |
 | Page « Apprendre » (`Learn.tsx`) | « La bibliothèque de l'observatoire » : modules existants, carnet de mots, encarts relisibles, « À découvrir » (encarts en attente). Les modules « budget » et « épargne » sont conservés. Le module « inflation » est réécrit (liste du marché, unités école) et déclenché par T35. Vérifications conformes à `FINANCIAL_EDUCATION.md` §9. |
 | Données existantes du simulateur | Archivées, non affichées. |
+# Mise à jour produit — septembre 2026
+
+Les nouvelles parties « Mes placements » utilisent des pièces virtuelles réellement transférées du
+solde disponible de l'enfant. Le montant initial est choisi par l'enfant ; les 100 parts de l'atelier
+représentent la répartition de ce montant, pas une seconde monnaie. Les versements programmés débitent
+le solde disponible au mois simulé correspondant ; un mois sans solde est sauté. Les passages ci-dessous
+sur les 100 unités école séparées des pièces décrivent les anciennes parties et le verger du temps long.

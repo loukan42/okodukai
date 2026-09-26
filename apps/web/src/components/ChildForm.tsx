@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { ApiError } from "../lib/api";
-import { Avatar, AVAILABLE_AVATARS } from "./Avatar";
+import { Avatar, AVAILABLE_AVATARS, AVATAR_LABELS } from "./Avatar";
 
 export interface ChildFormValues {
   displayName: string;
@@ -18,8 +18,8 @@ interface ChildFormProps {
 }
 
 const AGE_BANDS = [
-  { value: "AGE_8_9", label: "8-9 ans" },
-  { value: "AGE_10_12", label: "10-12 ans" },
+  { value: "AGE_8_9", label: "Moins de 9 ans" },
+  { value: "AGE_10_12", label: "9 ans ou plus" },
 ] as const;
 
 /** Formulaire d'ajout d'un profil enfant, partagé entre l'accueil et la gestion des enfants. */
@@ -68,14 +68,16 @@ export function ChildForm({ onSubmit, submitting = false, submitLabel = "Créer 
             </label>
           ))}
         </div>
+        <p className="field-hint">Ce choix adapte les explications à l'enfant. Vous pourrez changer son niveau pédagogique ensuite.</p>
       </fieldset>
 
       <fieldset className="field choice-field">
-        <legend>Avatar</legend>
+        <legend>Choisir un avatar</legend>
+        <p className="field-hint">Ce portrait apparaîtra sur le profil de votre enfant.</p>
         <div className="avatar-grid">
           {AVAILABLE_AVATARS.map((id, i) => (
             <label key={id} className={`avatar-pick${id === avatarId ? " avatar-pick--selected" : ""}`}>
-              <input type="radio" name={`${idPrefix}-avatar`} value={id} checked={id === avatarId} onChange={() => setAvatarId(id)} aria-label={`Avatar ${i + 1}`} />
+              <input type="radio" name={`${idPrefix}-avatar`} value={id} checked={id === avatarId} onChange={() => setAvatarId(id)} aria-label={AVATAR_LABELS[i]} />
               <Avatar avatarId={id} />
             </label>
           ))}

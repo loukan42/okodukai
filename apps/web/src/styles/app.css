@@ -343,6 +343,15 @@
   object-position: top center;
 }
 
+.avatar-illustration {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-image: url('/assets/avatars/roster-v2.png');
+  background-size: 400% 400%;
+  background-repeat: no-repeat;
+}
+
 .avatar-lg {
   width: 88px;
   height: 88px;

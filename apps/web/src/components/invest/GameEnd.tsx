@@ -37,16 +37,18 @@ export function GameEnd({ run, young, onNewGame, archived = false }: { run: Inve
   }, []);
 
   if (!report) return null;
+  const funded = run.fundedAmount !== null;
   const start = run.series[0]?.value ?? 100;
   const trend = trendOf(run.value - run.contributed, run.contributed, young);
   const scale = report.alternatives ? Math.max(run.value, ...Object.values(report.alternatives)) : run.value;
-  const decisions = report.decisions.filter((d) => d.type !== "VERSEMENT" || d.step === 0);
+  const decisions = report.decisions.filter((d) => (d.type !== "VERSEMENT" || d.step === 0) && d.type !== "WALLET_PLAN_SKIP");
 
   return (
     <section className="statement game-end" aria-labelledby="game-end-title">
       <h2 id="game-end-title">
         Ta partie est terminée : {report.years} années dans la vallée.
       </h2>
+      {funded && <p className="money-hint">Tu avais transféré {run.fundedAmount} pièces depuis ton compte. {run.settledAmount === null ? `Ton placement vaut maintenant ${units(run.value, false)} pièces.` : `${run.settledAmount} pièces sont revenues sur ton compte, avec le gain ou la perte de cette partie.`}</p>}
       {young ? (
         <p className="statement-main">
           <span aria-hidden="true">{TREND_GLYPH[trend]}</span> Au départ : {units(start, true)} · À la fin : {units(run.value, true)}
@@ -71,6 +73,7 @@ export function GameEnd({ run, young, onNewGame, archived = false }: { run: Inve
               {d.type === "VERSEMENT" && `Première répartition : ${allocationText(d.allocation, young)}`}
               {d.type === "ARBITRAGE" && `Changement de répartition : ${allocationText(d.allocation, young)}`}
               {d.type === "VERSEMENTS_PROGRAMMES" && `Versement programmé : ${d.amountPerMonth} unités par mois simulé`}
+              {d.type === "WALLET_PLAN" && `Versement programmé : ${d.amountPerMonth} pièces par mois simulé`}
               {d.type === "RETRAIT" && `Retrait de ${d.amount} unités`}
             </span>
           </li>

@@ -3,10 +3,12 @@
 // - la trajectoire est figée à la création et ne sort jamais du serveur au-delà de l'étape révélée ;
 // - la graine et le scénario restent cachés jusqu'à la fin de la partie ;
 // - les relevés (snapshots) sont créés en rattrapage paresseux, jamais recalculés ni réécrits ;
-// - les unités école n'ont aucun lien avec les pièces (aucune écriture au ledger ici).
+// - les parties récentes utilisent un capital transféré depuis le portefeuille ; les anciennes
+//   parties école sans financement restent lisibles.
 import { randomBytes } from "node:crypto";
 import type { AgeBand, Prisma, SimMode, SimRhythm, SimulationRun } from "@prisma/client";
 import { prisma } from "./prisma.js";
+import { getBalances, recordWalletTransaction } from "./ledger.js";
 import {
   ENGINE_VERSION,
   EXAMPLE_CONTRACT_FEES,
@@ -105,7 +107,7 @@ export function validateAllocation(allocation: Record<string, number>, ageBand: 
 }
 
 function operationsOf(ops: { step: number; type: string; amount: number | null; amountPerMonth: number | null; allocation: Prisma.JsonValue }[]): SimOperation[] {
-  return ops.map((op) => {
+  return ops.filter((op) => op.type !== "WALLET_PLAN" && op.type !== "WALLET_PLAN_SKIP").map((op) => {
     const allocation = (op.allocation ?? undefined) as Allocation | undefined;
     switch (op.type) {
       case "ARBITRAGE":
@@ -120,10 +122,44 @@ function operationsOf(ops: { step: number; type: string; amount: number | null; 
   });
 }
 
-/** Crée une partie : scénario équilibré, trajectoire figée, versement initial de 100 unités. */
+/**
+ * Chaque mois simulé d'une partie financée débite réellement le compte avant d'ajouter le dépôt
+ * au moteur. Un mois sans solde est marqué comme manqué : un crédit ultérieur ne modifie jamais
+ * rétroactivement un relevé déjà créé.
+ */
+async function syncFundedContributions(run: SimulationRun, revealedSteps: number) {
+  if (run.fundedAmount === null || run.contributionCap === null || revealedSteps < 1) return;
+  const cap = run.contributionCap;
+  await prisma.$transaction(async (tx) => {
+    const wallet = await tx.wallet.findUniqueOrThrow({ where: { childId: run.childId } });
+    await tx.$queryRaw`SELECT "id" FROM "Wallet" WHERE "id" = ${wallet.id} FOR UPDATE`;
+    const ops = await tx.simulationOperation.findMany({ where: { runId: run.id, step: { lte: revealedSteps } }, orderBy: [{ step: "asc" }, { createdAt: "asc" }] });
+    const plans = ops.filter((op) => op.type === "WALLET_PLAN");
+    if (plans.length === 0) return;
+    const completed = new Set(ops.filter((op) => op.idempotencyKey.startsWith(`sim-wallet-contribution:${run.id}:`)).map((op) => op.step));
+    let contributed = ops.filter((op) => op.type === "VERSEMENT").reduce((sum, op) => sum + (op.amount ?? 0), 0);
+    for (let step = 1; step <= revealedSteps; step++) {
+      if (completed.has(step)) continue;
+      const plan = plans.filter((op) => op.step <= step).at(-1);
+      if (!plan || !plan.amountPerMonth || plan.amountPerMonth <= 0) continue;
+      const amount = Math.min(plan.amountPerMonth, Math.max(0, cap - contributed));
+      if (amount <= 0) break;
+      const key = `sim-wallet-contribution:${run.id}:${step}`;
+      if ((await getBalances(tx, wallet.id)).available < amount) {
+        await tx.simulationOperation.create({ data: { runId: run.id, step, type: "WALLET_PLAN_SKIP", amount: 0, actorId: run.childId, idempotencyKey: key } });
+        continue;
+      }
+      await recordWalletTransaction(tx, { walletId: wallet.id, amount, type: "INVEST_LOCK", actorId: run.childId, sourceType: "simulation_run", sourceId: run.id, idempotencyKey: `invest-lock:${run.id}:${step}` });
+      await tx.simulationOperation.create({ data: { runId: run.id, step, type: "VERSEMENT", amount, allocation: plan.allocation as Prisma.InputJsonValue, actorId: run.childId, idempotencyKey: key } });
+      contributed += amount;
+    }
+  });
+}
+
+/** Crée une partie : scénario équilibré, trajectoire figée et capital initial choisi. */
 export async function createRun(
   tx: Prisma.TransactionClient,
-  input: { childId: string; householdId: string; rhythm: SimRhythm; horizonMonths: number; allocation: Allocation; idempotencyKey: string; mode?: SimMode; monthly?: number }
+  input: { childId: string; householdId: string; rhythm: SimRhythm; horizonMonths: number; allocation: Allocation; idempotencyKey: string; mode?: SimMode; monthly?: number; fundedAmount?: number }
 ) {
   const mode = input.mode ?? "MIROIR";
   const previous = await tx.simulationRun.findMany({ where: { childId: input.childId }, orderBy: { createdAt: "asc" }, select: { scenario: true } });
@@ -136,6 +172,7 @@ export async function createRun(
       childId: input.childId,
       householdId: input.householdId,
       mode,
+      fundedAmount: input.fundedAmount ?? null,
       contributionCap: mode === "ASSURANCE_VIE" ? ORCHARD.contributionCap : null,
       engineVersion: ENGINE_VERSION,
       parametersFingerprint: PARAMETERS_FINGERPRINT,
@@ -150,7 +187,7 @@ export async function createRun(
     },
   });
   await tx.simulationOperation.create({
-    data: { runId: run.id, step: 0, type: "VERSEMENT", amount: STARTING_UNITS, allocation: input.allocation as unknown as Prisma.InputJsonValue, actorId: input.childId, idempotencyKey: `sim-start:${run.id}` },
+    data: { runId: run.id, step: 0, type: "VERSEMENT", amount: input.fundedAmount ?? STARTING_UNITS, allocation: input.allocation as unknown as Prisma.InputJsonValue, actorId: input.childId, idempotencyKey: `sim-start:${run.id}` },
   });
   if (input.monthly && input.monthly > 0) {
     await tx.simulationOperation.create({
@@ -175,6 +212,7 @@ export async function syncRun(client: Client, run: SimulationRun, now = new Date
   const rhythm = RHYTHMS[run.rhythm];
   const { pauses, paused } = await pausesFor(client, run.childId);
   const clock = clockState({ rhythm, startAt: run.startedAt, now, horizonMonths: run.horizonMonths, timeZone: run.timeZone, pauses });
+  await syncFundedContributions(run, clock.revealedSteps);
   const market = run.marketPath as unknown as MarketPath;
   const ops = await client.simulationOperation.findMany({ where: { runId: run.id }, orderBy: [{ step: "asc" }, { createdAt: "asc" }] });
   // Les décisions prévues pour un relevé futur ne comptent qu'une fois ce relevé révélé.
@@ -208,7 +246,19 @@ export async function syncRun(client: Client, run: SimulationRun, now = new Date
     }
     await client.simulationSnapshot.createMany({ data: rows, skipDuplicates: true });
   }
-  if (clock.finished && run.status === "EN_COURS") {
+  if (clock.finished && run.fundedAmount !== null && run.settledAt === null) {
+    const amount = Math.max(0, Math.round(valuation.points[clock.revealedSteps].value));
+    await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "SimulationRun" WHERE "id" = ${run.id} FOR UPDATE`;
+      const fresh = await tx.simulationRun.findUniqueOrThrow({ where: { id: run.id } });
+      if (fresh.settledAt !== null) return;
+      if (amount > 0) {
+        const wallet = await tx.wallet.findUniqueOrThrow({ where: { childId: run.childId } });
+        await recordWalletTransaction(tx, { walletId: wallet.id, amount, type: "INVEST_RETURN", actorId: run.childId, sourceType: "simulation_run", sourceId: run.id, idempotencyKey: `invest-return:${run.id}` });
+      }
+      await tx.simulationRun.update({ where: { id: run.id }, data: { status: "TERMINEE", finishedAt: fresh.finishedAt ?? now, settledAmount: amount, settledAt: now } });
+    });
+  } else if (clock.finished && run.status === "EN_COURS") {
     await client.simulationRun.update({ where: { id: run.id }, data: { status: "TERMINEE", finishedAt: now } });
   }
   return { clock, valuation, operations: ops, paused };
@@ -217,6 +267,7 @@ export async function syncRun(client: Client, run: SimulationRun, now = new Date
 /** Vue exposable au client (enfant ou parent) : rien au-delà de l'étape révélée. */
 export async function runView(client: Client, run: SimulationRun, ageBand: AgeBand, now = new Date()) {
   const { clock, valuation, operations, paused } = await syncRun(client, run, now);
+  const settled = run.fundedAmount !== null ? await client.simulationRun.findUniqueOrThrow({ where: { id: run.id }, select: { settledAmount: true, settledAt: true } }) : null;
   const snapshots = await client.simulationSnapshot.findMany({ where: { runId: run.id }, orderBy: { rendezVousIndex: "asc" } });
   const points = valuation.points;
   const current = points[clock.revealedSteps];
@@ -233,11 +284,14 @@ export async function runView(client: Client, run: SimulationRun, ageBand: AgeBa
   const completionXp = finished ? await client.xpTransaction.findUnique({ where: { idempotencyKey: financeXpKey.game(run.childId, run.id) } }) : null;
   return {
     id: run.id,
+    fundedAmount: run.fundedAmount,
+    settledAmount: settled?.settledAmount ?? null,
+    settledAt: settled?.settledAt ?? null,
     mode: run.mode,
     status: finished ? "TERMINEE" : "EN_COURS",
     feesPaid: current.fees.total,
     feeRates: { entry: fees.entryRate, managementAnnual: typeof fees.managementRateAnnual === "number" ? fees.managementRateAnnual : null, arbitrage: fees.arbitrageRate },
-    monthlyPlan: valuation.monthlyPlan?.amountPerMonth ?? 0,
+    monthlyPlan: run.fundedAmount === null ? (valuation.monthlyPlan?.amountPerMonth ?? 0) : (operations.filter((o) => o.type === "WALLET_PLAN" && o.step <= clock.revealedSteps).at(-1)?.amountPerMonth ?? 0),
     paused,
     contributionCap: run.contributionCap,
     ageYears: Math.floor(clock.revealedSteps / 12),

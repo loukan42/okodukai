@@ -43,12 +43,14 @@ describe.skipIf(!process.env.DATABASE_URL)("placements école : moteur, relevés
       expect((await post("/child/invest/start", { allocation: { SECURISE: 40, ENTREPRISES: 50 }, idempotencyKey: randomUUID() })).status).toBe(400);
       expect((await post("/child/invest/start", { allocation: { SECURISE: 42, ENTREPRISES: 58 }, idempotencyKey: randomUUID() })).status).toBe(400);
       const key = randomUUID();
-      const started = await post("/child/invest/start", { allocation: { SECURISE: 40, ENTREPRISES: 60 }, idempotencyKey: key });
+      const started = await post("/child/invest/start", { allocation: { SECURISE: 40, ENTREPRISES: 60 }, amount: 5, idempotencyKey: key });
       expect(started.status).toBe(201);
-      expect((await post("/child/invest/start", { allocation: { SECURISE: 40, ENTREPRISES: 60 }, idempotencyKey: key })).status).toBe(200);
+      expect((await post("/child/invest/start", { allocation: { SECURISE: 40, ENTREPRISES: 60 }, amount: 5, idempotencyKey: key })).status).toBe(200);
       expect(await prisma.simulationRun.count({ where: { childId: child.id } })).toBe(1);
       let state = await get();
-      expect(state.run).toMatchObject({ value: 100, statements: [], clock: { revealedSteps: 0 }, scenarioRevealed: null });
+      expect(state.run).toMatchObject({ value: 5, statements: [], clock: { revealedSteps: 0 }, scenarioRevealed: null });
+      expect((await prisma.walletTransaction.findMany({ where: { walletId: wallet.id, type: "INVEST_LOCK" } })).map((t) => t.amount)).toEqual([5]);
+      expect((await post("/child/invest/start", { allocation: { SECURISE: 40, ENTREPRISES: 60 }, amount: 5, idempotencyKey: randomUUID() })).status).toBe(409);
 
       // Trois jours plus tard (rythme Standard : un relevé de 6 mois par jour à 17 h).
       await prisma.simulationRun.updateMany({ where: { childId: child.id }, data: { startedAt: new Date(Date.now() - 3 * 86_400_000) } });
@@ -105,6 +107,7 @@ describe.skipIf(!process.env.DATABASE_URL)("placements école : moteur, relevés
       await prisma.householdMembership.create({ data: { householdId: household.id, userId: user.id, role: "PARENT_ADMIN" } });
       const child = await prisma.childProfile.create({ data: { householdId: household.id, displayName: "Nora", ageBand: "AGE_10_12", avatarId: "aventurier-03", pinHash: "test" } });
       const wallet = await prisma.wallet.create({ data: { childId: child.id } });
+      await prisma.walletTransaction.create({ data: { walletId: wallet.id, amount: 200, type: "QUEST_REWARD", actorId: child.id, idempotencyKey: `${code}-quest` } });
       await prisma.walletTransaction.create({ data: { walletId: wallet.id, amount: 5, type: "SAVINGS_LOCK", actorId: child.id, idempotencyKey: `${code}-lock` } });
       const kid = { cookie: `okodukai_session=${signSession({ kind: "child", childId: child.id, householdId: household.id })}`, "content-type": "application/json" };
       const parent = { cookie: `okodukai_session=${signSession({ kind: "parent", userId: user.id, householdId: household.id, role: "PARENT_ADMIN" })}`, "content-type": "application/json" };
@@ -113,7 +116,7 @@ describe.skipIf(!process.env.DATABASE_URL)("placements école : moteur, relevés
       const plan = (body: unknown) => fetch(`${base}/child/invest/contributions`, { method: "POST", headers: kid, body: JSON.stringify(body) });
       const allocation = { SECURISE: 50, MONDE: 50 };
 
-      expect((await fetch(`${base}/child/invest/start`, { method: "POST", headers: kid, body: JSON.stringify({ allocation, idempotencyKey: randomUUID() }) })).status).toBe(201);
+      expect((await fetch(`${base}/child/invest/start`, { method: "POST", headers: kid, body: JSON.stringify({ allocation, amount: 100, idempotencyKey: randomUUID() }) })).status).toBe(201);
       expect((await plan({ amountPerMonth: 10, allocation, idempotencyKey: randomUUID() })).status).toBe(409);
       const settings = await fetch(`${base}/household/children/${child.id}/invest-settings`, { method: "PUT", headers: parent, body: JSON.stringify({ enabled: true, rhythm: "STANDARD", horizonMonths: 120, contributionsEnabled: true, contributionCap: 150 }) });
       expect(settings.status).toBe(200);
@@ -130,6 +133,7 @@ describe.skipIf(!process.env.DATABASE_URL)("placements école : moteur, relevés
       expect(state.contributed).toBeLessThanOrEqual(150);
       await prisma.simulationRun.updateMany({ where: { childId: child.id }, data: { startedAt: new Date(Date.now() - 12 * 86_400_000) } });
       expect((await get()).run.contributed).toBe(150);
+      expect((await prisma.walletTransaction.findMany({ where: { walletId: wallet.id, type: "INVEST_LOCK" } })).reduce((sum, t) => sum + t.amount, 0)).toBe(150);
 
       // Pause (qui commence maintenant) : plus de prochain relevé annoncé, rien de nouveau n'est
       // révélé ; à la reprise, l'horloge repart sans rattraper (le saut est testé dans clock.test.ts).
@@ -159,9 +163,10 @@ describe.skipIf(!process.env.DATABASE_URL)("placements école : moteur, relevés
     try {
       const child = await prisma.childProfile.create({ data: { householdId: household.id, displayName: "Léo", ageBand: "AGE_8_9", avatarId: "aventurier-01", pinHash: "test" } });
       const wallet = await prisma.wallet.create({ data: { childId: child.id } });
+      await prisma.walletTransaction.create({ data: { walletId: wallet.id, amount: 200, type: "QUEST_REWARD", actorId: child.id, idempotencyKey: `${code}-quest` } });
       await prisma.walletTransaction.create({ data: { walletId: wallet.id, amount: 5, type: "SAVINGS_LOCK", actorId: child.id, idempotencyKey: `${code}-lock` } });
       const kid = { cookie: `okodukai_session=${signSession({ kind: "child", childId: child.id, householdId: household.id })}`, "content-type": "application/json" };
-      type Run = { status: string; unseen: number; completionXp: number; statements: { index: number }[] };
+      type Run = { status: string; unseen: number; completionXp: number; statements: { index: number }[]; value: number; settledAmount: number | null; settledAt: string | null };
       const get = async () => (await (await fetch(`${base}/child/invest`, { headers: kid })).json()) as { gate: string; run: Run | null };
       const post = async (path: string, body: unknown) => {
         const res = await fetch(`${base}${path}`, { method: "POST", headers: kid, body: JSON.stringify(body) });
@@ -171,9 +176,9 @@ describe.skipIf(!process.env.DATABASE_URL)("placements école : moteur, relevés
 
       const key = randomUUID();
       const allocation = { SECURISE: 40, ENTREPRISES: 60 };
-      const started = await post("/child/invest/start", { allocation, idempotencyKey: key });
+      const started = await post("/child/invest/start", { allocation, amount: 100, idempotencyKey: key });
       expect(started).toMatchObject({ status: 201, body: { xpAwarded: 20 } });
-      expect(await post("/child/invest/start", { allocation, idempotencyKey: key })).toMatchObject({ status: 200, body: { xpAwarded: 20 } });
+      expect(await post("/child/invest/start", { allocation, amount: 100, idempotencyKey: key })).toMatchObject({ status: 200, body: { xpAwarded: 20 } });
       expect(await xp()).toBe(20);
 
       // Partie de 5 ans au rythme Standard (6 mois par jour) : terminée après 10 relevés.
@@ -181,6 +186,12 @@ describe.skipIf(!process.env.DATABASE_URL)("placements école : moteur, relevés
       const finished = (await get()).run!;
       expect(finished).toMatchObject({ status: "TERMINEE", completionXp: 0 });
       expect(finished.unseen).toBeGreaterThan(1);
+      expect(finished.settledAmount).toBe(Math.max(0, Math.round(finished.value)));
+      expect(finished.settledAt).not.toBeNull();
+      expect((await prisma.walletTransaction.findMany({ where: { walletId: wallet.id, type: "INVEST_RETURN" } })).map((t) => t.amount)).toEqual([finished.settledAmount]);
+      await fetch(`${base}/child/money`, { headers: kid });
+      await get();
+      expect(await prisma.walletTransaction.count({ where: { walletId: wallet.id, type: "INVEST_RETURN" } })).toBe(1);
 
       // Un bilan intermédiaire lu ne suffit pas : il faut arriver au bilan final.
       expect((await post(`/child/invest/statements/${finished.statements[0].index}/seen`, {})).body.run!.completionXp).toBe(0);
@@ -202,12 +213,45 @@ describe.skipIf(!process.env.DATABASE_URL)("placements école : moteur, relevés
       expect(games.games[0].story).toEqual(expect.any(String));
       expect((await fetch(`${base}/child/invest/games/${report.id}`, { headers: kid })).status).toBe(200);
       expect((await get()).gate).toBe("onboarding");
-      expect(await post("/child/invest/start", { allocation, idempotencyKey: randomUUID() })).toMatchObject({ status: 201, body: { xpAwarded: 0 } });
+      expect(await post("/child/invest/start", { allocation, amount: 50, idempotencyKey: randomUUID() })).toMatchObject({ status: 201, body: { xpAwarded: 0 } });
       expect(await xp()).toBe(40);
       expect(await prisma.xpTransaction.count({ where: { childId: child.id, sourceType: "FINANCE_LEARNING" } })).toBe(2);
       // La partie en cours n'a pas de bilan final consultable.
       const current = ((await (await fetch(`${base}/child/invest`, { headers: kid })).json()) as { run: { id: string } }).run;
       expect((await fetch(`${base}/child/invest/games/${current.id}`, { headers: kid })).status).toBe(409);
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      await prisma.household.delete({ where: { id: household.id } });
+    }
+  });
+
+  it("saute un versement sans solde et ne le rattrape pas après un crédit tardif", async () => {
+    const code = `invest-empty-${randomUUID()}`;
+    const server = createApp().listen(0);
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    const household = await prisma.household.create({ data: { name: code } });
+    try {
+      const child = await prisma.childProfile.create({ data: { householdId: household.id, displayName: "Lina", ageBand: "AGE_10_12", avatarId: "aventurier-04", pinHash: "test" } });
+      const wallet = await prisma.wallet.create({ data: { childId: child.id } });
+      await prisma.walletTransaction.create({ data: { walletId: wallet.id, amount: 6, type: "QUEST_REWARD", actorId: child.id, idempotencyKey: `${code}-quest` } });
+      await prisma.walletTransaction.create({ data: { walletId: wallet.id, amount: 1, type: "SAVINGS_LOCK", actorId: child.id, idempotencyKey: `${code}-saved` } });
+      await prisma.investSettings.create({ data: { childId: child.id, enabled: true, rhythm: "STANDARD", horizonMonths: 60, contributionsEnabled: true, contributionCap: 100, notifyStatement: false } });
+      const headers = { cookie: `okodukai_session=${signSession({ kind: "child", childId: child.id, householdId: household.id })}`, "content-type": "application/json" };
+      const allocation = { SECURISE: 50, ENTREPRISES: 50 };
+      const start = await fetch(`${base}/child/invest/start`, { method: "POST", headers, body: JSON.stringify({ allocation, amount: 5, idempotencyKey: randomUUID() }) });
+      expect(start.status).toBe(201);
+      const plan = await fetch(`${base}/child/invest/contributions`, { method: "POST", headers, body: JSON.stringify({ allocation, amountPerMonth: 5, idempotencyKey: randomUUID() }) });
+      expect(plan.status).toBe(201);
+      await prisma.simulationRun.updateMany({ where: { childId: child.id }, data: { startedAt: new Date(Date.now() - 2 * 86_400_000) } });
+      const before = (await (await fetch(`${base}/child/invest`, { headers })).json()) as { run: { contributed: number } };
+      expect(before.run.contributed).toBe(5);
+      const skipped = await prisma.simulationOperation.count({ where: { run: { childId: child.id }, type: "WALLET_PLAN_SKIP" } });
+      expect(skipped).toBeGreaterThan(0);
+      await prisma.walletTransaction.create({ data: { walletId: wallet.id, amount: 100, type: "QUEST_REWARD", actorId: child.id, idempotencyKey: `${code}-late-quest` } });
+      const after = (await (await fetch(`${base}/child/invest`, { headers })).json()) as { run: { contributed: number } };
+      expect(after.run.contributed).toBe(5);
+      expect(await prisma.simulationOperation.count({ where: { run: { childId: child.id }, type: "WALLET_PLAN_SKIP" } })).toBe(skipped);
+      expect((await prisma.walletTransaction.findMany({ where: { walletId: wallet.id, type: "INVEST_LOCK" } })).map((t) => t.amount)).toEqual([5]);
     } finally {
       await new Promise<void>((resolve) => server.close(() => resolve()));
       await prisma.household.delete({ where: { id: household.id } });

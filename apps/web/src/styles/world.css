@@ -408,15 +408,16 @@
 
 .avatar-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+  gap: 12px;
 }
 
 .avatar-grid .avatar-pick {
   position: relative;
   display: grid;
   place-items: center;
-  padding: 3px;
+  min-height: 72px;
+  padding: 4px;
   border-radius: 50%;
   border: 2px solid transparent;
   transition: transform var(--duration-fast) var(--ease-out), border-color var(--duration-fast);
@@ -428,12 +429,12 @@
 
 .avatar-grid .avatar-pick--selected {
   border-color: var(--gold-leaf);
-  box-shadow: 0 0 0 3px rgba(232, 173, 63, 0.25);
+  box-shadow: 0 0 0 3px rgba(232, 173, 63, 0.28), inset 0 0 0 2px #fff9e7;
 }
 
 .avatar-grid .avatar {
-  width: 52px;
-  height: 52px;
+  width: 60px;
+  height: 60px;
   background: transparent;
 }
 

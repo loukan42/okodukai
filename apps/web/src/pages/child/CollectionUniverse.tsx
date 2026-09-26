@@ -30,7 +30,7 @@ export function CollectionUniverse() {
 
   return <div className="album-page">
     <Link to="/enfant/collection" className="album-back"><GameIcon name="arrow" size={16}/> Tous les univers</Link>
-    <header className="album-header"><div><p className="scene-kicker">Album de collection</p><h1>{universeTitle}</h1><p>Chaque carte gagnée trouve sa place ici.</p></div><div className="album-count"><strong>{owned} / {cards.length}</strong><span>cartes trouvées</span></div></header>
+    <header className="album-header"><div><p className="scene-kicker">Album de collection</p><h1>{universeTitle}</h1><p>Les cartes que tu as gagnées dans cet univers sont ici.</p></div><div className="album-count"><strong>{owned} / {cards.length}</strong><span>cartes trouvées</span></div></header>
     <ProgressBar value={owned} max={cards.length}/>
     <div className="album-filter" role="group" aria-label="Filtrer les cartes">
       <button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")} aria-pressed={filter === "all"}>Toutes <span>{cards.length}</span></button>

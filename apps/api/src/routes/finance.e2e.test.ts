@@ -48,7 +48,7 @@ describe.skipIf(!process.env.DATABASE_URL)("encarts pédagogiques et vérificati
       // Coffre : transfert → T03 avec le vrai montant, puis la question Q02.
       expect((await question("vault")).question?.id).not.toBe("Q02");
       await prisma.walletTransaction.create({ data: { walletId: wallet.id, amount: 7, type: "SAVINGS_LOCK", actorId: child.id, idempotencyKey: `${code}-lock` } });
-      expect((await tip("vault")).tip).toMatchObject({ code: "T03", message: expect.stringContaining("Tes 7 pièces sont dans Mon coffre") });
+      expect((await tip("vault")).tip).toMatchObject({ code: "T03", message: expect.stringContaining("Tu as mis 7 pièces dans ton coffre") });
       const q02 = (await question("vault")).question!;
       expect(q02.id).toBe("Q02");
       expect(q02.options.at(-1)).toEqual({ id: "je_ne_sais_pas", text: "Je ne sais pas encore" });

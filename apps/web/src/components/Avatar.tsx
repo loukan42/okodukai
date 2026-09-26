@@ -1,30 +1,29 @@
-import { useState } from "react";
+/** Portraits Okodukai : les seize cases du sprite sont affichées à leur position exacte. */
+export const AVAILABLE_AVATARS = Array.from({ length: 16 }, (_, i) => `aventurier-${String(i + 1).padStart(2, "0")}`);
 
-/**
- * Roster d'avatars Okodukai : portraits vectoriels générés par le pipeline
- * (scripts/art/characters/avatars.mjs → public/assets/avatars/*.svg), versionnés.
- */
-export const AVAILABLE_AVATARS = Array.from({ length: 12 }, (_, i) => `aventurier-${String(i + 1).padStart(2, "0")}`);
+export const AVATAR_LABELS = [
+  "Cheveux bruns et sweat rouge", "Carré noir et pull bleu", "Boucles noires et sweat vert", "Nattes rousses",
+  "Cheveux blonds et lunettes", "Chignon bouclé et haut fleuri", "Casquette verte", "Cheveux longs et bandeau rose",
+  "Locks et sweat orange", "Cheveux blonds et chemisier bleu", "Lunettes rouges et marinière", "Couettes et pull jaune",
+  "Bonnet vert", "Boucles rousses et sweat bleu", "Carré brun et pull rouge", "Chapeau de paille",
+];
 
-const ROSTER_ID = /^aventurier-\d{2}$/;
-
-/** Anciens identifiants (PNG « fille 1.png »…) : image locale si présente, sinon un portrait du roster. */
-function fallbackFor(avatarId: string) {
-  let h = 0;
-  for (const ch of avatarId) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  return AVAILABLE_AVATARS[h % AVAILABLE_AVATARS.length];
-}
-
-export function avatarSrc(avatarId: string) {
-  return ROSTER_ID.test(avatarId) ? `/assets/avatars/${avatarId}.svg` : `/avatars/${encodeURIComponent(avatarId)}`;
+function avatarIndex(avatarId: string) {
+  const match = /^aventurier-(\d{2})$/.exec(avatarId);
+  const n = match ? Number(match[1]) : 0;
+  if (n >= 1 && n <= AVAILABLE_AVATARS.length) return n - 1;
+  let hash = 0;
+  for (const char of avatarId) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  return hash % AVAILABLE_AVATARS.length;
 }
 
 export function Avatar({ avatarId, size = "md" }: { avatarId: string; size?: "md" | "lg" }) {
-  const [broken, setBroken] = useState(false);
-  const src = broken ? avatarSrc(fallbackFor(avatarId)) : avatarSrc(avatarId);
+  const index = avatarIndex(avatarId);
+  const column = index % 4;
+  const row = Math.floor(index / 4);
   return (
-    <div className={`avatar ${size === "lg" ? "avatar-lg" : ""}`}>
-      <img src={src} alt="" className="avatar-img" onError={() => setBroken(true)} draggable={false} />
-    </div>
+    <span className={`avatar ${size === "lg" ? "avatar-lg" : ""}`} aria-hidden="true">
+      <span className="avatar-illustration" style={{ backgroundPosition: `${(column / 3) * 100}% ${(row / 3) * 100}%` }} />
+    </span>
   );
 }

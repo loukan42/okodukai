@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma.js";
 import { pedagogyBand } from "../lib/pedagogy.js";
 import { attachSession, requireChild, childSession } from "../middleware/requireAuth.js";
 import { getBalances } from "../lib/ledger.js";
+import { catchUpMoney } from "../lib/moneyCatchUp.js";
 import { levelFromTotalXp } from "../lib/levels.js";
 
 export const childRouter = Router();
@@ -10,6 +11,7 @@ childRouter.use(attachSession);
 
 childRouter.get("/child/wallet", requireChild, async (req, res) => {
   const childId = childSession(req).childId;
+  await catchUpMoney(childId);
   const wallet = await prisma.wallet.findUniqueOrThrow({ where: { childId } });
   const balances = await getBalances(prisma, wallet.id);
   const transactions = await prisma.walletTransaction.findMany({

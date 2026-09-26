@@ -46,7 +46,7 @@ export function ReadyStep({ session }: { session: ParentSession }) {
     <WorldShell emblem={<ChestArt state="low" size={156} />}>
       <OnboardingPath current={3} />
       <h1 className="world-title">Tout est prêt pour {session.household.name}</h1>
-      <p className="world-lead">Voici par où commencer. Chaque étape se fait depuis votre espace, à votre rythme.</p>
+      <p className="world-lead">Vous pouvez commencer par créer une quête ou ajouter une récompense. Ces réglages restent accessibles depuis votre espace parent.</p>
       <ol className="next-steps">
         {NEXT_STEPS.map((step) => (
           <li key={step.title}>

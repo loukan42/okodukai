@@ -43,11 +43,11 @@ const QUESTIONS: QuestionDef[] = [
   {
     id: "Q04", notion: "unites_ecole", band: "all", contexts: ["onboarding", "library"],
     build: () => ({
-      prompt: "Ton placement école a baissé. Et tes pièces ?",
-      explain: "Les unités école servent à apprendre. Elles ne touchent jamais tes pièces.",
+      prompt: "Tu places des pièces gagnées, puis leur valeur baisse. Que s'est-il passé ?",
+      explain: "Les pièces placées ont quitté ton solde disponible. Leur valeur peut monter ou baisser pendant la partie.",
       options: [
-        { id: "a", text: "Elles ne bougent pas.", correct: true, feedback: "Oui. Les unités école servent à apprendre. Elles ne touchent jamais tes pièces." },
-        { id: "b", text: "Elles baissent aussi.", feedback: "Non. Ce sont deux choses séparées : tes pièces ne bougent pas." },
+        { id: "a", text: "La valeur des pièces placées a baissé.", correct: true, feedback: "Oui. Le solde disponible ne change pas à cause du marché, mais la valeur de ce que tu as placé peut varier." },
+        { id: "b", text: "Le placement n'a aucun effet sur mes pièces.", feedback: "Les pièces placées ont quitté ton solde disponible, et leur valeur peut varier." },
       ],
     }),
   },
@@ -57,11 +57,11 @@ const QUESTIONS: QuestionDef[] = [
       c.hasTransfer === false
         ? null
         : {
-            prompt: "Tu mets 10 pièces dans Mon coffre. Combien de pièces as-tu en tout ?",
-            explain: "Mettre des pièces dans Mon coffre les change de place : le total ne change pas.",
+            prompt: "Tu ranges 10 pièces dans ton coffre. Combien de pièces as-tu en tout ?",
+            explain: "Tu as seulement déplacé ces pièces. Ton total ne change pas.",
             options: [
               { id: "a", text: "Autant qu'avant.", correct: true, feedback: "Oui. Tes pièces ont changé de place, le total ne change pas." },
-              { id: "b", text: "10 de moins.", feedback: "Non : elles ne sont pas dépensées, elles sont dans Mon coffre." },
+              { id: "b", text: "10 de moins.", feedback: "Non, elles sont dans ton coffre. Tu ne les as pas dépensées." },
               { id: "c", text: "10 de plus.", feedback: "Non : tu n'as rien gagné, tu as déplacé des pièces." },
             ],
           },
@@ -69,11 +69,11 @@ const QUESTIONS: QuestionDef[] = [
   {
     id: "Q01", notion: "compte", band: "all", contexts: ["vault", "library"],
     build: () => ({
-      prompt: "Tu as 20 pièces sur Mon compte et 50 dans Mon coffre. Une récompense coûte 30 pièces. Que se passe-t-il ?",
-      explain: "Seules les pièces de Mon compte s'utilisent directement. Il faut d'abord reprendre 10 pièces de Mon coffre.",
+      prompt: "Tu as 20 pièces sur ton compte et 50 dans ton coffre. Tu veux une récompense à 30 pièces. Que fais-tu ?",
+      explain: "Il te manque 10 pièces sur ton compte. Tu peux les reprendre du coffre avant de demander la récompense.",
       options: [
-        { id: "a", text: "Je dois d'abord reprendre des pièces de Mon coffre.", correct: true, feedback: "Oui. Mon compte, c'est ce que tu peux utiliser tout de suite." },
-        { id: "b", text: "Je peux l'acheter tout de suite.", feedback: "Pas encore : seules les pièces de Mon compte s'utilisent directement. Il faut d'abord reprendre 10 pièces de Mon coffre." },
+        { id: "a", text: "Je reprends 10 pièces de mon coffre.", correct: true, feedback: "Oui. Tu auras alors 30 pièces disponibles sur ton compte." },
+        { id: "b", text: "Je peux la demander tout de suite.", feedback: "Il te manque 10 pièces disponibles. Tu peux les reprendre du coffre." },
       ],
     }),
   },
@@ -231,7 +231,7 @@ const QUESTIONS: QuestionDef[] = [
       explain: "Arbitrer, c'est déplacer de la valeur d'un support à un autre.",
       options: [
         { id: "a", text: "déplacer de la valeur d'un support à un autre.", correct: true, feedback: "Oui." },
-        { id: "b", text: "transformer des unités en pièces.", feedback: "Impossible : les unités école ne deviennent jamais des pièces." },
+        { id: "b", text: "reprendre des pièces sur mon compte.", feedback: "Non. Arbitrer change la répartition du placement ; reprendre des pièces est un retrait." },
         { id: "c", text: "ajouter des unités.", feedback: "Ça, c'est un versement." },
       ],
     }),

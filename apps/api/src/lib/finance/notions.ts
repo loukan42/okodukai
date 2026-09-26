@@ -54,7 +54,7 @@ export const NOTIONS: Record<string, { word: string; chapter: number; old?: true
 
 export const CHAPTERS: Record<number, string> = {
   1: "Mon compte",
-  2: "Mon coffre",
+  2: "Coffre magique",
   3: "L'observatoire",
   4: "Le temps",
   5: "Les vrais mots",

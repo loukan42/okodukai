@@ -61,29 +61,39 @@ export function ChildrenManage() {
   }
 
   return (
-    <div className="stack parent-manage-page">
-      <div className="card parent-form-panel">
-        <h1 className="parent-form-title"><GameIcon name="user" size={27}/> Ajouter un enfant</h1>
+    <div className="stack parent-manage-page children-manage-page">
+      <header className="parent-page-intro">
+        <div className="parent-page-intro-icon"><GameIcon name="user" size={27}/></div>
+        <div>
+          <h1>Profils des enfants</h1>
+          <p>Créez un profil, choisissez comment les pièces sont reçues et réglez les activités éducatives de chaque enfant.</p>
+        </div>
+      </header>
+      <section className="card parent-form-panel" aria-labelledby="add-child-title">
+        <h2 id="add-child-title" className="parent-form-title">Ajouter un enfant</h2>
+        <p className="money-hint">Le prénom, l'âge et l'avatar sont visibles dans son espace. Le code à 4 chiffres lui permet de se connecter.</p>
         <ChildForm onSubmit={onSubmit} submitting={creating} />
-      </div>
+      </section>
 
-      <div className="stack">
+      <div className="stack children-profiles">
         {children.map((child) => (
-          <div key={child.id} className="card card-row">
-            <div className="row">
-              <Avatar avatarId={child.avatarId} />
-              <div>
-                <p style={{ fontWeight: 700, margin: 0 }}>{child.displayName}</p>
-                <p className="text-sm text-faint" style={{ margin: 0 }}>
-                  Niveau {child.currentLevel} · {child.ageBand === "AGE_8_9" ? "8-9 ans" : "10-12 ans"}
-                </p>
-                <div className="row" style={{ marginTop: 6 }}>
-                  <CoinPill amount={child.balances.available} />
-                  <span className="pill pill-forest"><GameIcon name="vault" size={16}/> {child.balances.vault}</span>
+          <section key={child.id} className="card child-profile-card" aria-labelledby={`profile-${child.id}`}>
+            <div className="child-profile-head">
+              <div className="child-profile-identity">
+                <Avatar avatarId={child.avatarId} size="lg" />
+                <div>
+                  <h2 id={`profile-${child.id}`}>{child.displayName}</h2>
+                  <p>Niveau {child.currentLevel} · {child.ageBand === "AGE_8_9" ? "Moins de 9 ans" : "9 ans ou plus"}</p>
                 </div>
               </div>
+              <div className="child-profile-balances">
+                <div><span>À dépenser</span><CoinPill amount={child.balances.available}/></div>
+                <div><span>Dans son coffre</span><span className="pill pill-forest"><GameIcon name="vault" size={16}/> {child.balances.vault}</span></div>
+              </div>
             </div>
-            <div className="row">
+            <p className="child-profile-help">Les pièces disponibles servent dans la boutique ou aux placements. Le coffre garde les pièces mises de côté pour un projet.</p>
+            <div className="child-profile-adjust">
+              <span>Correction ponctuelle du solde, par exemple après une erreur :</span>
               <button className="btn btn-ghost btn-sm" disabled={adjustingId === child.id} onClick={() => adjust(child.id, "credit")}>
                 + Pièces
               </button>
@@ -95,10 +105,10 @@ export function ChildrenManage() {
             <VaultRuleEditor childId={child.id} childName={child.displayName} />
             <PedagogyEditor childId={child.id} initial={child.pedagogyLevel ?? "AUTO"} ageBand={child.ageBand} />
             <InvestSettingsEditor childId={child.id} />
-            <Link to={`/parent/enfants/${child.id}/placements`} className="btn btn-ghost btn-sm">
+            <div className="child-profile-footer"><Link to={`/parent/enfants/${child.id}/placements`} className="btn btn-ghost btn-sm">
               Voir ce {queName(child.displayName)} comprend des placements
-            </Link>
-          </div>
+            </Link></div>
+          </section>
         ))}
       </div>
     </div>

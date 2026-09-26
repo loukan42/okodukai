@@ -61,6 +61,11 @@ export const RISK_NOTE = "Plus le niveau est élevé, plus la valeur peut varier
 
 export interface InvestRun {
   id: string;
+  /** Points transférés au lancement ; null pour une ancienne simulation sans transfert. */
+  fundedAmount: number | null;
+  /** Montant entier recrédité sur le compte à la fin ; null tant que la partie continue. */
+  settledAmount: number | null;
+  settledAt: string | null;
   mode: "MIROIR" | "ASSURANCE_VIE";
   status: "EN_COURS" | "TERMINEE";
   feesPaid: number;
@@ -103,6 +108,7 @@ export interface InvestRun {
 
 export interface InvestState {
   ageBand: "AGE_8_9" | "AGE_10_12";
+  availablePoints: number;
   gate: "disabled" | "locked" | "onboarding" | "open";
   settings: { enabled: boolean; rhythm: string; horizonMonths: number; contributionsEnabled: boolean; contributionCap: number; notifyStatement: boolean };
   allocationStep: number;

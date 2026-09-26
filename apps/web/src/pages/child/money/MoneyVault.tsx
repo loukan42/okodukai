@@ -8,10 +8,23 @@ import { ProgressBar } from "../../../components/ProgressBar";
 import { MoneyLoadError, useMoneyOverview } from "./MoneyAccount";
 import { FinanceTip } from "../../../components/finance/FinanceTip";
 import { FinanceQuestion } from "../../../components/finance/FinanceQuestion";
+import { VaultPrimeCard } from "../../../components/money/VaultPrimeCard";
+import { VaultExplainer } from "../../../components/money/VaultExplainer";
 
 type Mode = "lock" | "unlock";
 
 const DATE = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+
+const EXPLAINED_KEY = "okodukai:coffre-explique";
+
+/** L'explication s'ouvre d'elle-même à la première visite (confort local, sans enjeu si perdu). */
+function explainedBefore() {
+  try {
+    return window.localStorage.getItem(EXPLAINED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
 
 /** La règle, dite avant le dépôt : l'enfant dépose en connaissance de cause. */
 function ruleSentence(vault: MoneyOverview["vault"]) {
@@ -19,7 +32,7 @@ function ruleSentence(vault: MoneyOverview["vault"]) {
     case "PARENT_APPROVAL":
       return "Pour reprendre des pièces du coffre, un parent devra valider.";
     case "MIN_DAYS":
-      return `Les pièces que tu mets de côté restent dans Mon coffre au moins ${vault.minDays} jours.`;
+      return `Les pièces que tu mets de côté restent dans ton coffre au moins ${vault.minDays} jours.`;
     case "GOAL_ONLY":
       return "Tu pourras reprendre ces pièces quand ton objectif sera atteint.";
     default:
@@ -58,6 +71,15 @@ export function MoneyVault() {
   const [goalTarget, setGoalTarget] = useState(50);
   const [goalError, setGoalError] = useState<string | null>(null);
   const [rewards, setRewards] = useState<{ id: string; title: string; priceCoins: number }[]>([]);
+  const [explained] = useState(explainedBefore);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(EXPLAINED_KEY, "1");
+    } catch {
+      /* navigation privée : l'explication restera ouverte */
+    }
+  }, []);
 
   useEffect(() => {
     api
@@ -84,7 +106,7 @@ export function MoneyVault() {
   const needsApproval = mode === "unlock" && amount > data.vault.withdrawableNow && (data.vault.mode === "PARENT_APPROVAL" || (data.vault.mode === "GOAL_ONLY" && data.goals.length === 0));
   const after = mode === "lock" ? { account: available - amount, vault: vault + amount } : { account: available + amount, vault: vault - amount };
   const canMove = max > 0 && amount >= 1 && amount <= max;
-  const action = mode === "lock" ? `Mettre ${pieces(amount)} dans Mon coffre` : needsApproval ? `Demander à reprendre ${pieces(amount)}` : `Reprendre ${pieces(amount)} de Mon coffre`;
+  const action = mode === "lock" ? `Mettre ${pieces(amount)} dans le coffre` : needsApproval ? `Demander à reprendre ${pieces(amount)}` : `Reprendre ${pieces(amount)} du coffre`;
 
   async function move() {
     if (!canMove || sending) return;
@@ -94,7 +116,7 @@ export function MoneyVault() {
       const res = await api.post<{ outcome: "done" | "requested" }>(`/child/savings/${mode}`, { amount, idempotencyKey: key.current });
       if (res.outcome === "done" && !reduce) launchCoins(mode === "lock" ? "toChest" : "fromChest");
       if (res.outcome === "requested") setMessage({ tone: "info", text: "Demande envoyée. Un parent va la regarder." });
-      else setMessage({ tone: "ok", text: mode === "lock" ? `C'est fait. ${pieces(amount)} ${amount > 1 ? "sont" : "est"} dans Mon coffre. Ton total n'a pas changé.` : `C'est fait. ${pieces(amount)} ${amount > 1 ? "sont revenues" : "est revenue"} sur Mon compte.` });
+      else setMessage({ tone: "ok", text: mode === "lock" ? `C'est fait. ${pieces(amount)} ${amount > 1 ? "sont" : "est"} dans ton coffre. Ton total n'a pas changé.${data!.vault.prime.active ? ` ${amount > 1 ? "Elles compteront" : "Elle comptera"} pour ta prime à partir de lundi.` : ""}` : `C'est fait. ${pieces(amount)} ${amount > 1 ? "sont revenues" : "est revenue"} sur ton compte.` });
       key.current = intentKey();
       await reload();
     } catch (err) {
@@ -172,9 +194,12 @@ export function MoneyVault() {
           <ChestArt state={chestStateFor(vault, data.goals)} size={300} className="money-vault-hero-chest" />
         </div>
         <div className="money-vault-hero-text">
-          <h1 id="vault-title">Mon coffre</h1>
+          <h1 id="vault-title">Coffre magique</h1>
           <p className="money-vault-hero-balance">
             <strong>{vault}</strong> <span>{vault > 1 ? "pièces" : "pièce"}</span>
+          </p>
+          <p className="money-vault-purpose">
+            {data.vault.prime.active ? "Ici, tes pièces sont mises de côté. Et chaque lundi, ton coffre t'en donne en plus." : "Ici, tes pièces sont mises de côté pour tes objectifs."}
           </p>
           <p className="money-rule">{ruleSentence(data.vault)}</p>
           {data.vault.mode === "MIN_DAYS" && nextUnlock && data.vault.locked > 0 && (
@@ -191,6 +216,9 @@ export function MoneyVault() {
         </p>
       )}
 
+      <VaultPrimeCard prime={data.vault.prime} />
+      <VaultExplainer prime={data.vault.prime} rule={ruleSentence(data.vault)} older={data.ageBand === "AGE_10_12"} startOpen={vault === 0 || !explained} />
+
       <section className="money-transfer" aria-labelledby="transfer-title">
         <h2 id="transfer-title" className="sr-only">
           Déplacer des pièces
@@ -205,7 +233,7 @@ export function MoneyVault() {
         </div>
 
         {max === 0 ? (
-          <p className="money-hint">{mode === "lock" ? "Mon compte est vide pour l'instant : termine une quête pour gagner des pièces." : "Mon coffre est vide pour l'instant."}</p>
+          <p className="money-hint">{mode === "lock" ? "Ton compte est vide pour l'instant : termine une quête pour gagner des pièces." : "Ton coffre est vide pour l'instant."}</p>
         ) : (
           <>
             <div className="money-chips" role="group" aria-label="Montant">
@@ -228,12 +256,12 @@ export function MoneyVault() {
                 </strong>
               </div>
               <div>
-                <span>Mon coffre</span>
+                <span>Coffre magique</span>
                 <strong>
                   {vault} → {after.vault}
                 </strong>
               </div>
-              {needsApproval && <p>Un parent devra valider avant que les pièces reviennent sur Mon compte.</p>}
+              {needsApproval && <p>Un parent devra valider avant que les pièces reviennent sur ton compte.</p>}
             </div>
 
             <button ref={actionRef} type="button" className="btn btn-quest btn-block" onClick={() => void move()} disabled={!canMove || sending}>
@@ -255,7 +283,7 @@ export function MoneyVault() {
         <div className="section-heading">
           <h2 id="goals-title">Mes objectifs</h2>
         </div>
-        {data.goals.length > 1 && <p className="money-hint">Mon coffre remplit tes objectifs dans l'ordre : le premier d'abord, puis le suivant.</p>}
+        {data.goals.length > 1 && <p className="money-hint">Tes pièces vont d'abord vers le premier objectif, puis vers le suivant.</p>}
         <ol className="money-goals">
           {data.goals.map((goal, index) => (
             <li key={goal.id} className={`money-goal${goal.reached ? " money-goal--reached" : ""}`}>
@@ -272,8 +300,8 @@ export function MoneyVault() {
               <p>
                 {goal.reached
                   ? goal.rewardId
-                    ? `Objectif atteint. Remets ces pièces sur Mon compte, puis demande « ${goal.title} » à la boutique.`
-                    : "Objectif atteint. Pour utiliser ces pièces, remets-les d'abord sur Mon compte."
+                    ? `Objectif atteint. Reprends ces pièces sur ton compte, puis demande « ${goal.title} » à la boutique.`
+                    : "Objectif atteint. Pour utiliser ces pièces, reprends-les sur ton compte."
                   : `Il te manque ${pieces(goal.missing)}.`}
               </p>
               {data.goals.length > 1 && (

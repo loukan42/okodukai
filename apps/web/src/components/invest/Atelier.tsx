@@ -71,11 +71,11 @@ export function Atelier({ young, step, allowed, risks, value, onChange }: Atelie
                 <RiskMeter level={risks[code]} label={`Niveau de risque ${risks[code]} sur 5`} />
               </span>
               <span className="atelier-controls">
-                <button type="button" onClick={() => change(code, -step)} disabled={v <= 0} aria-label={young ? `Retirer 10 unités de ${name}` : `Retirer ${step} % de ${name}`}>
+                <button type="button" onClick={() => change(code, -step)} disabled={v <= 0} aria-label={young ? `Retirer 10 parts de ${name}` : `Retirer ${step} % de ${name}`}>
                   −
                 </button>
-                <output>{young ? `${v / 10} ${v / 10 > 1 ? "jetons" : "jeton"} · ${v} unités` : `${v} %`}</output>
-                <button type="button" onClick={() => change(code, step)} disabled={left <= 0} aria-label={young ? `Ajouter 10 unités à ${name}` : `Ajouter ${step} % à ${name}`}>
+                <output>{young ? `${v / 10} ${v / 10 > 1 ? "jetons" : "jeton"} · ${v} parts` : `${v} %`}</output>
+                <button type="button" onClick={() => change(code, step)} disabled={left <= 0} aria-label={young ? `Ajouter 10 parts à ${name}` : `Ajouter ${step} % à ${name}`}>
                   +
                 </button>
               </span>
@@ -90,7 +90,7 @@ export function Atelier({ young, step, allowed, risks, value, onChange }: Atelie
         )}
         {left > 0 && <span className="atelier-gauge-left" style={{ width: `${left}%` }} />}
       </div>
-      <p className="atelier-total">{young ? `Total : ${placed} sur 100 · À placer : ${left} unités` : `Placé : ${placed} % · À placer : ${left} % · Total : 100 %`}</p>
+      <p className="atelier-total">{young ? `Total : ${placed} parts sur 100 · Encore ${left} à répartir` : `Placé : ${placed} % · À placer : ${left} % · Total : 100 %`}</p>
 
       {riskLevel !== null && (
         <p className="atelier-risk">
@@ -98,7 +98,7 @@ export function Atelier({ young, step, allowed, risks, value, onChange }: Atelie
           <span>{young ? `Ta répartition : ${RISK_WORD[riskLevel].toLowerCase()}` : `Niveau de risque de ta répartition : ${riskLevel} sur 5. ${capitalize(RISK_SENTENCE[riskLevel].split(" : ")[1] ?? "")}`}</span>
         </p>
       )}
-      {full && <p className="money-hint">{young ? "Tout est déjà placé. Retire d'abord des unités d'un autre support." : "Tout est placé. Retire d'abord une part d'un autre support."}</p>}
+      {full && <p className="money-hint">{young ? "Toutes les parts sont réparties. Retires-en d'un support pour en ajouter ici." : "Tout est placé. Retire d'abord une part d'un autre support."}</p>}
       {concentrated && only[0] !== "SECURISE" && (
         <p className="library-note" role="note">
           {young

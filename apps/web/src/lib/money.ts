@@ -2,7 +2,7 @@
 import type { ChestState } from "../art/ChestArt";
 
 export type Place = "account" | "vault";
-export type LineKind = "entree" | "sortie" | "transfert" | "remboursement" | "correction" | "bonus_epargne";
+export type LineKind = "entree" | "sortie" | "transfert" | "remboursement" | "correction" | "bonus_epargne" | "prime_coffre";
 
 export interface MoneyLine {
   id: string;
@@ -42,6 +42,22 @@ export interface WeekSummary {
   repris: number;
 }
 
+/** Prime du coffre, calculée par le serveur (le client ne fait que l'afficher). */
+export interface VaultPrimePreview {
+  active: boolean;
+  /** Pièces à garder toute la semaine pour gagner une pièce. */
+  step: number;
+  weeklyCap: number;
+  balance: number;
+  /** Lundi prochain : pièces restées depuis lundi dernier et prime assurée si rien ne sort. */
+  next: { at: string; kept: number; amount: number } | null;
+  /** Pièces rangées cette semaine : elles comptent à partir de lundi. */
+  countsFromNextWeek: number;
+  /** Si rien ne bouge : prochains lundis, prime et solde du coffre après. */
+  projection: { at: string; prime: number; balance: number }[];
+  example: { kept: number; prime: number };
+}
+
 export interface MoneyOverview {
   ageBand: "AGE_8_9" | "AGE_10_12";
   balances: { available: number; vault: number };
@@ -56,6 +72,7 @@ export interface MoneyOverview {
     locked: number;
     nextUnlockAt: string | null;
     pendingRequest: { id: string; amount: number; createdAt: string } | null;
+    prime: VaultPrimePreview;
   };
 }
 
@@ -79,6 +96,7 @@ export const KIND_WORD: Record<LineKind, string> = {
   remboursement: "Remboursement",
   correction: "Correction",
   bonus_epargne: "Bonus d'épargne",
+  prime_coffre: "Prime du coffre",
 };
 
 /** Une clé par intention de transfert : un double appui n'en crée pas deux. */

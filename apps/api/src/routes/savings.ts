@@ -7,8 +7,10 @@ import { pedagogyBand } from "../lib/pedagogy.js";
 import { validateBody } from "../lib/validation.js";
 import { attachSession, requireChild, requireParent, childSession, parentSession } from "../middleware/requireAuth.js";
 import { recordWalletTransaction, DuplicateTransactionError, InsufficientFundsError } from "../lib/ledger.js";
-import { checkAndAwardBadges } from "../lib/badges.js";
 import { applyAllowance } from "../lib/allowance.js";
+import { syncGoals } from "../lib/goals.js";
+import { catchUpMoney } from "../lib/moneyCatchUp.js";
+import { vaultPrimeRule, vaultPrimeView } from "../lib/vaultPrime.js";
 import { readLedger, weekSummary, allocateGoals, vaultAvailability, activeGoals, monthKeyParis, monthSummary, previousMonthKey, type Place } from "../lib/money.js";
 
 export const savingsRouter = Router();
@@ -24,7 +26,7 @@ async function walletOf(childId: string) {
 
 /** Photographie complète de Mon argent : soldes, semaine, objectifs, règle du coffre. */
 async function moneyState(childId: string) {
-  await applyAllowance(childId);
+  await catchUpMoney(childId);
   const wallet = await walletOf(childId);
   const [ledger, goals, rule, pending] = await Promise.all([
     readLedger(prisma, wallet.id),
@@ -35,25 +37,6 @@ async function moneyState(childId: string) {
   const goalViews = allocateGoals(goals, ledger.balances.vault);
   const availability = vaultAvailability(ledger.transactions, rule, goalViews[0]);
   return { wallet, ledger, goals: goalViews, availability, pendingRequest: pending };
-}
-
-/** Marque atteints les objectifs que Mon coffre remplit désormais (une seule fois chacun). */
-async function syncGoals(tx: Tx, childId: string, householdId: string, vault: number) {
-  const goals = await activeGoals(tx, childId);
-  const views = allocateGoals(goals, vault);
-  let reachedNow = false;
-  for (const [i, view] of views.entries()) {
-    if (view.reached && !goals[i].achievedAt) {
-      reachedNow = true;
-      await tx.savingsGoal.update({ where: { id: view.id }, data: { achievedAt: new Date() } });
-      await tx.notification.create({
-        data: { householdId, audience: "CHILD", childId, type: "goal_completed", payload: { goalId: view.id, goalTitle: view.title } },
-      });
-    }
-  }
-  const first = views.find((v) => !v.reached) ?? views[0];
-  await tx.childProfile.update({ where: { id: childId }, data: { activeGoalId: first?.id ?? null } });
-  if (reachedNow) await checkAndAwardBadges(tx, childId, householdId);
 }
 
 function isDuplicate(err: unknown) {
@@ -75,7 +58,11 @@ savingsRouter.get("/child/money", requireChild, async (req, res) => {
     week: weekSummary(state.ledger.lines),
     recent: accountLines.slice(-5).reverse(),
     goals: state.goals,
-    vault: { ...state.availability, pendingRequest: state.pendingRequest ? { id: state.pendingRequest.id, amount: state.pendingRequest.amount, createdAt: state.pendingRequest.createdAt } : null },
+    vault: {
+      ...state.availability,
+      pendingRequest: state.pendingRequest ? { id: state.pendingRequest.id, amount: state.pendingRequest.amount, createdAt: state.pendingRequest.createdAt } : null,
+      prime: await vaultPrimeView(childId),
+    },
   });
 });
 
@@ -91,6 +78,7 @@ savingsRouter.get("/child/money/history", requireChild, async (req, res) => {
   if (!parsed.success) return res.status(400).json({ error: "Requête invalide" });
   const { place, filter, cursor, limit } = parsed.data;
   const { childId } = childSession(req);
+  await catchUpMoney(childId);
   const ledger = await readLedger(prisma, (await walletOf(childId)).id);
   const lines = ledger.lines
     .filter((l) => l.place === (place as Place))
@@ -141,7 +129,7 @@ savingsRouter.post("/child/savings/lock", requireChild, validateBody(moveSchema)
     if (err instanceof InsufficientFundsError) {
       const { ledger } = await moneyState(childId);
       return res.status(400).json({
-        error: `Il te manque ${req.body.amount - ledger.balances.available} pièces sur Mon compte pour en mettre ${req.body.amount} de côté.`,
+        error: `Il te manque ${req.body.amount - ledger.balances.available} pièces sur ton compte pour en mettre ${req.body.amount} de côté.`,
         code: "INSUFFICIENT_ACCOUNT",
         available: ledger.balances.available,
       });
@@ -173,7 +161,7 @@ savingsRouter.post("/child/savings/unlock", requireChild, validateBody(moveSchem
   const { balances } = state.ledger;
 
   if (amount > balances.vault) {
-    return res.status(400).json({ error: `Mon coffre contient ${balances.vault} pièces. Tu peux en reprendre jusqu'à ${balances.vault}.`, code: "INSUFFICIENT_VAULT", vault: balances.vault });
+    return res.status(400).json({ error: `Ton coffre contient ${balances.vault} pièces. Tu peux en reprendre jusqu'à ${balances.vault}.`, code: "INSUFFICIENT_VAULT", vault: balances.vault });
   }
 
   if (amount > state.availability.withdrawableNow) {
@@ -198,10 +186,10 @@ savingsRouter.post("/child/savings/unlock", requireChild, validateBody(moveSchem
       return res.status(202).json({ outcome: "requested", request: { id: request.id, amount: request.amount, createdAt: request.createdAt } });
     }
     if (mode === "MIN_DAYS" && nextUnlockAt) {
-      return res.status(409).json({ error: "Ces pièces restent dans Mon coffre un peu plus longtemps. C'est la règle choisie avec tes parents.", code: "VAULT_LOCKED_UNTIL", until: nextUnlockAt, withdrawableNow: state.availability.withdrawableNow });
+      return res.status(409).json({ error: "Ces pièces doivent rester un peu plus longtemps dans ton coffre, selon la règle choisie par tes parents.", code: "VAULT_LOCKED_UNTIL", until: nextUnlockAt, withdrawableNow: state.availability.withdrawableNow });
     }
     return res.status(409).json({
-      error: firstGoal ? `Il te manque ${firstGoal.missing} pièces pour ton objectif. Ensuite, tu pourras les reprendre.` : "Ces pièces restent dans Mon coffre pour l'instant.",
+      error: firstGoal ? `Il te manque ${firstGoal.missing} pièces pour ton objectif. Ensuite, tu pourras les reprendre.` : "Ces pièces restent dans ton coffre pour l'instant.",
       code: "VAULT_LOCKED_GOAL",
       missing: firstGoal?.missing ?? null,
       withdrawableNow: state.availability.withdrawableNow,
@@ -223,7 +211,7 @@ savingsRouter.post("/child/savings/unlock", requireChild, validateBody(moveSchem
     });
   } catch (err) {
     if (err instanceof InsufficientFundsError) {
-      return res.status(400).json({ error: `Mon coffre contient ${balances.vault} pièces. Tu peux en reprendre jusqu'à ${balances.vault}.`, code: "INSUFFICIENT_VAULT", vault: balances.vault });
+      return res.status(400).json({ error: `Ton coffre contient ${balances.vault} pièces. Tu peux en reprendre jusqu'à ${balances.vault}.`, code: "INSUFFICIENT_VAULT", vault: balances.vault });
     }
     if (!isDuplicate(err)) throw err;
   }
@@ -378,6 +366,34 @@ savingsRouter.put("/household/children/:childId/vault-rule", requireParent, vali
   res.json({ rule: { mode: rule.mode, minDays: rule.minDays, since: rule.since } });
 });
 
+// Prime du coffre : 1 pièce pour chaque tranche de `step` pièces restées toute la semaine, au plus
+// `weeklyCap` par semaine, chaque lundi. Active par défaut ; le parent la règle ou l'arrête.
+savingsRouter.get("/household/children/:childId/vault-prime", requireParent, async (req, res) => {
+  const child = await childOfHousehold(req.params.childId, parentSession(req).householdId);
+  if (!child) return res.status(404).json({ error: "Enfant introuvable" });
+  await catchUpMoney(child.id);
+  res.json({ prime: await vaultPrimeView(child.id) });
+});
+
+const primeSchema = z.object({ active: z.boolean(), step: z.number().int().min(1).max(1000), weeklyCap: z.number().int().min(1).max(1000) });
+
+savingsRouter.put("/household/children/:childId/vault-prime", requireParent, validateBody(primeSchema), async (req, res) => {
+  const { householdId, userId } = parentSession(req);
+  const child = await childOfHousehold(req.params.childId, householdId);
+  if (!child) return res.status(404).json({ error: "Enfant introuvable" });
+  // Ce qui était dû avant le changement est versé avec l'ancienne règle.
+  await catchUpMoney(child.id);
+  const previous = await vaultPrimeRule(child.id);
+  // Réactiver repart de maintenant : pas de primes pour les semaines où elle était arrêtée.
+  const restart = !previous.active && req.body.active;
+  await prisma.vaultPrime.update({
+    where: { childId: child.id },
+    data: { active: req.body.active, step: req.body.step, weeklyCap: req.body.weeklyCap, updatedById: userId, ...(restart ? { since: new Date(), checkedUntil: null } : {}) },
+  });
+  await prisma.auditLog.create({ data: { householdId, actorUserId: userId, action: "vault_prime_updated", targetType: "ChildProfile", targetId: child.id, metadata: req.body } });
+  res.json({ prime: await vaultPrimeView(child.id) });
+});
+
 savingsRouter.get("/household/vault-requests", requireParent, async (req, res) => {
   const requests = await prisma.vaultWithdrawalRequest.findMany({
     where: { status: "PENDING", child: { householdId: parentSession(req).householdId } },
@@ -503,8 +519,7 @@ savingsRouter.get("/child/money/month-summary", requireChild, async (req, res) =
   const s = monthSummary(state.ledger.lines, key);
   if (s.entrees + s.sorties + s.misDeCote === 0) return res.json({ summary: null });
   const month = new Intl.DateTimeFormat("fr-FR", { month: "long", timeZone: "Europe/Paris" }).format(new Date(`${key}-15T12:00:00Z`));
-  const verb = (n: number, one: string, many: string) => (n > 1 ? many : one);
-  const text = `En ${month} : ${pieces(s.entrees)} ${verb(s.entrees, "est entrée", "sont entrées")}, ${pieces(s.sorties)} ${verb(s.sorties, "est sortie", "sont sorties")}, ${pieces(s.misDeCote)} ${verb(s.misDeCote, "est allée", "sont allées")} dans Mon coffre.`;
+  const text = `En ${month}, tu as reçu ${pieces(s.entrees)}, dépensé ${pieces(s.sorties)} et mis ${pieces(s.misDeCote)} dans ton coffre.`;
   const goal = state.goals.find((g) => !g.reached) ?? state.goals[0];
   const goalText = goal ? `${goal.title} : ${goal.present} sur ${goal.targetCoins}.` : null;
   await prisma.financeTipLog

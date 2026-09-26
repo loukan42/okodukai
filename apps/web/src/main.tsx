@@ -12,6 +12,7 @@ import "./styles/child.css";
 import "./styles/booster.css";
 import "./styles/celebration.css";
 import "./styles/finance.css";
+import "./styles/parent-management.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

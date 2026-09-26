@@ -60,6 +60,7 @@ function Onboarding({ state, onDone }: { state: InvestState; onDone: () => Promi
   const allowed = state.allowedSupports ?? SUPPORT_ORDER;
   const [step, setStep] = useState(1);
   const [allocation, setAllocation] = useState<Allocation>(EMPTY_ALLOCATION);
+  const [amount, setAmount] = useState(Math.min(100, Math.max(1, state.availablePoints)));
   const [open, setOpen] = useState<SupportCode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -73,7 +74,7 @@ function Onboarding({ state, onDone }: { state: InvestState; onDone: () => Promi
     setSending(true);
     setError(null);
     try {
-      const res = await api.post<{ xpAwarded?: number }>("/child/invest/start", { allocation, idempotencyKey: key.current });
+      const res = await api.post<{ xpAwarded?: number }>("/child/invest/start", { allocation, amount, idempotencyKey: key.current });
       setXpAwarded(res.xpAwarded ?? 0);
       setStep(6);
     } catch (err) {
@@ -88,15 +89,19 @@ function Onboarding({ state, onDone }: { state: InvestState; onDone: () => Promi
       <p className="onboarding-count">Étape {step} sur 6</p>
       {step === 1 && (
         <section className="invest-step">
-          <h1>Tu as 100 unités école à répartir.</h1>
-          <p>{young ? "Ce ne sont pas tes pièces. Elles servent à apprendre. Si elles baissent, tes pièces ne bougent pas." : "Les unités école servent à apprendre à placer. Elles ne s'achètent pas, ne se dépensent pas et ne deviennent jamais des pièces."}</p>
-          <div className="study-tokens" aria-label="10 jetons de 10 unités">
+          <h1>Choisis combien de pièces placer.</h1>
+          <p>Tu as {state.availablePoints} pièces disponibles. Le montant choisi quittera ton compte et sera placé dans ton observatoire. Sa valeur pourra monter ou baisser.</p>
+          <label className="invest-amount-field" htmlFor="invest-amount">Pièces à transférer
+            <input id="invest-amount" type="number" min={1} max={state.availablePoints} step={1} value={amount} onChange={(event) => setAmount(Number(event.target.value))} />
+          </label>
+          <div className="study-tokens" aria-label="10 jetons représentant 10 parts chacun">
             {Array.from({ length: 10 }, (_, i) => (
               <span key={i} className="study-token" />
             ))}
           </div>
-          <p className="money-hint">{young ? "10 jetons de 10 unités." : "100 unités = 100 %."}</p>
-          <button className="btn btn-quest" onClick={() => setStep(2)}>
+          <p className="money-hint">Ces 10 jetons représentent 100 parts. Tu vas répartir tes {amount || 0} pièces entre plusieurs supports.</p>
+          {state.availablePoints === 0 && <p className="money-hint">Ton compte est vide. Termine une quête pour gagner des pièces, ou reprends-en dans ton coffre si la règle le permet.</p>}
+          <button className="btn btn-quest" onClick={() => setStep(2)} disabled={!Number.isInteger(amount) || amount < 1 || amount > state.availablePoints}>
             D'accord
           </button>
         </section>
@@ -106,7 +111,7 @@ function Onboarding({ state, onDone }: { state: InvestState; onDone: () => Promi
           <h1>Il existe plusieurs types de supports.</h1>
           <p>
             {young
-              ? "Un support, c'est un endroit où tu places tes unités. Chacun bouge à sa façon : certains très peu, d'autres beaucoup. Tu en découvres deux pour commencer."
+              ? "Un support, c'est un endroit où tu places tes pièces. Sa valeur peut bouger. Tu en découvres deux pour commencer."
               : "Un support, c'est un type de placement. Chacun a sa façon d'évoluer et son niveau de risque."}
           </p>
           <div className="invest-step-actions">
@@ -147,21 +152,21 @@ function Onboarding({ state, onDone }: { state: InvestState; onDone: () => Promi
               Retour
             </button>
             <button className="btn btn-quest" onClick={() => setStep(4)}>
-              Répartir mes unités
+              Répartir mes pièces
             </button>
           </div>
         </section>
       )}
       {step === 4 && (
         <section className="invest-step">
-          <h1>{young ? "Répartis tes 100 unités." : "Répartis ton capital."}</h1>
+          <h1>{young ? "Répartis tes pièces en 100 parts." : "Répartis ton capital."}</h1>
           <Atelier young={young} step={state.allocationStep} allowed={allowed} risks={RISKS} value={allocation} onChange={setAllocation} />
           <div className="invest-step-actions">
             <button className="btn btn-ghost" onClick={() => setStep(3)}>
               Retour
             </button>
             <button className="btn btn-quest" onClick={() => setStep(5)} disabled={placed !== 100}>
-              {placed === 100 ? "Continuer" : young ? `Place encore ${100 - placed} unités` : `Il reste ${100 - placed} % à placer`}
+              {placed === 100 ? "Continuer" : young ? `Répartis encore ${100 - placed} parts` : `Il reste ${100 - placed} % à répartir`}
             </button>
           </div>
         </section>
@@ -169,12 +174,13 @@ function Onboarding({ state, onDone }: { state: InvestState; onDone: () => Promi
       {step === 5 && (
         <section className="invest-step">
           <h1>Ta répartition</h1>
+          <p>Tu vas transférer {amount} pièces depuis ton compte. Elles seront réparties ainsi :</p>
           <ul className="allocation-summary">
             {SUPPORT_ORDER.filter((c) => allocation[c] > 0).map((c) => (
               <li key={c}>
                 <SupportEmblem code={c} size={22} />
                 <span>{SUPPORTS[c].name}</span>
-                <strong>{young ? `${allocation[c]} unités` : `${allocation[c]} % · ${allocation[c]} unités`}</strong>
+                <strong>{young ? `${allocation[c]} parts sur 100` : `${allocation[c]} %`}</strong>
               </li>
             ))}
           </ul>
@@ -190,7 +196,7 @@ function Onboarding({ state, onDone }: { state: InvestState; onDone: () => Promi
               Modifier
             </button>
             <button className="btn btn-quest" onClick={() => void validate()} disabled={sending}>
-              {sending ? "Un instant…" : "Valider ma répartition"}
+              {sending ? "Un instant…" : `Transférer ${amount} pièces et commencer`}
             </button>
           </div>
         </section>
@@ -198,13 +204,13 @@ function Onboarding({ state, onDone }: { state: InvestState; onDone: () => Promi
       {step === 6 && (
         <section className="invest-step">
           <h1>Ta répartition est enregistrée.</h1>
-          <p>Premier relevé : {first}. D'ici là, rien ne bouge.</p>
+          <p>{amount} pièces ont quitté ton compte pour rejoindre tes placements. Premier relevé : {first}.</p>
           <XpEarned amount={xpAwarded} reason="Première répartition" />
           {/* Q04 (INVESTMENT_UX O6) ; si la notion est déjà vérifiée, la phrase seule suffit. */}
           <FinanceQuestion context="onboarding" onEmpty={() => setCheckDone(true)} />
           {checkDone && (
             <p className="library-note" role="note">
-              Si ton placement école baisse un jour, tes pièces ne bougent pas : ce sont deux choses séparées.
+              La valeur de ton placement peut monter ou baisser. Les pièces que tu as transférées ne sont plus dans ton solde disponible.
             </p>
           )}
           <button className="btn btn-quest" onClick={() => void onDone()}>
@@ -227,7 +233,7 @@ function Statement({ run, young, onClose }: { run: InvestRun; young: boolean; on
       ? "Ton placement n'a presque pas bougé cette fois."
       : trend === "up"
         ? `Ton placement a monté cette fois : ${units(Math.abs(delta), young)} de plus. Ça ne veut pas dire qu'il montera toujours.`
-        : `Ton placement a baissé cette fois : ${units(Math.abs(delta), young)} de moins. Ce n'est pas une erreur de ta part. Tes pièces n'ont pas bougé.`;
+        : `Ton placement a baissé cette fois : ${units(Math.abs(delta), young)} de moins. Ce n'est pas une erreur de ta part.${run.fundedAmount === null ? " Tes pièces n'ont pas bougé." : " La valeur des pièces placées peut varier."}`;
   return (
     <section className="statement" aria-labelledby="statement-title">
       <h2 id="statement-title">
@@ -266,6 +272,7 @@ function Statement({ run, young, onClose }: { run: InvestRun; young: boolean; on
 
 function Observatory({ state, reload }: { state: InvestState; reload: () => Promise<void> }) {
   const run = state.run!;
+  const funded = run.fundedAmount !== null;
   const young = state.ageBand === "AGE_8_9";
   const [showStatement, setShowStatement] = useState(run.unseen > 0);
   const [rebalancing, setRebalancing] = useState(false);
@@ -308,7 +315,7 @@ function Observatory({ state, reload }: { state: InvestState; reload: () => Prom
   return (
     <div className="money-page">
       <ObservatoryHeader
-        title="Mes placements école"
+        title={funded ? "Mes placements" : "Mes placements école"}
         lit={run.unseen > 0}
         subtitle={
           finished
@@ -328,9 +335,9 @@ function Observatory({ state, reload }: { state: InvestState; reload: () => Prom
         </button>
       )}
 
-      <section className="observatory-value" aria-label="Valeur de mes placements école">
+      <section className="observatory-value" aria-label="Valeur de mes placements">
         <p className="observatory-value-number">
-          <strong>{units(run.value, young)}</strong> <span>unités école</span>
+          <strong>{units(run.value, young)}</strong> <span>{funded ? "pièces placées" : "unités école"}</span>
         </p>
         {young ? (
           <p>
@@ -388,7 +395,7 @@ function Observatory({ state, reload }: { state: InvestState; reload: () => Prom
                 </span>
                 <span className="observatory-support-name">
                   <strong>{SUPPORTS[c].name}</strong>
-                  <small>{young ? `${units(run.bySupport[c], true)} unités` : `${units(run.bySupport[c], false)} unités · ${Math.round(run.actualAllocation[c])} % (choisi ${run.targetAllocation[c]} %)`}</small>
+                  <small>{young ? `${units(run.bySupport[c], true)} ${funded ? "pièces" : "unités"}` : `${units(run.bySupport[c], false)} ${funded ? "pièces" : "unités"} · ${Math.round(run.actualAllocation[c])} % (choisi ${run.targetAllocation[c]} %)`}</small>
                 </span>
                 <RiskMeter level={run.supportsRisk[c]} label={`Niveau de risque ${run.supportsRisk[c]} sur 5`} />
                 <GameIcon name="arrow" size={16} />
@@ -483,7 +490,7 @@ export function Invest() {
     return (
       <div className="empty-state" role="alert">
         <strong>Impossible d'afficher tes placements pour l'instant.</strong>
-        <p>Tes unités école n'ont pas bougé.</p>
+        <p>Réessaie dans un instant pour voir où en sont tes pièces.</p>
         <button className="btn btn-primary" onClick={() => void load()}>
           Réessayer
         </button>
@@ -494,14 +501,14 @@ export function Invest() {
   if (state.gate === "disabled")
     return (
       <div className="money-page">
-        <ObservatoryHeader title="Mes placements école" subtitle="Mes placements école ne sont pas ouverts pour l'instant. Tes parents peuvent les activer." />
+        <ObservatoryHeader title="Mes placements" subtitle="Tes parents peuvent activer les placements depuis leurs réglages." />
       </div>
     );
   if (state.gate === "locked")
     return (
       <div className="money-page">
-        <ObservatoryHeader title="L'observatoire est fermé" subtitle="L'observatoire s'ouvre quand tu as mis des pièces dans Mon coffre au moins une fois." />
-        <p className="money-hint">Dépôts dans Mon coffre : 0 sur 1</p>
+        <ObservatoryHeader title="L'observatoire est fermé" subtitle="Range d'abord quelques pièces dans ton coffre pour ouvrir l'observatoire." />
+        <p className="money-hint">Tu pourras les reprendre ensuite, selon la règle choisie par tes parents.</p>
         <Link to="/enfant/argent/coffre" className="btn btn-quest">
           Mettre de côté
         </Link>

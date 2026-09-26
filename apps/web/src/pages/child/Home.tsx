@@ -112,7 +112,7 @@ export function Home() {
         <Link to="/enfant/argent/coffre" className="home-money-card home-money-card--vault">
           <ChestArt state={chestStateFor(vault, money.goals)} size={112} className="home-money-art home-money-art--chest" />
           <span className="home-money-text">
-            <span>Mon coffre</span>
+            <span>Coffre magique</span>
             <strong>
               {vault} <small>{vault > 1 ? "pièces" : "pièce"}</small>
             </strong>
@@ -189,7 +189,7 @@ export function Home() {
             <ObjectArt name="coin-sprout" size={72} />
             <span>
               <strong>Investir</strong>
-              <small>{statementReady ? "Ton bilan est prêt." : "Découvre comment un placement évolue, avec des unités école."}</small>
+              <small>{statementReady ? "Ton bilan est prêt." : "Place des pièces gagnées et suis leur valeur au fil de la partie."}</small>
             </span>
             <GameIcon name="arrow" size={18} />
           </Link>

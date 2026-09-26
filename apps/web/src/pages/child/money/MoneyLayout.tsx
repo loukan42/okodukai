@@ -2,7 +2,7 @@ import { NavLink, Outlet } from "react-router-dom";
 
 const TABS = [
   { to: "/enfant/argent", label: "Mon compte", end: true },
-  { to: "/enfant/argent/coffre", label: "Mon coffre" },
+  { to: "/enfant/argent/coffre", label: "Coffre magique" },
   { to: "/enfant/argent/investir", label: "Investir" },
   { to: "/enfant/argent/historique", label: "Historique" },
 ];

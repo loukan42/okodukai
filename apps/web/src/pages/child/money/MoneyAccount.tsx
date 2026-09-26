@@ -84,7 +84,7 @@ export function MoneyAccount() {
       <Link to="/enfant/argent/coffre" className="money-vault-card">
         <ChestArt state={chestStateFor(vault, data.goals)} size={132} className="money-vault-card-chest" />
         <span className="money-vault-card-text">
-          <span className="money-vault-card-title">Mon coffre</span>
+          <span className="money-vault-card-title">Coffre magique</span>
           <strong>{pieces(vault)}</strong>
           {goal ? (
             <>
@@ -97,12 +97,17 @@ export function MoneyAccount() {
           ) : (
             <span>Choisis un objectif : ton coffre le remplira pièce après pièce.</span>
           )}
+          {data.vault.prime.active && (
+            <span className="money-vault-card-prime">
+              {data.vault.prime.next && data.vault.prime.next.amount > 0 ? `Lundi : +${pieces(data.vault.prime.next.amount)} de prime` : "Chaque lundi, ton coffre te donne une prime."}
+            </span>
+          )}
         </span>
       </Link>
 
       {!young && (
         <p className="money-total">
-          Tout mon argent : <strong>{pieces(available + vault)}</strong> (Mon compte {available} + Mon coffre {vault})
+          Sur ton compte et dans ton coffre, tu as <strong>{pieces(available + vault)}</strong> : {available} disponibles et {vault} de côté.
           <Link to="/enfant/argent/tout" className="money-total-link">
             Tout ce que je possède <GameIcon name="arrow" size={14} />
           </Link>

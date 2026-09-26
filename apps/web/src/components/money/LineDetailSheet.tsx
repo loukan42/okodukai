@@ -3,7 +3,7 @@ import { useDialogFocus } from "../../lib/useDialogFocus";
 import { KIND_WORD, fullDate, signed, type MoneyLine } from "../../lib/money";
 import { KindIcon } from "./MoneyLineRow";
 
-const PLACE_NAME = { account: "Mon compte", vault: "Mon coffre" } as const;
+const PLACE_NAME = { account: "Ton compte", vault: "Coffre magique" } as const;
 
 /**
  * Détail d'un mouvement : Avant · Mouvement · Après. C'est le geste qui fait comprendre

@@ -23,18 +23,18 @@ const LOOP: { title: string; text: string; art: LoopArt }[] = [
   { title: "Dépenser", text: "La boutique familiale propose vos récompenses : une sortie, un film, du temps de jeu.", art: { kind: "object", src: "coin-pouch" } },
   { title: "Économiser", text: "Il met des pièces de côté dans son coffre, pour un objectif qu'il a choisi.", art: { kind: "chest" } },
   { title: "Attendre", text: "Le coffre se remplit semaine après semaine. Patienter fait partie du jeu.", art: { kind: "object", src: "hourglass" } },
-  { title: "Comprendre l'investissement", text: "Avec un capital d'école fictif, il voit comment un placement évolue. Sans lien avec ses vraies pièces.", art: { kind: "object", src: "coin-sprout" } },
+  { title: "Comprendre les placements", text: "Il peut placer des pièces gagnées. Leur valeur évolue pendant la partie, puis le montant final revient sur son compte.", art: { kind: "object", src: "coin-sprout" } },
 ];
 
 const GUARANTEES: { icon: GameIconName; title: string; text: string }[] = [
   { icon: "lock", title: "Un solde que personne ne retouche", text: "Chaque mouvement est enregistré et daté. Le solde se calcule à partir de l'historique, jamais à la main." },
-  { icon: "check", title: "Vous validez", text: "Les quêtes terminées, les achats et les sorties du coffre passent par vous." },
+  { icon: "check", title: "Vous validez", text: "Vous validez les quêtes terminées et les achats. Selon la règle choisie, vous validez aussi les retraits du coffre." },
   { icon: "coin", title: "Des pièces virtuelles", text: "Aucun paiement, aucune carte bancaire, aucune conversion en euros." },
   { icon: "flag", title: "Sans pression", text: "Pas de classement entre frères et sœurs, pas de notification culpabilisante." },
 ];
 
 const STATEMENT = [
-  { day: "Aujourd'hui", rows: [{ label: "Quête", detail: "Ranger sa chambre", amount: 20 }, { label: "Transfert", detail: "Vers Mon coffre", amount: -40 }] },
+  { day: "Aujourd'hui", rows: [{ label: "Quête", detail: "Ranger sa chambre", amount: 20 }, { label: "Transfert", detail: "Vers le Coffre magique", amount: -40 }] },
   { day: "Hier", rows: [{ label: "Récompense", detail: "Soirée film", amount: -15 }, { label: "Bonus", detail: "Aide pour les courses", amount: 10 }] },
 ];
 
@@ -142,7 +142,7 @@ export function Landing() {
           <h2 id="lp-loop-title" className="landing-h2">
             De la quête au coffre
           </h2>
-          <p className="lp-section-lead">Chaque pièce gagnée suit le même chemin. Votre enfant le parcourt à son rythme ; vous validez les étapes importantes.</p>
+          <p className="lp-section-lead">Votre enfant gagne des pièces, puis décide de les utiliser ou de les garder pour plus tard. Vous fixez les règles.</p>
 
           <div className="lp-board">
             <svg className="lp-board-path" viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true">
@@ -214,7 +214,7 @@ export function Landing() {
               <div className="lp-statement-vault">
                 <ChestArt state="low" size={52} />
                 <div>
-                  <span>Mon coffre · objectif « jeu de société »</span>
+                  <span>Coffre magique · objectif « jeu de société »</span>
                   <div className="lp-statement-progress" role="img" aria-label="60 pièces sur 150">
                     <span style={{ width: "40%" }} />
                   </div>

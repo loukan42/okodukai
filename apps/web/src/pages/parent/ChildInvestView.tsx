@@ -72,7 +72,7 @@ export function ChildInvestView() {
           <h2 id="last-title">Dernier bilan</h2>
           {run.paused && <p className="money-banner">L'observatoire est en pause.</p>}
           <p>
-            {units(run.value, young)} unités école
+            {units(run.value, young)} {run.fundedAmount === null ? "unités école" : "pièces placées"}
             {young ? ` (au départ : ${units(run.contributed, true)})` : ` · versé ${units(run.contributed, false)} · performance ${signedPercent(run.performance)}`}
             {run.clock.nextRendezVousAt && ` · prochain relevé : ${DATE.format(new Date(run.clock.nextRendezVousAt))}`}
           </p>

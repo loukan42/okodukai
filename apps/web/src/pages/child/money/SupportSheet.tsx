@@ -11,6 +11,7 @@ import { GameIcon } from "../../../components/GameIcon";
 
 interface Sheet {
   code: SupportCode;
+  funded?: boolean;
   riskLevel: number;
   duration: string;
   xpAwarded: number;
@@ -89,10 +90,10 @@ export function SupportSheet() {
         {!sheet.held ? (
           <p>Tu n'as pas d'unités ici pour l'instant.</p>
         ) : young ? (
-          <p>Tu as {units(sheet.units ?? 0, true)} unités école ici.</p>
+          <p>Tu as {units(sheet.units ?? 0, true)} {sheet.funded ? "pièces placées" : "unités école"} ici.</p>
         ) : (
           <p>
-            Ta part : {units(sheet.units ?? 0, false)} unités école · {PCT.format(sheet.actualPercent ?? 0)} % de ton portefeuille (choisi : {sheet.targetPercent} %)
+            Ta part : {units(sheet.units ?? 0, false)} {sheet.funded ? "pièces placées" : "unités école"} · {PCT.format(sheet.actualPercent ?? 0)} % de ton portefeuille (choisi : {sheet.targetPercent} %)
           </p>
         )}
         {sheet.held && sheet.trail && sheet.trail.length > 0 && (

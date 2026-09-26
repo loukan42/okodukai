@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { api } from "../../lib/api";
+import { api, ApiError } from "../../lib/api";
 import { EmptyState } from "../../components/EmptyState";
 import { CoinPill } from "../../components/CoinPill";
 import { GameIcon } from "../../components/GameIcon";
@@ -27,6 +27,8 @@ export function RewardsManage() {
   const [category, setCategory] = useState<"EXPERIENCE" | "OBJET">("EXPERIENCE");
   const [price, setPrice] = useState(20);
   const [creating, setCreating] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function load() {
     const res = await api.get<{ rewards: RewardRow[] }>("/rewards");
@@ -45,30 +47,52 @@ export function RewardsManage() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!title) return;
+    if (!title.trim() || price < 1) return;
     setCreating(true);
+    setError(null);
     try {
-      await api.post("/rewards", { title, category, priceCoins: price, allowedChildIds: [] });
+      await api.post("/rewards", { title: title.trim(), category, priceCoins: price, allowedChildIds: [] });
       setTitle("");
       await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "La récompense n'a pas pu être ajoutée. Réessayez.");
     } finally {
       setCreating(false);
     }
   }
 
   async function toggleActive(reward: RewardRow) {
-    await api.patch(`/rewards/${reward.id}`, { active: !reward.active });
-    load();
+    setBusyId(reward.id);
+    setError(null);
+    try {
+      await api.patch(`/rewards/${reward.id}`, { active: !reward.active });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Le changement n'a pas été enregistré. Réessayez.");
+    } finally {
+      setBusyId(null);
+    }
   }
 
+  const activeCount = rewards.filter((reward) => reward.active).length;
+
   return (
-    <div className="stack parent-manage-page">
-      <div className="card parent-form-panel">
-        <h1 className="parent-form-title"><GameIcon name="gift" size={27}/> Nouvelle récompense</h1>
-        <p className="text-faint text-sm">Choisissez une récompense que votre famille pourra valider.</p>
-        <div className="row-wrap" style={{ marginBottom: 16 }}>
+    <div className="stack parent-manage-page rewards-manage-page">
+      <header className="parent-page-intro">
+        <div className="parent-page-intro-icon"><GameIcon name="gift" size={27}/></div>
+        <div>
+          <h1>Boutique du foyer</h1>
+          <p>Votre enfant échange les pièces gagnées contre les récompenses que vous choisissez. Chaque demande d'achat attend votre validation.</p>
+        </div>
+      </header>
+
+      <section className="card parent-form-panel reward-create" aria-labelledby="reward-create-title">
+        <h2 id="reward-create-title">Ajouter une récompense</h2>
+        <p className="text-faint text-sm">Fixez son prix en pièces. Elle apparaîtra dans la boutique de l'enfant.</p>
+        <p className="reward-template-label">Quelques idées pour commencer</p>
+        <div className="reward-templates">
           {TEMPLATES.map((t) => (
-            <button key={t.title} type="button" className="pill pill-sky" style={{ cursor: "pointer", border: "none" }} onClick={() => applyTemplate(t)}>
+            <button key={t.title} type="button" className="reward-template" onClick={() => applyTemplate(t)}>
               {t.title}
             </button>
           ))}
@@ -80,48 +104,51 @@ export function RewardsManage() {
           </div>
           <div className="grid-2">
             <div className="field">
-                <label htmlFor="reward-category">Catégorie</label>
-                <select id="reward-category" value={category} onChange={(e) => setCategory(e.target.value as "EXPERIENCE" | "OBJET")}>
+              <label htmlFor="reward-category">Catégorie</label>
+              <select id="reward-category" value={category} onChange={(e) => setCategory(e.target.value as "EXPERIENCE" | "OBJET")}>
                 <option value="EXPERIENCE">Expérience</option>
                 <option value="OBJET">Objet</option>
               </select>
             </div>
             <div className="field">
-                <label htmlFor="reward-price">Prix (pièces)</label>
-                <input id="reward-price" type="number" min={1} value={price} onChange={(e) => setPrice(Number(e.target.value))} />
+              <label htmlFor="reward-price">Prix en pièces</label>
+              <input id="reward-price" type="number" min={1} value={price} onChange={(e) => setPrice(Number(e.target.value))} />
             </div>
           </div>
-          <button type="submit" className="btn btn-primary btn-block" disabled={creating}>
-            Ajouter à la boutique
+          <button type="submit" className="btn btn-primary btn-block" disabled={creating || !title.trim() || price < 1}>
+            {creating ? "Ajout en cours…" : "Ajouter à la boutique"}
           </button>
         </form>
-      </div>
+      </section>
 
-      <div>
-        <h2 className="font-display" style={{ fontSize: 20, marginBottom: 12 }}>
-          Boutique du foyer
-        </h2>
+      <section className="reward-catalog" aria-labelledby="reward-catalog-title">
+        <div className="reward-catalog-intro">
+          <div>
+            <h2 id="reward-catalog-title">Récompenses créées</h2>
+            <p>{activeCount} visible{activeCount > 1 ? "s" : ""} dans la boutique · {rewards.length} au total</p>
+          </div>
+        </div>
+        {error && <p className="form-error" role="alert">{error}</p>}
         {rewards.length === 0 ? (
           <EmptyState icon="gift" title="Boutique vide" subtitle="Ajoutez une première récompense." />
         ) : (
-          <div className="stack">
-            {rewards.map((r) => (
-              <div key={r.id} className="card card--tight card-row">
-                <div>
-                  <p style={{ fontWeight: 700, margin: 0 }}>{r.title}</p>
-                  <p className="text-sm text-faint" style={{ margin: 0 }}>
-                    {r.category === "EXPERIENCE" ? "Expérience" : "Objet"}
-                  </p>
+          <div className="reward-admin-list">
+            <div className="reward-admin-columns" aria-hidden="true"><span>Récompense</span><span>Prix</span><span>Disponibilité</span></div>
+            {rewards.map((reward) => (
+              <article key={reward.id} className={`reward-admin-row${reward.active ? "" : " reward-admin-row--inactive"}`}>
+                <div className="reward-admin-main">
+                  <h3>{reward.title}</h3>
+                  <span>{reward.category === "EXPERIENCE" ? "Expérience" : "Objet"} · {reward.active ? "Visible par l'enfant" : "Masquée de la boutique"}</span>
                 </div>
-                <CoinPill amount={r.priceCoins}/>
-                <button className="btn btn-ghost btn-sm" onClick={() => toggleActive(r)}>
-                  {r.active ? "Désactiver" : "Réactiver"}
+                <div className="reward-admin-price"><span>Prix</span><CoinPill amount={reward.priceCoins}/></div>
+                <button type="button" className={`btn btn-sm ${reward.active ? "btn-ghost" : "btn-primary"}`} disabled={busyId === reward.id} onClick={() => void toggleActive(reward)}>
+                  {busyId === reward.id ? "Un instant…" : reward.active ? "Désactiver" : "Réactiver"}
                 </button>
-              </div>
+              </article>
             ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

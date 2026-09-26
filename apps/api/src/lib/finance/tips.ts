@@ -11,6 +11,7 @@ type Vars = Record<string, string | number>;
 /** Ce qu'un bilan expose au moteur d'encarts (extrait de `runView`). */
 export interface RunFacts {
   mode: "MIROIR" | "ASSURANCE_VIE";
+  fundedAmount: number | null;
   finished: boolean;
   value: number;
   contributed: number;
@@ -100,8 +101,8 @@ const TIPS: TipDef[] = [
   },
   {
     code: "T03", screen: "vault", title: { young: "Transfert", old: "Transfert" }, notions: ["transfert"],
-    young: "Tes {n} pièces sont dans Mon coffre. Tu as toujours autant de pièces en tout : elles ont changé de place. Cela s'appelle un transfert.",
-    old: "Tes {n} pièces sont dans Mon coffre. Tu as toujours autant de pièces en tout : elles ont changé de place. Cela s'appelle un transfert.",
+    young: "Tu as mis {n} pièces dans ton coffre. Elles ont changé de place, mais ton total reste le même. C'est un transfert.",
+    old: "Tu as mis {n} pièces dans ton coffre. Elles ont changé de place, mais ton total reste le même. C'est un transfert.",
     detect: (c) => {
       const l = first(c.ledger, (x) => x.place === "vault" && x.kind === "transfert" && x.amount > 0);
       return l ? { n: l.amount } : null;
@@ -109,14 +110,14 @@ const TIPS: TipDef[] = [
   },
   {
     code: "T04", screen: "vault", title: { young: "Objectif", old: "Objectif" }, notions: ["objectif"],
-    young: "Ton objectif : {titre}, {cible} pièces. Chaque pièce mise dans Mon coffre t'en rapproche.",
-    old: "Ton objectif : {titre}, {cible} pièces. Chaque pièce mise dans Mon coffre t'en rapproche.",
+    young: "Tu veux mettre {cible} pièces de côté pour {titre}. Chaque pièce rangée dans ton coffre t'en rapproche.",
+    old: "Tu veux mettre {cible} pièces de côté pour {titre}. Chaque pièce rangée dans ton coffre t'en rapproche.",
     detect: (c) => (c.goals?.[0] ? { titre: c.goals[0].title, cible: c.goals[0].targetCoins } : null),
   },
   {
     code: "T05", screen: "vault", title: { young: "Épargner", old: "Épargne" }, notions: ["epargne"],
-    young: "Objectif atteint : {cible} pièces dans Mon coffre. Tu as mis de côté pour plus tard : cela s'appelle épargner. Pour utiliser ces pièces, remets-les d'abord sur Mon compte.",
-    old: "Objectif atteint : {cible} pièces dans Mon coffre. Tu as mis de côté pour plus tard : cela s'appelle épargner. L'argent mis de côté s'appelle l'épargne. Pour utiliser ces pièces, remets-les d'abord sur Mon compte.",
+    young: "Tu as atteint ton objectif de {cible} pièces dans le coffre. Mettre des pièces de côté, c'est épargner. Pour les utiliser, reprends-les sur ton compte.",
+    old: "Tu as atteint ton objectif de {cible} pièces dans le coffre. Mettre des pièces de côté, c'est épargner. Cet argent de côté s'appelle l'épargne. Pour l'utiliser, reprends-le sur ton compte.",
     detect: (c) => {
       const g = c.goals?.find((x) => x.achievedAt);
       return g ? { cible: g.targetCoins } : null;
@@ -133,7 +134,7 @@ const TIPS: TipDef[] = [
   },
   {
     code: "T26", screen: "bilan", title: { old: "Moins-value latente" }, notions: ["latent"],
-    young: "Ton placement vaut moins qu'au départ : {v} au lieu de {depart}. Il peut encore bouger, dans un sens ou dans l'autre. Tes pièces ne sont pas touchées.",
+    young: "Ton placement vaut {v}, contre {depart} au départ. Sa valeur peut encore monter ou baisser.",
     old: "Ton portefeuille vaut moins que ce que tu as versé. On parle de moins-value. Tant que tu ne changes rien, elle peut encore évoluer : on dit qu'elle est latente.",
     detect: (c) => (c.run && c.run.statements.length > 0 && c.run.value < c.run.contributed - 0.005 ? { v: fmt(c.run.value, c.band), depart: fmt(c.run.contributed, c.band) } : null),
   },
@@ -189,8 +190,8 @@ const TIPS: TipDef[] = [
   {
     code: "T34", screen: "bilan", title: { old: "Frais de gestion" }, notions: ["frais"],
     young: null,
-    old: "Des frais ont été retirés : {f} unité en tout depuis le début. C'est le prix de la gestion de ton placement. Ils sont retirés un peu chaque mois, même quand le placement baisse.",
-    detect: (c) => (c.run && c.run.feesPaid > 0 ? { f: fmt(c.run.feesPaid, c.band) } : null),
+    old: "Depuis le début, {f} ont été retirés pour la gestion de ton placement. Ces frais sont prélevés chaque mois, même quand sa valeur baisse.",
+    detect: (c) => (c.run && c.run.feesPaid > 0 ? { f: `${fmt(c.run.feesPaid, c.band)} ${c.run.fundedAmount === null ? "unités école" : "pièces"}` } : null),
   },
   {
     code: "T35", screen: "bilan", title: { old: "Inflation" }, notions: ["inflation"],
@@ -214,15 +215,15 @@ const TIPS: TipDef[] = [
   {
     code: "T39", screen: "bilan", title: { old: "Versement programmé" }, notions: ["versement_regulier"],
     young: null,
-    old: "Des unités école sont arrivées et ont été placées selon ta répartition : tu as versé {verse} en tout. Ajouter un peu à intervalles réguliers s'appelle un versement programmé.",
-    detect: (c) => (c.run && c.run.monthlyPlan > 0 && c.run.contributed > 100.005 ? { verse: fmt(c.run.contributed, c.band) } : null),
+    old: "Tu as versé {verse} en tout selon la répartition choisie. Ajouter un montant à intervalles réguliers s'appelle un versement programmé.",
+    detect: (c) => (c.run && c.run.monthlyPlan > 0 && c.run.contributed > (c.run.fundedAmount ?? 100) + 0.005 ? { verse: `${fmt(c.run.contributed, c.band)} ${c.run.fundedAmount === null ? "unités école" : "pièces"}` } : null),
   },
   {
     code: "T40", screen: "bilan", title: { old: "Versé, valeur" }, notions: ["verse_vs_valeur"],
     young: null,
-    old: "Attention à ne pas confondre : tu as versé {verse}, ton portefeuille vaut {v}. Seule la différence ({d}) vient des mouvements des placements.",
+    old: "Tu as versé {verse}. Ton placement vaut maintenant {v}. La différence, {d}, vient de l'évolution de sa valeur et des frais.",
     detect: (c) =>
-      c.run && c.run.contributed > 100.005
+      c.run && c.run.contributed > (c.run.fundedAmount ?? 100) + 0.005
         ? { verse: fmt(c.run.contributed, c.band), v: fmt(c.run.value, c.band), d: `${c.run.value >= c.run.contributed ? "+" : "−"}${fmt(Math.abs(c.run.value - c.run.contributed), c.band)}` }
         : null,
   },
@@ -248,7 +249,7 @@ const TIPS: TipDef[] = [
   {
     code: "T44", screen: "patrimoine", title: { old: "Patrimoine" }, notions: ["patrimoine"],
     young: null,
-    old: "Tout ce que tu possèdes s'appelle ton patrimoine. Ici, il est en deux parties qui ne s'additionnent pas : les pièces et les unités école.",
+    old: "Tout ce que tu possèdes s'appelle ton patrimoine. Les pièces de ton compte, de ton coffre et de tes placements s'additionnent. Les unités école du verger sont affichées à part.",
     detect: () => ({}),
   },
   {
