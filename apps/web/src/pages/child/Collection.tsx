@@ -4,9 +4,8 @@ import { api } from "../../lib/api";
 import { EmptyState } from "../../components/EmptyState";
 import { ProgressBar } from "../../components/ProgressBar";
 import { GameIcon } from "../../components/GameIcon";
-import { BoosterOpenOverlay } from "../../components/BoosterOpenOverlay";
+import { BoosterOpenOverlay, type RevealedCard } from "../../components/booster/BoosterOpenOverlay";
 import boosterImage from "../../assets/cards/card-booster.webp";
-import type { CardRarity } from "@okodukai/shared";
 import { useAuth } from "../../lib/AuthContext";
 
 interface Universe { id: string; code: string; title: string; description: string | null }
@@ -19,6 +18,8 @@ export function Collection() {
   const [universes, setUniverses] = useState<UniverseDisplay[]>([]);
   const [boosters, setBoosters] = useState<BoosterRow[]>([]);
   const [openingBooster, setOpeningBooster] = useState<BoosterRow | null>(null);
+  // Boosters ouverts à la suite sans fermer l'écran (la liste est rechargée à la fermeture).
+  const [openedIds, setOpenedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -58,6 +59,19 @@ export function Collection() {
       {universe.imageUrl ? <img className="universe-tile-art" src={universe.imageUrl} alt="" loading="lazy"/> : <span className="universe-tile-pattern" aria-hidden="true"/>}
       <span className="universe-tile-shade"/><span className="universe-tile-content"><small>Univers {String(index + 1).padStart(2,"0")}</small><strong>{universe.title}</strong><span className="universe-tile-description">{universe.description}</span><span className="universe-tile-progress"><span>{universe.owned} / {universe.total} cartes</span><ProgressBar value={universe.owned} max={universe.total}/></span><span className="universe-tile-link">Ouvrir l'album <GameIcon name="arrow" size={17}/></span></span>
     </Link>)}</div>}</section>
-    <BoosterOpenOverlay open={openingBooster !== null} onOpen={async () => { const res = await api.post<{ cards: { id: string; name: string; rarity: CardRarity; artworkUrl: string | null }[] }>(`/child/boosters/${openingBooster!.id}/open`); return res.cards; }} onClose={() => { setOpeningBooster(null); void load(); }}/>
+    <BoosterOpenOverlay
+      key={openingBooster?.id ?? "ferme"}
+      open={openingBooster !== null}
+      universeTitle={openingBooster?.definition.universe.title}
+      remaining={boosters.filter((b) => b.id !== openingBooster?.id && !openedIds.includes(b.id)).length}
+      onOpen={async () => {
+        const id = openingBooster!.id;
+        const res = await api.post<{ cards: RevealedCard[] }>(`/child/boosters/${id}/open`);
+        setOpenedIds((ids) => [...ids, id]);
+        return res.cards;
+      }}
+      onOpenNext={() => setOpeningBooster(boosters.find((b) => b.id !== openingBooster?.id && !openedIds.includes(b.id)) ?? null)}
+      onClose={() => { setOpeningBooster(null); setOpenedIds([]); void load(); }}
+    />
   </div>;
 }

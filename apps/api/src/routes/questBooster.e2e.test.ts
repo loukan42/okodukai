@@ -48,10 +48,10 @@ describe.skipIf(!process.env.DATABASE_URL)("quest booster journey", () => {
       const firstOpen = await fetch(`${base}/child/boosters/${boosters[0].id}/open`, { method: "POST", headers: { cookie: childCookie } });
       expect(firstOpen.status).toBe(200);
       const firstResult = await firstOpen.json() as { cards: { name: string }[]; alreadyOpened: boolean };
-      expect(firstResult).toMatchObject({ alreadyOpened: false, cards: [{ name: "Carte test" }] });
+      expect(firstResult).toMatchObject({ alreadyOpened: false, cards: [{ name: "Carte test", isNew: true }] });
       const secondOpen = await fetch(`${base}/child/boosters/${boosters[0].id}/open`, { method: "POST", headers: { cookie: childCookie } });
       expect(secondOpen.status).toBe(200);
-      expect(await secondOpen.json()).toMatchObject({ alreadyOpened: true, cards: [{ name: "Carte test" }] });
+      expect(await secondOpen.json()).toMatchObject({ alreadyOpened: true, cards: [{ name: "Carte test", isNew: true }] });
       expect(await prisma.childCard.count({ where: { childId: child.id } })).toBe(1);
       expect(await prisma.boosterInstance.count({ where: { childId: child.id } })).toBe(1);
     } finally {

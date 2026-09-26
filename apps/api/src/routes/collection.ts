@@ -62,11 +62,30 @@ collectionRouter.get("/child/boosters", requireChild, async (req, res) => {
   res.json({ boosters });
 });
 
+/**
+ * Cartes dans l'ordre du tirage, marquées `isNew` pour la première occurrence d'une carte que
+ * l'enfant ne possédait pas avant cette ouverture (décidé par le serveur, jamais par le client).
+ */
+function withNewFlags<T extends { id: string }>(cards: T[], isNewCard: (cardId: string) => boolean) {
+  const seen = new Set<string>();
+  return cards.map((card) => {
+    const isNew = !seen.has(card.id) && isNewCard(card.id);
+    seen.add(card.id);
+    return { ...card, isNew };
+  });
+}
+
 async function cardsFromOpening(boosterInstanceId: string) {
   const opening = await prisma.boosterOpening.findUnique({ where: { boosterInstanceId } });
   if (!opening) return [];
-  const cards = await prisma.card.findMany({ where: { id: { in: opening.resultCardIds } } });
-  return opening.resultCardIds.map((id) => cards.find((card) => card.id === id)!).filter(Boolean);
+  const [cards, owned] = await Promise.all([
+    prisma.card.findMany({ where: { id: { in: opening.resultCardIds } } }),
+    prisma.childCard.findMany({ where: { childId: opening.childId, cardId: { in: opening.resultCardIds } } }),
+  ]);
+  const ordered = opening.resultCardIds.map((id) => cards.find((card) => card.id === id)!).filter(Boolean);
+  // Rejeu : une carte est nouvelle si elle a été obtenue pour la première fois par cette ouverture.
+  const firstAt = new Map(owned.map((c) => [c.cardId, c.firstObtainedAt.getTime()]));
+  return withNewFlags(ordered, (id) => (firstAt.get(id) ?? 0) >= opening.createdAt.getTime() - 5_000);
 }
 
 collectionRouter.post("/child/boosters/:id/open", requireChild, async (req, res, next) => {
@@ -155,6 +174,7 @@ collectionRouter.post("/child/boosters/:id/open", requireChild, async (req, res,
   const cards = await prisma.card.findMany({ where: { id: { in: cardIds } } });
   // conserve l'ordre du tirage (findMany ne garantit pas l'ordre d'entrée)
   const orderedCards = cardIds.map((id) => cards.find((c) => c.id === id)!).filter(Boolean);
+  const ownedBefore = new Set(ownedCards.map((c) => c.cardId));
 
-  res.json({ alreadyOpened: false, cards: orderedCards, guaranteeTriggered });
+  res.json({ alreadyOpened: false, cards: withNewFlags(orderedCards, (id) => !ownedBefore.has(id)), guaranteeTriggered });
 });

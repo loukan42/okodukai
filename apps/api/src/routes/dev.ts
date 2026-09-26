@@ -68,6 +68,40 @@ devRouter.post("/dev/login-as-child", validateBody(loginAsChildSchema), async (r
   res.json({ ok: true, householdId: child.householdId });
 });
 
+const grantBoostersSchema = z.object({ childId: z.string().uuid(), count: z.number().int().min(1).max(10) });
+
+/** Donne des boosters à un enfant de démo (un univers activé du foyer au hasard) pour rejouer l'ouverture. */
+devRouter.post("/dev/grant-boosters", validateBody(grantBoostersSchema), async (req, res) => {
+  const child = await prisma.childProfile.findUnique({ where: { id: req.body.childId } });
+  if (!child) return res.status(404).json({ error: "Profil introuvable" });
+  const definitions = await prisma.boosterDefinition.findMany({
+    where: { universe: { active: true, householdGrants: { some: { householdId: child.householdId } }, cards: { some: { active: true } } } },
+  });
+  if (definitions.length === 0) return res.status(409).json({ error: "Aucun univers activé pour ce foyer." });
+  await prisma.boosterInstance.createMany({
+    data: Array.from({ length: req.body.count }, () => ({
+      childId: child.id,
+      definitionId: definitions[Math.floor(Math.random() * definitions.length)].id,
+      sourceType: "dev",
+    })),
+  });
+  res.status(201).json({ ok: true });
+});
+
+/** Cartes réelles d'une rareté donnée, pour prévisualiser l'animation d'ouverture sans rien créditer. */
+devRouter.get("/dev/sample-cards", async (req, res) => {
+  const rarity = z.enum(["COMMUNE", "PEU_COMMUNE", "RARE", "EPIQUE", "LEGENDAIRE"]).safeParse(req.query.rarity);
+  if (!rarity.success) return res.status(400).json({ error: "Rareté inconnue" });
+  const [best, fillers] = await Promise.all([
+    prisma.card.findMany({ where: { active: true, rarity: rarity.data, artworkUrl: { not: null } }, take: 40 }),
+    prisma.card.findMany({ where: { active: true, rarity: { in: ["COMMUNE", "PEU_COMMUNE"] }, artworkUrl: { not: null } }, take: 40 }),
+  ]);
+  const pick = <T,>(list: T[]) => list[Math.floor(Math.random() * list.length)];
+  if (best.length === 0) return res.status(404).json({ error: "Aucune carte de cette rareté" });
+  const cards = [...Array.from({ length: 4 }, () => pick(fillers)).filter(Boolean), pick(best)];
+  res.json({ cards: cards.map((card, index) => ({ ...card, isNew: index % 2 === 0 })) });
+});
+
 devRouter.post("/dev/reseed", async (_req, res) => {
   const result = await seedDatabase(prisma);
   res.json({

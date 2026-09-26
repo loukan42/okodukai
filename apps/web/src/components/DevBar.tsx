@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
+import { RARITY_LABELS, type CardRarity } from "@okodukai/shared";
 import { useAuth, LAST_HOUSEHOLD_KEY } from "../lib/AuthContext";
 import { GameIcon } from "./GameIcon";
+import { BoosterOpenOverlay, type RevealedCard } from "./booster/BoosterOpenOverlay";
+
+const PREVIEW_RARITIES: CardRarity[] = ["COMMUNE", "RARE", "EPIQUE", "LEGENDAIRE"];
 
 interface DevHousehold {
   id: string;
@@ -19,11 +23,13 @@ interface DevHousehold {
  */
 export function DevBar() {
   const navigate = useNavigate();
-  const { refresh } = useAuth();
+  const { refresh, session } = useAuth();
   const [open, setOpen] = useState(false);
   const [households, setHouseholds] = useState<DevHousehold[] | null>(null);
   const [available, setAvailable] = useState(true);
   const [busy, setBusy] = useState(false);
+  // Aperçu de l'ouverture avec de vraies cartes d'une rareté donnée : rien n'est crédité.
+  const [preview, setPreview] = useState<CardRarity | null>(null);
 
   async function load() {
     try {
@@ -67,6 +73,18 @@ export function DevBar() {
     }
   }
 
+  async function grantBoosters(childId: string) {
+    setBusy(true);
+    try {
+      await api.post("/dev/grant-boosters", { childId, count: 3 });
+      setOpen(false);
+      if (window.location.pathname === "/enfant/collection") window.location.reload();
+      else navigate("/enfant/collection");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function reseed() {
     if (!window.confirm("Réinitialiser toutes les données avec le jeu de démo ? Cette action efface les données existantes.")) {
       return;
@@ -99,6 +117,24 @@ export function DevBar() {
               Réinitialiser
             </button>
           </div>
+
+          {session?.kind === "child" && (
+            <div style={{ marginBottom: 14 }}>
+              <p className="text-sm text-faint" style={{ fontWeight: 700, marginBottom: 6 }}>
+                Boosters de {session.child.displayName}
+              </p>
+              <button className="btn btn-ghost btn-sm btn-block" disabled={busy} onClick={() => grantBoosters(session.child.id)}>
+                <GameIcon name="gift" size={17} />Donner 3 boosters
+              </button>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
+                {PREVIEW_RARITIES.map((rarity) => (
+                  <button key={rarity} className="btn btn-ghost btn-sm" onClick={() => { setPreview(rarity); setOpen(false); }}>
+                    Aperçu {RARITY_LABELS[rarity].toLowerCase()}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {households === null && <p className="text-sm text-faint">Chargement…</p>}
           {households?.length === 0 && (
@@ -145,6 +181,13 @@ export function DevBar() {
       >
         Démo
       </button>
+      <BoosterOpenOverlay
+        key={preview ?? "sans-apercu"}
+        open={preview !== null}
+        universeTitle="Aperçu"
+        onOpen={async () => (await api.get<{ cards: RevealedCard[] }>(`/dev/sample-cards?rarity=${preview}`)).cards}
+        onClose={() => setPreview(null)}
+      />
     </div>
   );
 }
