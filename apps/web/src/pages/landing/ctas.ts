@@ -16,5 +16,5 @@ export function landingCtas(): Ctas {
   }
   return known
     ? { primary: { to: "/profils", label: "Choisir mon profil" }, secondary: { to: "/connexion", label: "Espace parent" }, nav: { to: "/profils", label: "Mon profil" } }
-    : { primary: { to: "/inscription", label: "Créer notre famille" }, secondary: { to: "/connexion", label: "Connexion" }, nav: { to: "/inscription", label: "Commencer" } };
+    : { primary: { to: "/inscription", label: "Créer un compte" }, secondary: { to: "/connexion", label: "Connexion" }, nav: { to: "/inscription", label: "Commencer" } };
 }
