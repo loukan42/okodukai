@@ -37,18 +37,28 @@ Chaque palier est un **calque additionnel** du même décor (jamais un décor en
 
 ## 2. Style général
 
-- Illustration vectorielle **peinte** : formes douces, volumes lisibles par aplats dégradés, pas de contour noir. Un contour sombre très fin (couleur de l'ombre du matériau, jamais noir) est autorisé sur les petits objets d'interface ≤ 64 px pour la lisibilité.
+> **Pivot (septembre 2026)** : l'illustration vectorielle plate a été jugée « cheap » par le propriétaire du produit
+> (« on veut un design de niveau Blizzard »). Le monde, les objets et les décors sont désormais **rendus en 3D
+> stylisée** par le studio du repo (section 13) ; le vectoriel ne reste que pour les portraits d'avatars et les
+> pictogrammes d'interface.
+
+- **3D stylisée, matières réelles** : volumes sculptés et chanfreinés (aucune arête vive), matières PBR (or martelé,
+  bois de planches, cuir, cire, verre, terre cuite), lumière de studio chaude. Pas de photoréalisme froid, pas de
+  plastique uniforme.
 - Silhouettes simples et reconnaissables à 48 px. Les objets doivent se lire en ombre chinoise.
-- Fantasy légère et nature : feuillages ronds, ginkgos dorés, érables vermillon ponctuels, pierres moussues.
-- Touches japonaises extrêmement discrètes : lanternes de papier, pièce à trou carré, toits à débord légèrement relevé, tissus façon *noren* (sans motif ni texte). Jamais de torii, de kanji décoratif, de sabre ni de cliché.
-- Détails maîtrisés : un objet porte 2 à 4 détails signifiants (cerclage, rivets, clou, pli), pas davantage.
+- Fantasy légère et nature : feuillages ronds, érables et ginkgos dorés, pierres moussues.
+- Touches japonaises extrêmement discrètes : pièce à trou carré, blason à quatre pétales, vagues *seigaiha* gravées,
+  lanternes. Jamais de torii, de kanji décoratif, de sabre ni de cliché.
+- Détails maîtrisés : un objet porte 2 à 4 détails signifiants (cerclage, rivets, blason, sceau), pas davantage.
+- Ambiances (décision « Mix A + B ») : **heure dorée** pour l'accueil, Mon compte, les quêtes, le coffre, la boutique,
+  la landing et l'inscription ; **crépuscule aux lanternes** pour la Collection, Investir / l'observatoire et Mon bilan.
 
 ## 3. Perspective
 
 | Usage | Vue | Règle |
 | --- | --- | --- |
 | Backgrounds / scènes | Panoramique latérale | Horizon entre 40 % et 55 % de la hauteur ; 3 à 5 plans parallèles |
-| Objets et bâtiments | Frontale trois-quarts, légèrement plongeante (~15°) | On voit la face avant, le dessus, et le flanc droit |
+| Objets et bâtiments | Trois-quarts plongeant (~15° pour les scènes, 25-30° pour les objets 3D isolés) | On voit la face avant, le dessus, et un flanc ; même cadrage pour tous les états d'un objet |
 | Icônes d'objets (≤ 64 px) | Même trois-quarts simplifié | Le dessus et le flanc droit se réduisent à un bandeau |
 | Cartes et boosters | Frontale stricte | Objets plats, légère inclinaison uniquement par l'interface |
 | Personnages | Trois-quarts face | Pieds au sol, ombre de contact |
@@ -108,15 +118,26 @@ Proportions « jeune aventurier » : 3,5 têtes, tête ronde, grands yeux simple
 
 1. **Aucun texte dans les images.** Panneaux, bannières, étiquettes : vides. Le texte est en HTML.
 2. **Assets modulaires** : fond, objets, végétation, particules et avant-plan séparés, composés dans l'app.
-3. **Formats** : vectoriel natif en SVG optimisé (fond et objets) ; WebP/AVIF uniquement pour les textures et les rares rendus raster ; composants React pour les objets animés ou à états.
-4. **Nommage** : `lieu-objet-variante.ext` en kebab-case, en anglais technique (`child-home-valley-bg-far.svg`, `okodukai-coin-large`, `savings-chest-full`). Jamais `final`, `v2`, `new`.
-5. **Organisation** : `apps/web/public/assets/<catégorie>/` pour les fichiers statiques, `apps/web/src/art/` pour les composants illustrés. Catégories : `brand`, `backgrounds`, `characters`, `avatars`, `coins`, `quests`, `rewards`, `shop`, `savings`, `bank`, `invest`, `cards`, `boosters`, `collections`, `learning`, `decorations`, `textures`.
+3. **Formats** : rendus 3D du studio exportés en **WebP** (fond transparent pour les objets) à plusieurs largeurs
+   (`<nom>-<largeur>.webp`, servis via `srcset`) ; SVG pour les avatars ; composants React (`apps/web/src/art/`)
+   pour tout ce qui s'anime ou change d'état.
+4. **Nommage** : `lieu-objet-variante.ext` en kebab-case, en anglais technique (`valley-golden-wide`, `okodukai-coin`, `savings-chest-full`). Jamais `final`, `v2`, `new`.
+5. **Organisation** : `apps/web/public/assets/<catégorie>/` pour les fichiers statiques, `apps/web/src/art/` pour les composants illustrés. Catégories : `brand`, `backgrounds`, `characters`, `avatars`, `coins`, `quests`, `rewards`, `shop`, `savings`, `bank`, `invest`, `cards`, `boosters`, `collections`, `learning`, `decorations`, `textures`, `objects`.
 6. **Traçabilité** : chaque asset est inscrit dans `ASSET_REGISTRY.md` (source, méthode, date, licence).
-7. **Poids** : background complet ≤ 120 Ko (gzip), objet ≤ 15 Ko, texture ≤ 30 Ko.
+7. **Poids** (WebP) : fond plein cadre ≤ 80 Ko en 1 920 px, objet ≤ 20 Ko à sa taille d'affichage 2x, avatar SVG ≤ 4 Ko. Le logo n'est jamais servi en PNG source (1,2 Mo) : `assets/brand/logo-full-{320,640,960}.webp`.
 
 ## 10. Mouvement
 
-Le monde respire, il ne s'agite pas : fanion qui ondule (4-6 s), lanternes qui scintillent, feuilles de ginkgo qui tombent, poussière lumineuse, pièce qui tourne une fois à l'apparition, coffre qui se soulève légèrement quand on y dépose des pièces. Parallaxe ≤ 12 px. Tout est coupé par `prefers-reduced-motion`.
+Le monde respire, il ne s'agite pas. Un seul moment orchestré par écran (l'arrivée), puis des boucles lentes :
+
+- **Arrivée** (framer-motion) : le décor recule légèrement (zoom 1,08 → 1,03 en 2,4 s), le texte monte (16 px, 0,55 s,
+  `ease-out`), le coffre tombe et se pose sur un ressort, six pièces jaillissent et retombent (1,5 s, une seule fois).
+- **Boucles** (CSS) : coffre qui flotte (6 s), pièces qui dansent (4,8 s), halo qui respire (3,8 s), poussières
+  dorées qui montent dans la lumière (9-19 s).
+- **Parallaxe** à la souris uniquement (pas au gyroscope) : décor ±14 px, objet principal ±22 px, ressorts doux.
+- **Défilement** : le chemin de la boucle produit se trace une fois quand il entre à l'écran (2,2 s).
+- Interfaces : < 300 ms, `ease-out`, jamais `ease-in`. Tout est coupé par `prefers-reduced-motion` (entrées sans
+  animation, boucles arrêtées).
 
 ## 11. Grille de refus (revue Art Director)
 
@@ -129,3 +150,25 @@ Un asset est refusé s'il présente : perspective incohérente avec la section 3
 - Un parent de 40 ans s'arrêterait-il sur la capture dans un fil LinkedIn ?
 - Un enfant de 10 ans dirait-il « c'est mon jeu » ?
 - Le chiffre le plus important (solde, reste à épargner, gain d'une quête) est-il lu en moins de 2 secondes ?
+
+## 13. Studio 3D (pipeline du repo)
+
+Aucun générateur d'images externe : tout est produit par du code versionné, donc reproductible et retouchable.
+
+- **Où** : `apps/web/scripts/art/studio/`. Une scène = un module ESM three.js (`scenes/*.js`) qui exporte
+  `render(canvas, params)`. `harness.mjs` l'empaquette (esbuild), la rend dans Chromium headless (WebGL2 via
+  SwiftShader), suréchantillonne ×2 puis réduit en Lanczos ; `exportWebp` écrit les largeurs demandées.
+- **Commandes** : `npm run art:studio --workspace apps/web [-- filtre]` reconstruit les assets listés dans
+  `studio/build.mjs` ; `node scripts/art/studio/sheet.mjs <scène> <sortie.png> '<[params]>'` produit une planche de
+  revue (fond ivoire, fond nuit, vignette 56 px) ; `shot.mjs` rend un décor seul.
+- **Plateau commun** (`lib/stage.js`) : tone mapping ACES, environnement « photo produit » en dôme dégradé (ciel
+  crème, horizon ambré, sol chaud clair, nadir bleu nuit `#1c2438`) + boîtes à lumière (clé chaude en haut à gauche,
+  contre-jour froid à droite, plafond, réflecteur bas). L'or ne tombe jamais dans le noir.
+- **Matières** (`lib/textures.js`) : textures procédurales seedées — métal martelé, planches de bois, pierre,
+  gravure *seigaiha* ; `lib/coins.js` fournit la pièce « de foule » instanciée pour les tas et les éclats.
+- **Décors** (`scenes/valley.js`) : terrain procédural (rivière sinueuse, collines, montagnes striées), bosquets
+  instanciés à feuillage lissé, ciel en shader (dégradé, halo solaire, nuages étirés), brume + perspective
+  atmosphérique bleutée, bloom léger, vignettage et grain.
+- **Revue** : chaque rendu passe par une planche `sheet.mjs` ; refus si l'or paraît noir ou plâtreux, si une ombre
+  portée « flotte » sur l'interface (on garde l'ombre de contact seule), si un objet ne se lit plus à 56 px.
+

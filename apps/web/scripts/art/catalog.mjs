@@ -25,3 +25,8 @@ catalog.push(
   { id: "collection-arch", group: "landmarks", kind: "object", path: "collections/collection-arch.svg", w: 190, h: 248, small: 56, previewWidth: 190, render: collectionArch },
   { id: "lantern-post", group: "landmarks", kind: "object", path: "decorations/lantern-post.svg", w: 80, h: 156, small: 40, previewWidth: 80, render: lanternPost },
 );
+
+import { ROSTER, avatar } from "./characters/avatars.mjs";
+for (const spec of ROSTER) {
+  catalog.push({ id: spec.id, group: "avatars", kind: "object", path: `avatars/${spec.id}.svg`, w: 128, h: 128, small: 48, previewWidth: 128, render: () => avatar(spec) });
+}
