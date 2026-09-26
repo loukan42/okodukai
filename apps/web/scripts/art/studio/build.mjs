@@ -17,11 +17,22 @@ export const STUDIO_ASSETS = [
   // Objets de la boucle produit (gagner, dépenser, attendre, investir).
   ...["quest-scroll", "coin-pouch", "hourglass", "coin-sprout"].map((object) => ({ id: object, scene: "props", size: [512, 512], params: { object }, out: `objects/${object}`, widths: [128, 256, 512] })),
   // Tableau d'aventurier (Journal de quêtes).
-  { id: "quest-board", scene: "board", size: [540, 540], params: {}, out: "quests/quest-board", widths: [180, 360, 540] },
+  { id: "quest-board", scene: "board", size: [1080, 1080], params: {}, out: "quests/quest-board", widths: [180, 360, 540, 1080] },
   // Objets des lieux de l'argent : lunette (observatoire), arbre (verger), étagère (bibliothèque).
   ...["telescope", "orchard-tree", "bookshelf"].map((object) => ({ id: object, scene: "places", size: [512, 512], params: { object }, out: `objects/${object}`, widths: [128, 256, 512] })),
   // Échoppe de la boutique familiale (en-tête de la boutique).
   { id: "shop-stall", scene: "shop", size: [540, 540], params: {}, out: "shop/shop-stall", widths: [180, 360, 540] },
+  // Landing : le monde en plans séparés (fond, avant-plan, socle du téléphone) et la vallée à l'aube.
+  ...["wide", "tall"].flatMap((frame) => {
+    const [w, h] = frame === "wide" ? [1920, 1080] : [1080, 1600];
+    const widths = frame === "wide" ? [1280, 1920] : [720, 1080];
+    return [
+      { id: `valley-path-golden-${frame}`, scene: "world", size: [w, h], supersample: 1.5, opaque: true, quality: 76, params: { layer: "bg", mood: "golden", frame }, out: `backgrounds/valley-path-golden-${frame}`, widths },
+      { id: `valley-foreground-golden-${frame}`, scene: "world", size: [w, h], supersample: 1.5, quality: 80, params: { layer: "fg", mood: "golden", frame }, out: `decorations/valley-foreground-golden-${frame}`, widths },
+      { id: `valley-hamlet-dawn-${frame}`, scene: "world", size: [w, h], supersample: 1.5, opaque: true, quality: 76, params: { layer: "bg", mood: "dawn", frame: `dawn-${frame}` }, out: `backgrounds/valley-hamlet-dawn-${frame}`, widths },
+    ];
+  }),
+  { id: "stone-plinth", scene: "world", size: [900, 520], params: { layer: "base", mood: "golden" }, out: "objects/stone-plinth", widths: [450, 900] },
   // Fonds plein cadre de la vallée : paysage (desktop) et portrait (mobile), deux ambiances.
   ...["golden", "dusk"].flatMap((mood) => [
     { id: `valley-${mood}-wide`, scene: "valley", size: [1920, 1080], supersample: 1.5, opaque: true, quality: 78, params: { mood }, out: `backgrounds/valley-${mood}-wide`, widths: [1280, 1920] },

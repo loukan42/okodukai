@@ -11,7 +11,7 @@ import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { makeNoise } from "../lib/noise.js";
 
-const MOODS = {
+export const MOODS = {
   golden: {
     skyTop: 0x4f8ad0, skyMid: 0xf2d0a0, horizon: 0xffe2b0, sun: 0xfff1d0,
     fog: 0xf2dcbc, fogDensity: 0.0012, haze: 0x8ea2d8,
@@ -19,6 +19,15 @@ const MOODS = {
     hemiSky: 0xffe2bc, hemiGround: 0x4a4a78, hemi: 0.62,
     grass: [0x86a24c, 0xc2a95a, 0x5f8440], rock: 0xb08c6c, sand: 0xd9c08c,
     water: 0x6f98a8, exposure: 1.0, lanterns: false,
+  },
+  // Aube (fin de la landing) : ciel pâle, horizon pêche et rose, soleil bas devant la caméra.
+  dawn: {
+    skyTop: 0x6f8fc6, skyMid: 0xf6c0a0, horizon: 0xffd6a4, sun: 0xfff0d0,
+    fog: 0xf3cdb2, fogDensity: 0.0011, haze: 0xa0a3cc,
+    sunDir: [-0.3, 0.07, -0.95], sunColor: 0xffc48e, sunIntensity: 2.4,
+    hemiSky: 0xffdcca, hemiGround: 0x4a4a78, hemi: 0.75,
+    grass: [0x7c9a4a, 0xb9a062, 0x587e40], rock: 0xa98e7a, sand: 0xdabd94,
+    water: 0x93abc4, exposure: 1.02, lanterns: true,
   },
   dusk: {
     skyTop: 0x1d2a55, skyMid: 0x6b5f93, horizon: 0xf29a64, sun: 0xffb27a,
@@ -30,13 +39,13 @@ const MOODS = {
   },
 };
 
-const riverX = (z) => 14 * Math.sin(z * 0.013 + 0.6) + 6 * Math.sin(z * 0.031);
-const smooth = (a, b, x) => {
+export const riverX = (z) => 14 * Math.sin(z * 0.013 + 0.6) + 6 * Math.sin(z * 0.031);
+export const smooth = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
   return t * t * (3 - 2 * t);
 };
 
-function terrainHeight(n, x, z) {
+export function terrainHeight(n, x, z) {
   const d = Math.abs(x - riverX(z));
   const valley = smooth(4, 70, d) * 16 - 2.2 * (1 - smooth(3, 12, d));
   const hills = n.fbm(x * 0.018, z * 0.018, 5) * 14 * smooth(6, 40, d);
@@ -45,7 +54,7 @@ function terrainHeight(n, x, z) {
   return valley + hills + ridge;
 }
 
-function skyMaterial(mood) {
+export function skyMaterial(mood) {
   const m = MOODS[mood];
   return new THREE.ShaderMaterial({
     side: THREE.BackSide,
@@ -90,7 +99,7 @@ function skyMaterial(mood) {
   });
 }
 
-function canopyGeometry(n) {
+export function canopyGeometry(n) {
   const parts = [];
   for (let k = 0; k < 3; k++) {
     const g = new THREE.IcosahedronGeometry(1, 4);
@@ -120,7 +129,7 @@ function canopyGeometry(n) {
   return g;
 }
 
-function buildTerrain(n, mood, { size, seg, center = [0, 0], tint }) {
+export function buildTerrain(n, mood, { size, seg, center = [0, 0], tint }) {
   const m = MOODS[mood];
   const g = new THREE.PlaneGeometry(size, size, seg, seg);
   g.rotateX(-Math.PI / 2);
@@ -153,7 +162,8 @@ function buildTerrain(n, mood, { size, seg, center = [0, 0], tint }) {
   return mesh;
 }
 
-function forest(n, mood, count, seed) {
+/** Bosquets instanciés. `avoid(x, z)` écarte des zones (un chemin, un hameau). */
+export function forest(n, mood, count, seed, avoid) {
   const m = MOODS[mood];
   const canopy = canopyGeometry(n);
   const trunk = new THREE.CylinderGeometry(0.12, 0.2, 1.4, 6);
@@ -171,6 +181,7 @@ function forest(n, mood, count, seed) {
     const x = riverX(z) + (r() * 2 - 1) * (40 + (40 - z) * 0.55);
     const d = Math.abs(x - riverX(z));
     if (d < 7) continue;
+    if (avoid && avoid(x, z)) continue;
     const y = terrainHeight(n, x, z);
     if (y < 0.8 || y > 38) continue;
     const e = 0.8;
@@ -198,7 +209,7 @@ function forest(n, mood, count, seed) {
   return [crowns, trunks];
 }
 
-function lanterns(n, count, seed) {
+export function lanterns(n, count, seed) {
   const r = makeNoise(seed).rand;
   const g = new THREE.Group();
   const bulb = new THREE.SphereGeometry(0.22, 12, 8);
@@ -221,7 +232,7 @@ function lanterns(n, count, seed) {
 }
 
 // Vignettage et léger grain de pellicule, appliqués après le bloom.
-const Finish = {
+export const Finish = {
   uniforms: { tDiffuse: { value: null }, strength: { value: 0.32 } },
   vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
   fragmentShader: `uniform sampler2D tDiffuse; uniform float strength; varying vec2 vUv;

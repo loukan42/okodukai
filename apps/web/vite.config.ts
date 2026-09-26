@@ -10,7 +10,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       // Une navigation vers /api/* (ex. /api/health) doit atteindre le serveur, pas l'app en cache.
       // push-sw.js : affichage des notifications (« Ton relevé est prêt. ») et ouverture de l'app au clic.
-      workbox: { navigateFallbackDenylist: [/^\/api\//], importScripts: ["/push-sw.js"] },
+      // La pièce 3D de la landing (three.js) n'est pas préchargée : l'app n'en a pas besoin.
+      workbox: { navigateFallbackDenylist: [/^\/api\//], importScripts: ["/push-sw.js"], globIgnores: ["**/coin3d-*.js"] },
       includeAssets: ["favicon.png"],
       manifest: {
         name: "Okodukai",
