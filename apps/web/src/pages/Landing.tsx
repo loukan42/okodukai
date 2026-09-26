@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
 import { LandingNav } from "./landing/LandingNav";
@@ -18,8 +19,24 @@ import "./landing/landing.css";
  * Une journée dans le monde : l'heure dorée du hero, le crépuscule des placements, la nuit
  * de la collection et des parents, puis l'aube de la fin, où le chemin mène au hameau.
  */
+/** Le reflet des boutons de verre suit le pointeur : un seul écouteur pour toute la page. */
+function useGlassHighlight() {
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      const button = (e.target as Element | null)?.closest?.(".lp-btn") as HTMLElement | null;
+      if (!button) return;
+      const r = button.getBoundingClientRect();
+      button.style.setProperty("--mx", `${e.clientX - r.left}px`);
+      button.style.setProperty("--my", `${e.clientY - r.top}px`);
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onMove);
+  }, []);
+}
+
 export function Landing() {
   const { session } = useAuth();
+  useGlassHighlight();
   if (session?.kind === "parent") return <Navigate to="/parent" replace />;
   if (session?.kind === "child") return <Navigate to="/enfant" replace />;
   const ctas = landingCtas();

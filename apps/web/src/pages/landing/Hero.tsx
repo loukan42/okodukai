@@ -61,10 +61,10 @@ export function Hero({ ctas }: { ctas: Ctas }) {
             Il gagne des pièces virtuelles avec les quêtes que vous lui proposez, puis apprend à les dépenser, les garder ou les placer.
           </motion.p>
           <motion.div className="lp-hero-actions" {...enter(0.5)}>
-            <Link to={ctas.primary.to} className="lp-btn lp-btn--gold">
+            <Link to={ctas.primary.to} className="lp-btn lp-btn--tint">
               {ctas.primary.label}
             </Link>
-            <a href="#comment" className="lp-btn lp-btn--ghost">
+            <a href="#comment" className="lp-btn lp-btn--clear">
               Comment ça marche
             </a>
           </motion.div>

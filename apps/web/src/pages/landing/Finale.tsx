@@ -42,10 +42,10 @@ export function Finale({ ctas }: { ctas: Ctas }) {
           </h2>
           <p>Il suffit d'un e-mail et du nom de votre famille, puis d'un profil par enfant. Le reste se règle plus tard.</p>
           <div className="lp-hero-actions">
-            <Link to={ctas.primary.to} className="lp-btn lp-btn--gold">
+            <Link to={ctas.primary.to} className="lp-btn lp-btn--tint">
               {ctas.primary.label}
             </Link>
-            <Link to={ctas.secondary.to} className="lp-btn lp-btn--ghost">
+            <Link to={ctas.secondary.to} className="lp-btn lp-btn--clear">
               {ctas.secondary.label}
             </Link>
           </div>

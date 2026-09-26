@@ -112,7 +112,9 @@
   color: var(--lp-gold-soft);
 }
 
-/* Boutons : une pièce d'or frappée, pas un rectangle ombré. ------------------------- */
+/* Boutons : du verre (Liquid Glass adapté). Un remplissage translucide uni, un liseré de verre
+ * épais sur le bord, un reflet qui suit le pointeur (--mx, --my, posés par Landing.tsx). Pas de
+ * dégradé de couleur, pas d'ombre empilée. */
 
 .lp-btn {
   position: relative;
@@ -122,80 +124,78 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 56px;
-  padding: 0 28px;
+  min-height: 54px;
+  padding: 0 26px;
   border: 0;
   border-radius: 999px;
-  font: 800 17px/1 var(--font-interface);
+  font: 700 16.5px/1 var(--font-interface);
   letter-spacing: 0.005em;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  backdrop-filter: blur(16px) saturate(170%);
   transition:
     transform 180ms var(--lp-ease),
-    box-shadow 260ms var(--lp-ease),
-    background-color 260ms var(--lp-ease);
+    background-color 220ms var(--lp-ease);
 }
 
-.lp-btn--gold {
-  color: #2b1804;
-  background:
-    radial-gradient(130% 150% at 28% -10%, #fff4cf 0%, #f8d06a 34%, #e6a83e 64%, #c9852a 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    inset 0 -3px 6px rgba(122, 70, 8, 0.32),
-    inset 0 0 0 1px rgba(160, 100, 20, 0.35),
-    0 1px 2px rgba(92, 54, 10, 0.3),
-    0 8px 18px -6px rgba(140, 84, 14, 0.5),
-    0 22px 40px -18px rgba(140, 84, 14, 0.5);
+/* Le bord du verre : plus clair en haut, là où la lumière entre. */
+.lp-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.35));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
-/* Reflet qui balaie la pièce au survol (une fois, pas en boucle). */
-.lp-btn--gold::after {
+/* Le reflet qui suit le pointeur. */
+.lp-btn::after {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.55) 48%, transparent 62%);
-  transform: translateX(-120%);
-  transition: transform 700ms var(--lp-ease);
+  border-radius: inherit;
+  background: radial-gradient(90px circle at var(--mx, 30%) var(--my, -10%), rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 70%);
+  opacity: 0.55;
+  transition: opacity 220ms var(--lp-ease);
+  pointer-events: none;
 }
 
-.lp-btn--gold:hover::after {
-  transform: translateX(120%);
-}
-
-.lp-btn--gold:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -3px 6px rgba(122, 70, 8, 0.3),
-    inset 0 0 0 1px rgba(160, 100, 20, 0.35),
-    0 2px 3px rgba(92, 54, 10, 0.28),
-    0 14px 26px -8px rgba(140, 84, 14, 0.55),
-    0 30px 54px -22px rgba(140, 84, 14, 0.55);
-}
-
-.lp-btn--ghost {
-  color: var(--lp-ink);
-  background: rgba(255, 250, 240, 0.74);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
-  backdrop-filter: blur(12px) saturate(150%);
-  box-shadow:
-    inset 0 0 0 1px rgba(23, 41, 65, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 10px 26px -14px rgba(23, 41, 65, 0.45);
-}
-
-.lp-btn--ghost:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 250, 240, 0.92);
+.lp-btn:hover::after {
+  opacity: 1;
 }
 
 .lp-btn:active {
-  transform: translateY(1px) scale(0.98);
+  transform: scale(0.97);
   transition-duration: 80ms;
+}
+
+/* Verre teinté bleu nuit : l'action principale. */
+.lp-btn--tint {
+  color: #fffaf0;
+  background-color: rgba(23, 41, 65, 0.8);
+}
+
+.lp-btn--tint:hover {
+  background-color: rgba(23, 41, 65, 0.9);
+}
+
+/* Verre clair : l'action secondaire. */
+.lp-btn--clear {
+  color: var(--lp-ink);
+  background-color: rgba(255, 255, 255, 0.34);
+}
+
+.lp-btn--clear:hover {
+  background-color: rgba(255, 255, 255, 0.5);
 }
 
 .lp-btn--small {
@@ -2715,17 +2715,13 @@
 
 @media (prefers-reduced-motion: reduce) {
   .lp-btn,
-  .lp-btn--gold::after,
+  .lp-btn::after,
   .lp-chapter,
   .lp-vault-chest,
   .lp-story-progress li,
   .lp-coin-still,
   .lp-coin-canvas {
     transition: none;
-  }
-
-  .lp-btn--gold::after {
-    display: none;
   }
 
   .lpa-toast,
@@ -2746,9 +2742,13 @@
 }
 
 @media (prefers-reduced-transparency: reduce) {
+  .lp-btn--tint {
+    background-color: var(--lp-night-2);
+  }
+
   .lp-nav--scrolled,
   .lp-hero-path ol,
-  .lp-btn--ghost {
+  .lp-btn--clear {
     background: var(--lp-paper);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;

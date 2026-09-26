@@ -563,29 +563,29 @@
 .summon-btn {
   min-height: 52px;
   padding: 0 22px;
-  border-radius: 14px;
+  border-radius: 999px;
   font: 800 16px var(--font-interface);
   cursor: pointer;
-  transition: transform 140ms var(--ease-out), filter 140ms ease;
+  transition: transform 140ms var(--ease-out), background-color 200ms var(--ease-out);
 }
 .summon-btn:active { transform: scale(0.97); }
 .summon-btn--primary {
   min-width: 200px;
-  color: #3a2105;
-  border: 1px solid #fff0c4;
-  background: linear-gradient(180deg, #ffe8a6 0%, #f3be51 55%, #d99530 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), inset 0 -3px 0 rgba(120, 70, 10, 0.32), 0 10px 26px rgba(243, 190, 81, 0.28);
+  color: #2b1804;
+  border: 0;
+  background: #f0bf55;
 }
 .summon-btn--ghost {
   color: var(--pearl);
-  border: 1px solid rgba(223, 233, 255, 0.32);
-  background: rgba(8, 18, 42, 0.55);
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba(223, 233, 255, 0.35);
+  background: rgba(8, 18, 42, 0.45);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
 @media (hover: hover) {
-  .summon-btn--primary:hover { filter: brightness(1.06); }
-  .summon-btn--ghost:hover { border-color: rgba(223, 233, 255, 0.6); }
+  .summon-btn--primary:hover { background: #f5ca6a; }
+  .summon-btn--ghost:hover { background: rgba(8, 18, 42, 0.6); }
 }
 
 /* -- Récapitulatif ---------------------------------------------------- */

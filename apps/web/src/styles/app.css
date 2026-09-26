@@ -46,12 +46,9 @@
   gap: var(--space-3);
 }
 
-/* Boutons : des matières (or frappé, bleu nuit, papier), pas des rectangles ombrés. ----- */
+/* Boutons : des aplats nets, sans dégradé ni ombre. La pression se sent (scale 0.97). -------- */
 
 .btn {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -64,19 +61,14 @@
   font-weight: 800;
   font-size: 15px;
   line-height: 1.15;
-  letter-spacing: 0.005em;
   text-decoration: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition:
-    transform 160ms var(--ease-out),
-    box-shadow 240ms var(--ease-out),
-    background-color 240ms var(--ease-out),
-    color 240ms var(--ease-out);
-}
-
-.btn:hover:not(:disabled) {
-  transform: translateY(-1px);
+    transform 140ms var(--ease-out),
+    background-color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out),
+    color 200ms var(--ease-out);
 }
 
 .btn:active:not(:disabled) {
@@ -96,67 +88,24 @@
 
 /* Bleu nuit : l'action courante. */
 .btn-primary {
+  background: #1c2e4a;
   color: #fffaf0;
-  background: radial-gradient(140% 170% at 30% -30%, #3d5b84 0%, #213857 44%, #152640 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
-    0 1px 2px rgba(15, 28, 48, 0.3),
-    0 6px 14px -6px rgba(15, 28, 48, 0.45),
-    0 16px 30px -16px rgba(15, 28, 48, 0.5);
 }
 
 .btn-primary:hover:not(:disabled) {
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.24),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 2px 3px rgba(15, 28, 48, 0.28),
-    0 10px 20px -8px rgba(15, 28, 48, 0.5),
-    0 24px 40px -20px rgba(15, 28, 48, 0.55);
+  background: #273f63;
 }
 
-/* Or frappé, comme la pièce : ce qui fait gagner ou avancer. */
+/* Or : ce qui fait gagner ou avancer (quête, objectif, coffre). */
 .btn-gold,
 .btn-quest {
+  background: #f0bf55;
   color: #2b1804;
-  text-shadow: 0 1px 0 rgba(255, 244, 210, 0.6);
-  background: radial-gradient(130% 150% at 28% -10%, #fff4cf 0%, #f8d06a 34%, #e6a83e 64%, #c9852a 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    inset 0 -3px 6px rgba(122, 70, 8, 0.3),
-    inset 0 0 0 1px rgba(160, 100, 20, 0.35),
-    0 1px 2px rgba(92, 54, 10, 0.3),
-    0 8px 18px -6px rgba(140, 84, 14, 0.45),
-    0 20px 36px -18px rgba(140, 84, 14, 0.45);
 }
 
 .btn-gold:hover:not(:disabled),
 .btn-quest:hover:not(:disabled) {
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -3px 6px rgba(122, 70, 8, 0.28),
-    inset 0 0 0 1px rgba(160, 100, 20, 0.35),
-    0 2px 3px rgba(92, 54, 10, 0.28),
-    0 12px 24px -8px rgba(140, 84, 14, 0.5),
-    0 28px 48px -22px rgba(140, 84, 14, 0.5);
-}
-
-/* Reflet qui balaie la pièce au survol, une fois. */
-.btn-gold::after,
-.btn-quest::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.55) 48%, transparent 62%);
-  transform: translateX(-120%);
-  transition: transform 700ms var(--ease-out);
-}
-
-.btn-gold:hover:not(:disabled)::after,
-.btn-quest:hover:not(:disabled)::after {
-  transform: translateX(120%);
+  background: #f5ca6a;
 }
 
 .btn-quest {
@@ -165,33 +114,25 @@
   font-size: 17px;
 }
 
-/* Papier : l'action secondaire. */
+/* Contour : l'action secondaire. */
 .btn-ghost {
+  background: transparent;
   color: var(--ink);
-  background: rgba(255, 250, 240, 0.9);
-  box-shadow:
-    inset 0 0 0 1px rgba(23, 41, 65, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 1px 2px rgba(23, 41, 65, 0.08),
-    0 6px 14px -8px rgba(23, 41, 65, 0.28);
+  box-shadow: inset 0 0 0 1.5px rgba(23, 41, 65, 0.2);
 }
 
 .btn-ghost:hover:not(:disabled) {
-  background: #fffaf0;
-  box-shadow:
-    inset 0 0 0 1px rgba(23, 41, 65, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 2px 3px rgba(23, 41, 65, 0.1),
-    0 10px 20px -10px rgba(23, 41, 65, 0.32);
+  background: rgba(23, 41, 65, 0.05);
+  box-shadow: inset 0 0 0 1.5px rgba(23, 41, 65, 0.32);
 }
 
 .btn-danger {
+  background: #f6dcd8;
   color: #9b2c22;
-  background: linear-gradient(180deg, #fbe8e3, #f5d3cb);
-  box-shadow:
-    inset 0 0 0 1px rgba(194, 69, 69, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 6px 14px -8px rgba(160, 50, 40, 0.35);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #f1cdc7;
 }
 
 .btn-block {
@@ -208,11 +149,6 @@
 @media (prefers-reduced-motion: reduce) {
   .btn {
     transition: none;
-  }
-
-  .btn-gold::after,
-  .btn-quest::after {
-    display: none;
   }
 }
 

@@ -27,7 +27,7 @@ export function LandingNav({ ctas }: { ctas: Ctas }) {
         <Link to={ctas.secondary.to} className="lp-nav-login">
           {ctas.secondary.label}
         </Link>
-        <Link to={ctas.nav.to} className="lp-btn lp-btn--gold lp-btn--small">
+        <Link to={ctas.nav.to} className="lp-btn lp-btn--tint lp-btn--small">
           {ctas.nav.label}
         </Link>
       </div>
