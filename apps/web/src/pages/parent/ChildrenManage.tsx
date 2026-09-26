@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { queName } from "../../lib/french";
 import { api } from "../../lib/api";
 import { Avatar } from "../../components/Avatar";
 import { ChildForm, type ChildFormValues } from "../../components/ChildForm";
@@ -93,6 +95,9 @@ export function ChildrenManage() {
             <VaultRuleEditor childId={child.id} childName={child.displayName} />
             <PedagogyEditor childId={child.id} initial={child.pedagogyLevel ?? "AUTO"} ageBand={child.ageBand} />
             <InvestSettingsEditor childId={child.id} />
+            <Link to={`/parent/enfants/${child.id}/placements`} className="btn btn-ghost btn-sm">
+              Voir ce {queName(child.displayName)} comprend des placements
+            </Link>
           </div>
         ))}
       </div>

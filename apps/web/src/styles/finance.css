@@ -124,3 +124,13 @@
 .game-end-figures div { padding: 10px 12px; border-radius: 12px; background: #fffaf0; border: 1px solid #eadfc4; }
 .game-end-figures dt { font-size: 12px; font-weight: 800; color: var(--ink-faint); }
 .game-end-figures dd { margin: 2px 0 0; font: 800 18px var(--font-display); color: var(--ink); }
+
+/* Vue parent des placements (INVESTMENT_UX §20). */
+.parent-invest h2 { margin: 0 0 10px; font-size: 19px; }
+.understanding-list { display: grid; gap: 8px; margin: 0 0 10px; padding: 0; list-style: none; }
+.understanding-list li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--parchment); }
+.understanding-state { padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 800; white-space: nowrap; color: var(--ink-faint); background: #ece3cc; }
+.understanding-state--decouvert { color: #274a60; background: var(--sky-soft); }
+.understanding-state--sait_expliquer { color: #1f5c40; background: var(--forest-soft); }
+.parent-next-talk { border-left: 4px solid var(--gold); }
+.parent-next-talk p { margin: 0; font: 600 17px / 1.45 var(--font-display); }

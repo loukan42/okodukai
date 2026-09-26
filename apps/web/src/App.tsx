@@ -24,6 +24,7 @@ import { MoneyVault } from "./pages/child/money/MoneyVault";
 import { MoneyHistory } from "./pages/child/money/MoneyHistory";
 import { Invest } from "./pages/child/money/Invest";
 import { SupportSheet } from "./pages/child/money/SupportSheet";
+import { ChildInvestView } from "./pages/parent/ChildInvestView";
 import { GameArchive, GamesArchive } from "./pages/child/money/GamesArchive";
 import { Orchard } from "./pages/child/money/Orchard";
 import { Learn } from "./pages/child/Learn";
@@ -82,6 +83,7 @@ export default function App() {
         <Route path="quetes" element={<QuestsManage />} />
         <Route path="boutique" element={<RewardsManage />} />
         <Route path="enfants" element={<ChildrenManage />} />
+        <Route path="enfants/:childId/placements" element={<ChildInvestView />} />
         <Route path="univers" element={<UniversesManage />} />
       </Route>
 

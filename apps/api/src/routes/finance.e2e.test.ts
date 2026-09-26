@@ -65,6 +65,14 @@ describe.skipIf(!process.env.DATABASE_URL)("encarts pédagogiques et vérificati
       expect(journal.chapters.find((c) => c.chapter === 2)!.notions.find((n) => n.code === "transfert")!.state).toBe("VERIFIEE");
       expect(journal.chapters.some((c) => c.chapter === 5)).toBe(false);
 
+      // Vue parent : les phrases du test avec leur état, jamais de score ; isolée par foyer.
+      const overview = (await (await fetch(`${base}/household/children/${child.id}/invest/overview`, { headers: parent })).json()) as { understanding: { code: string; state: string }[]; nextTalk: string };
+      expect(overview.understanding.map((u) => u.code)).toEqual(["P1", "P2", "P3", "P4", "P5", "P8"]);
+      expect(overview.understanding.find((u) => u.code === "P2")!.state).toBe("SAIT_EXPLIQUER");
+      expect(overview.nextTalk).toContain("Léo");
+      const stranger = { cookie: `okodukai_session=${signSession({ kind: "parent", userId: user.id, householdId: randomUUID(), role: "PARENT_ADMIN" })}` };
+      expect((await fetch(`${base}/household/children/${child.id}/invest/overview`, { headers: stranger })).status).toBe(404);
+
       // Niveau pédagogique « Approfondi » : l'enfant de 8-9 ans voit les mots 10-12.
       const level = await fetch(`${base}/household/children/${child.id}/pedagogy`, { method: "PUT", headers: parent, body: JSON.stringify({ level: "APPROFONDI" }) });
       expect(level.status).toBe(200);

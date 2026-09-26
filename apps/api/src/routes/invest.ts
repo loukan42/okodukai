@@ -408,3 +408,63 @@ investRouter.post("/household/children/:childId/invest-pause", requireParent, va
   await prisma.auditLog.create({ data: { householdId, actorUserId: userId, action: req.body.paused ? "invest_paused" : "invest_resumed", targetType: "ChildProfile", targetId: child.id } });
   res.json({ paused: req.body.paused });
 });
+
+// ---------------------------------------------------------------------------
+// Vue parent des placements (INVESTMENT_UX §20) : ce que l'enfant comprend, pas sa performance
+// ---------------------------------------------------------------------------
+
+/** Les huit phrases du test (FINANCIAL_EDUCATION §2.1) et les notions qui les vérifient. */
+const SENTENCES: { code: string; text: string; notions: string[]; old?: true }[] = [
+  { code: "P1", text: "Mon compte, c'est ce que je peux utiliser.", notions: ["compte"] },
+  { code: "P2", text: "Mon coffre, c'est ce que j'ai décidé de mettre de côté.", notions: ["transfert"] },
+  { code: "P3", text: "Mes placements peuvent monter ou descendre.", notions: ["unites_ecole", "hausse_baisse"] },
+  { code: "P4", text: "Je peux répartir mon argent.", notions: ["repartition", "pourcentage"] },
+  { code: "P5", text: "Mettre tout au même endroit peut augmenter certains risques.", notions: ["concentration", "diversification"] },
+  { code: "P6", text: "Un placement peut avoir des frais.", notions: ["frais"], old: true },
+  { code: "P7", text: "Les prix peuvent augmenter avec le temps.", notions: ["inflation", "pouvoir_achat"], old: true },
+  { code: "P8", text: "Je n'ai pas besoin de regarder mes placements toutes les cinq minutes.", notions: ["patience"] },
+];
+
+async function understandingFor(childId: string, band: AgeBand) {
+  const progress = await prisma.financeNotionProgress.findMany({ where: { childId } });
+  const state = new Map(progress.map((p) => [p.notionCode, p.state]));
+  return SENTENCES.filter((s) => band === "AGE_10_12" || !s.old).map((s) => {
+    const states = s.notions.map((n) => state.get(n));
+    return {
+      code: s.code,
+      text: s.text,
+      state: states.includes("VERIFIEE") ? "SAIT_EXPLIQUER" : states.some(Boolean) ? "DECOUVERT" : "PAS_ENCORE",
+    };
+  });
+}
+
+/** Une idée de question pour la prochaine discussion, tirée du dernier bilan (jamais un chiffre à juger). */
+function nextTalk(name: string, view: Awaited<ReturnType<typeof runView>> | null) {
+  const change = view?.lastStatement?.bySupportChange ?? {};
+  const names: Record<string, string> = { SECURISE: "Sécurisé", PRETER: "Prêter", MONDE: "Panier Monde", ENTREPRISES: "Entreprises" };
+  const down = Object.entries(change).sort((a, b) => a[1] - b[1]).find(([, d]) => d < -0.005);
+  const up = Object.entries(change).sort((a, b) => b[1] - a[1]).find(([, d]) => d > 0.005);
+  if (down && up) return `Demandez à ${name} pourquoi ${names[down[0]]} a baissé alors que ${names[up[0]]} a monté.`;
+  if (view && view.feesPaid > 0) return `Demandez à ${name} ce que les frais ont changé depuis le départ.`;
+  if (down) return `Demandez à ${name} : « Que ferais-tu si tu avais besoin de tes unités l'an prochain ? »`;
+  if (view && view.statements.length > 0) return `Demandez à ${name} ce qui a changé au dernier relevé, et quand aura lieu le prochain.`;
+  return `Demandez à ${name} : « Comment as-tu choisi de répartir tes 100 unités école ? »`;
+}
+
+investRouter.get("/household/children/:childId/invest/overview", requireParent, async (req, res) => {
+  const child = await childOfHousehold(req.params.childId, parentSession(req).householdId);
+  if (!child) return res.status(404).json({ error: "Enfant introuvable" });
+  const band = pedagogyBand(child);
+  const settings = await investSettingsFor(prisma, child.id, band);
+  const [mirror, orchard] = await Promise.all([activeRun(prisma, child.id), activeRun(prisma, child.id, "ASSURANCE_VIE")]);
+  const view = mirror ? await runView(prisma, mirror, band) : null;
+  res.json({
+    name: child.displayName,
+    ageBand: band,
+    enabled: settings.enabled,
+    understanding: await understandingFor(child.id, band),
+    run: view,
+    orchard: orchard ? await runView(prisma, orchard, band) : null,
+    nextTalk: nextTalk(child.displayName, view),
+  });
+});
