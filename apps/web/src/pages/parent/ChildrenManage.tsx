@@ -5,6 +5,7 @@ import { ChildForm, type ChildFormValues } from "../../components/ChildForm";
 import { CoinPill } from "../../components/CoinPill";
 import { GameIcon } from "../../components/GameIcon";
 import { VaultRuleEditor } from "../../components/VaultRuleEditor";
+import { InvestSettingsEditor } from "../../components/InvestSettingsEditor";
 
 interface ChildRow {
   id: string;
@@ -86,6 +87,7 @@ export function ChildrenManage() {
               </button>
             </div>
             <VaultRuleEditor childId={child.id} childName={child.displayName} />
+            <InvestSettingsEditor childId={child.id} />
           </div>
         ))}
       </div>

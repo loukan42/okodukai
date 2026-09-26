@@ -22,6 +22,7 @@ import { MoneyLayout } from "./pages/child/money/MoneyLayout";
 import { MoneyAccount } from "./pages/child/money/MoneyAccount";
 import { MoneyVault } from "./pages/child/money/MoneyVault";
 import { MoneyHistory } from "./pages/child/money/MoneyHistory";
+import { Invest } from "./pages/child/money/Invest";
 import { Learn } from "./pages/child/Learn";
 import { DevBar } from "./components/DevBar";
 
@@ -94,10 +95,11 @@ export default function App() {
           <Route index element={<MoneyAccount />} />
           <Route path="coffre" element={<MoneyVault />} />
           <Route path="historique" element={<MoneyHistory />} />
-          <Route path="investir" element={<Learn />} />
+          <Route path="investir" element={<Invest />} />
+          <Route path="investir/bibliotheque" element={<Learn />} />
         </Route>
         <Route path="coffre" element={<Navigate to="/enfant/argent/coffre" replace />} />
-        <Route path="apprendre" element={<Navigate to="/enfant/argent/investir" replace />} />
+        <Route path="apprendre" element={<Navigate to="/enfant/argent/investir/bibliotheque" replace />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

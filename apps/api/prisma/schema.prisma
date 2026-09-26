@@ -92,6 +92,8 @@ model ChildProfile {
   notifications   Notification[]
   vaultRule       VaultRule?
   vaultRequests   VaultWithdrawalRequest[]
+  investSettings  InvestSettings?
+  simulationRuns  SimulationRun[]
 
   @@index([householdId])
 }
@@ -659,3 +661,97 @@ model AuditLog {
 
   @@index([householdId, createdAt])
 }
+
+// ---------------------------------------------------------------------------
+// Placements école (moteur finsim) : unités école uniquement, jamais des pièces.
+// Voir docs/FINANCIAL_SIMULATION_ENGINE.md §10 et docs/INVESTMENT_UX.md.
+// ---------------------------------------------------------------------------
+
+enum SimRhythm {
+  RAPIDE
+  STANDARD
+  LONG
+}
+
+enum SimRunStatus {
+  EN_COURS
+  TERMINEE
+  ARRETEE
+}
+
+/// Réglages parent des placements école d'un enfant.
+model InvestSettings {
+  childId       String   @id
+  child         ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  enabled       Boolean  @default(true)
+  rhythm        SimRhythm @default(STANDARD)
+  /// Durée d'une partie en mois simulés (24 à 120).
+  horizonMonths Int      @default(60)
+  updatedById   String?
+  updatedAt     DateTime @updatedAt
+}
+
+/// Une partie de simulation : trajectoire de marché figée à la création (jamais envoyée au client).
+model SimulationRun {
+  id                    String   @id @default(uuid())
+  childId               String
+  child                 ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  householdId           String
+  engineVersion         String
+  parametersFingerprint String
+  seed                  String
+  scenario              String
+  horizonMonths         Int
+  rhythm                SimRhythm
+  timeZone              String   @default("Europe/Paris")
+  startedAt             DateTime @default(now())
+  fees                  Json
+  marketPath            Json
+  status                SimRunStatus @default(EN_COURS)
+  finishedAt            DateTime?
+  /// Clé d'idempotence de la validation de la première répartition.
+  idempotencyKey        String   @unique
+  createdAt             DateTime @default(now())
+
+  operations SimulationOperation[]
+  snapshots  SimulationSnapshot[]
+
+  @@index([childId, status])
+}
+
+/// Journal immuable des décisions de l'enfant (versement initial, arbitrages…).
+model SimulationOperation {
+  id             String   @id @default(uuid())
+  runId          String
+  run            SimulationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  step           Int
+  type           String
+  amount         Float?
+  amountPerMonth Float?
+  allocation     Json?
+  actorId        String
+  idempotencyKey String   @unique
+  createdAt      DateTime @default(now())
+
+  @@index([runId, step])
+}
+
+/// Relevé : ce que l'enfant a découvert à un rendez-vous. Jamais recalculé ni réécrit.
+model SimulationSnapshot {
+  id              String   @id @default(uuid())
+  runId           String
+  run             SimulationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  rendezVousIndex Int
+  step            Int
+  scheduledAt     DateTime
+  valueAtReveal   Float
+  bySupport       Json
+  contributed     Float
+  performanceIndex Float
+  priceIndex      Float
+  seenAt          DateTime?
+  computedAt      DateTime @default(now())
+
+  @@unique([runId, rendezVousIndex])
+}
+

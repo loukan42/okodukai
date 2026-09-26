@@ -14,7 +14,7 @@ import { rewardsRouter } from "./routes/rewards.js";
 import { savingsRouter } from "./routes/savings.js";
 import { collectionRouter } from "./routes/collection.js";
 import { learningRouter } from "./routes/learning.js";
-import { simulationRouter } from "./routes/simulation.js";
+import { investRouter } from "./routes/invest.js";
 import { badgesRouter } from "./routes/badges.js";
 import { notificationsRouter } from "./routes/notifications.js";
 import { devRouter } from "./routes/dev.js";
@@ -57,7 +57,7 @@ export function createApp() {
   app.use("/", savingsRouter);
   app.use("/", collectionRouter);
   app.use("/", learningRouter);
-  app.use("/", simulationRouter);
+  app.use("/", investRouter);
   app.use("/", badgesRouter);
   app.use("/", notificationsRouter);
 

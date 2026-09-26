@@ -885,3 +885,594 @@
   margin: 6px 0 0;
   line-height: 1.5;
 }
+
+/* Investir : l'observatoire (variante crépuscule), l'établi, les bilans ------------------ */
+
+.observatory-head {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 20px 22px;
+  border-radius: 24px;
+  color: #f4ecd8;
+  background: url("/assets/backgrounds/valley-dusk-wide-1280.webp") center 55% / cover no-repeat, #2a2447;
+  border: 1px solid rgba(20, 24, 50, 0.6);
+}
+
+.observatory-head::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, rgba(12, 14, 34, 0.82), rgba(12, 14, 34, 0.45));
+}
+
+.observatory-head h1 {
+  color: #fff4da;
+  font-size: clamp(24px, 3.2vw, 32px);
+  font-variation-settings: "SOFT" 100;
+}
+
+.observatory-head p {
+  margin: 4px 0 0;
+  color: #dcd8e6;
+  line-height: 1.5;
+}
+
+.observatory-head .scene-kicker {
+  color: #f5c77a;
+  margin: 0;
+}
+
+.observatory-value {
+  display: grid;
+  gap: 6px;
+  padding: 20px;
+  border-radius: 22px;
+  background: var(--surface-raised);
+  border: 1px solid var(--parchment-line);
+  box-shadow: var(--shadow-md);
+}
+
+.observatory-value p {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.observatory-value b {
+  color: var(--night);
+  font-variant-numeric: tabular-nums;
+}
+
+.observatory-value-number {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.observatory-value-number strong {
+  font-size: clamp(42px, 8vw, 64px);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--night);
+  font-variant-numeric: tabular-nums;
+}
+
+.observatory-value-number span {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.observatory-risk {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px !important;
+  font-size: 14px;
+}
+
+.observatory-trail {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--parchment-dim);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--night);
+}
+
+.observatory-supports {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.observatory-supports li {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--surface-raised);
+  border: 1px solid var(--parchment-line);
+}
+
+.observatory-support-name {
+  display: grid;
+  gap: 2px;
+}
+
+.observatory-support-name small {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.support-card-emblem {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: #274a60;
+  background: #dbe9ee;
+  border: 1px solid #b8d0d8;
+}
+
+/* Crans de risque : hauteur croissante et texture, pas seulement la couleur. */
+.risk-meter {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.risk-meter-bar {
+  width: 7px;
+  border-radius: 2px;
+  background: #e2d8c2;
+}
+
+.risk-meter-bar--on {
+  background: repeating-linear-gradient(135deg, #3d5f78 0 2px, #5d7d95 2px 4px);
+}
+
+.onboarding-count {
+  margin: 0;
+  font-weight: 800;
+  color: var(--ink-faint);
+  font-size: 14px;
+}
+
+.invest-step {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border-radius: 24px;
+  background: var(--surface-raised);
+  border: 1px solid var(--parchment-line);
+  box-shadow: var(--shadow-md);
+}
+
+.invest-step h1,
+.invest-step h2 {
+  margin: 0;
+  font-size: clamp(22px, 3vw, 28px);
+  color: var(--night);
+}
+
+.invest-step p {
+  margin: 0;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.invest-step > .btn {
+  justify-self: start;
+}
+
+.invest-step-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.invest-step-actions--even .btn {
+  flex: 1 1 0;
+}
+
+/* Jetons d'étude : bleu ciel gravés d'une étoile, jamais d'or (réservé à la pièce). */
+.study-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.study-token {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 45%),
+    #9fc3c8;
+  border: 2px solid #6f9aa0;
+  box-shadow: inset 0 -3px 0 rgba(40, 80, 90, 0.2);
+  position: relative;
+}
+
+.study-token::after {
+  content: "✦";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #3f6f76;
+  font-size: 15px;
+}
+
+.support-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.support-card {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--parchment-line);
+  background: var(--surface);
+}
+
+.support-card-head {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  border: 0;
+  background: none;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.support-card-head strong {
+  display: block;
+  font-size: 16.5px;
+}
+
+.support-card-head small {
+  color: var(--ink-faint);
+}
+
+.support-card p {
+  margin: 0;
+  font-size: 14.5px;
+}
+
+.support-card-risk {
+  font-weight: 700;
+  color: #3d5f78 !important;
+}
+
+.support-card-real {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--sky-soft);
+}
+
+.atelier {
+  display: grid;
+  gap: 14px;
+}
+
+.atelier-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.atelier-row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: #f7efdc;
+  border: 1px solid #e3d3b0;
+}
+
+.atelier-emblem {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #fffaf0;
+  color: #274a60;
+}
+
+.atelier-name {
+  display: grid;
+  gap: 6px;
+}
+
+.atelier-controls {
+  display: grid;
+  grid-template-columns: 44px minmax(84px, auto) 44px;
+  align-items: center;
+  gap: 6px;
+}
+
+.atelier-controls button {
+  height: 44px;
+  border-radius: 12px;
+  border: 1.5px solid var(--parchment-line);
+  background: var(--surface);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--night);
+  cursor: pointer;
+}
+
+.atelier-controls button:disabled {
+  color: var(--ink-faint);
+  cursor: not-allowed;
+}
+
+.atelier-controls output {
+  text-align: center;
+  font-weight: 800;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.atelier-gauge {
+  display: flex;
+  height: 22px;
+  border-radius: 11px;
+  overflow: hidden;
+  border: 1px solid #cdbf9f;
+  background: #efe6d2;
+}
+
+.atelier-gauge-part {
+  height: 100%;
+  transition: width 120ms var(--ease-out);
+}
+
+.atelier-gauge-part--securise {
+  background: repeating-linear-gradient(0deg, #7e9eae 0 3px, #8fb0c0 3px 6px);
+}
+
+.atelier-gauge-part--preter {
+  background: repeating-linear-gradient(90deg, #6f9a74 0 3px, #82ad86 3px 6px);
+}
+
+.atelier-gauge-part--monde {
+  background: repeating-linear-gradient(45deg, #c49a4a 0 3px, #d6ad5d 3px 6px);
+}
+
+.atelier-gauge-part--entreprises {
+  background: repeating-linear-gradient(135deg, #b0684a 0 3px, #c47d5e 3px 6px);
+}
+
+.atelier-gauge-left {
+  height: 100%;
+  background: repeating-linear-gradient(135deg, transparent 0 4px, rgba(92, 107, 120, 0.25) 4px 6px);
+}
+
+.atelier-total {
+  margin: 0;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--night);
+}
+
+.atelier-risk {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink-soft);
+}
+
+/* Encart de la bibliothèque : dans la page, jamais bloquant. */
+.library-note {
+  margin: 0;
+  padding: 12px 14px 12px 42px;
+  border-radius: 14px;
+  background: var(--sky-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23274a60' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5C9 3 6 3 3 4v15c3-1 6-1 9 1 3-2 6-2 9-1V4c-3-1-6-1-9 1zM12 5v15'/%3E%3C/svg%3E") 14px 13px / 18px no-repeat;
+  color: #274a60 !important;
+  line-height: 1.5;
+}
+
+.allocation-summary {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.allocation-summary li {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--parchment);
+  color: #274a60;
+}
+
+.allocation-summary span {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.statement {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-radius: 22px;
+  background: linear-gradient(160deg, #fffaf0, #f6ecd4);
+  border: 1px solid #d8c29a;
+  box-shadow: var(--shadow-md);
+}
+
+.statement h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.statement p {
+  margin: 0;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.statement .btn {
+  justify-self: start;
+}
+
+.statement-main {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--night) !important;
+}
+
+.statement-supports {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.statement-supports li {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  color: #274a60;
+}
+
+.statement-supports span {
+  color: var(--ink);
+}
+
+.statement-supports strong {
+  color: var(--night);
+  font-variant-numeric: tabular-nums;
+}
+
+.money-banner--button {
+  border: 1px solid #d5ad61;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  font-weight: 800;
+}
+
+.value-chart {
+  margin: 0;
+  padding: 14px 14px 8px;
+  border-radius: 20px;
+  background: #1b2440;
+  border: 1px solid #2c3658;
+}
+
+.value-chart svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.value-chart-grid {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.value-chart-axis,
+.value-chart-ref-label {
+  fill: #aab4cc;
+  font-size: 12px;
+  font-family: var(--font-interface);
+}
+
+.value-chart-ref {
+  stroke: #aab4cc;
+  stroke-dasharray: 4 5;
+}
+
+.value-chart-line {
+  fill: none;
+  stroke: #f5c77a;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.value-chart-dot {
+  fill: #f5c77a;
+  stroke: #1b2440;
+  stroke-width: 2;
+}
+
+.value-chart-last {
+  fill: #fff4da;
+  font-size: 14px;
+  font-weight: 800;
+  font-family: var(--font-interface);
+}
+
+.value-chart-note {
+  margin: 6px 4px 4px;
+  font-size: 13px;
+  color: #aab4cc;
+}
+
+@media (max-width: 520px) {
+  .atelier-row {
+    grid-template-columns: 40px 1fr;
+  }
+
+  .atelier-controls {
+    grid-column: 1 / -1;
+    grid-template-columns: 52px 1fr 52px;
+  }
+
+  .observatory-head {
+    grid-template-columns: 1fr;
+    background-image: url("/assets/backgrounds/valley-dusk-tall-720.webp");
+  }
+}
+
+.vault-rule-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.vault-rule-toggle input {
+  width: 20px;
+  height: 20px;
+  accent-color: #253c51;
+}
