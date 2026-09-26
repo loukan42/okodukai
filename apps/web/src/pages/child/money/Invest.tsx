@@ -26,6 +26,7 @@ import { ValueChart } from "../../../components/invest/ValueChart";
 import { XpEarned } from "../../../components/invest/XpEarned";
 import { FinanceQuestion } from "../../../components/finance/FinanceQuestion";
 import { FinanceTip } from "../../../components/finance/FinanceTip";
+import { GameIcon } from "../../../components/GameIcon";
 import { ObjectArt } from "../../../art/ObjectArt";
 
 const RISKS: Record<SupportCode, number> = { SECURISE: 1, PRETER: 2, MONDE: 4, ENTREPRISES: 5 };
@@ -374,14 +375,17 @@ function Observatory({ state, reload }: { state: InvestState; reload: () => Prom
         <ul className="observatory-supports">
           {SUPPORT_ORDER.filter((c) => (run.bySupport[c] ?? 0) > 0.005 || run.targetAllocation[c] > 0).map((c) => (
             <li key={c}>
-              <span className="support-card-emblem">
-                <SupportEmblem code={c} size={26} />
-              </span>
-              <span className="observatory-support-name">
-                <strong>{SUPPORTS[c].name}</strong>
-                <small>{young ? `${units(run.bySupport[c], true)} unités` : `${units(run.bySupport[c], false)} unités · ${Math.round(run.actualAllocation[c])} % (choisi ${run.targetAllocation[c]} %)`}</small>
-              </span>
-              <RiskMeter level={run.supportsRisk[c]} label={`Niveau de risque ${run.supportsRisk[c]} sur 5`} />
+              <Link to={`/enfant/argent/investir/support/${c}`} className="observatory-support-link">
+                <span className="support-card-emblem">
+                  <SupportEmblem code={c} size={26} />
+                </span>
+                <span className="observatory-support-name">
+                  <strong>{SUPPORTS[c].name}</strong>
+                  <small>{young ? `${units(run.bySupport[c], true)} unités` : `${units(run.bySupport[c], false)} unités · ${Math.round(run.actualAllocation[c])} % (choisi ${run.targetAllocation[c]} %)`}</small>
+                </span>
+                <RiskMeter level={run.supportsRisk[c]} label={`Niveau de risque ${run.supportsRisk[c]} sur 5`} />
+                <GameIcon name="arrow" size={16} />
+              </Link>
             </li>
           ))}
         </ul>

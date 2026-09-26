@@ -23,6 +23,7 @@ import { MoneyAccount } from "./pages/child/money/MoneyAccount";
 import { MoneyVault } from "./pages/child/money/MoneyVault";
 import { MoneyHistory } from "./pages/child/money/MoneyHistory";
 import { Invest } from "./pages/child/money/Invest";
+import { SupportSheet } from "./pages/child/money/SupportSheet";
 import { Orchard } from "./pages/child/money/Orchard";
 import { Learn } from "./pages/child/Learn";
 import { DevBar } from "./components/DevBar";
@@ -99,6 +100,7 @@ export default function App() {
           <Route path="investir" element={<Invest />} />
           <Route path="investir/bibliotheque" element={<Learn />} />
           <Route path="investir/verger" element={<Orchard />} />
+          <Route path="investir/support/:code" element={<SupportSheet />} />
         </Route>
         <Route path="coffre" element={<Navigate to="/enfant/argent/coffre" replace />} />
         <Route path="apprendre" element={<Navigate to="/enfant/argent/investir/bibliotheque" replace />} />

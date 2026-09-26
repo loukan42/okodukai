@@ -64,3 +64,39 @@
 .carnet-leaves strong { display: block; color: #1d3a50; }
 
 @media (prefers-reduced-motion: reduce) { .finance-tip, .finance-question { animation: none; } }
+
+/* Supports de l'observatoire : chaque ligne ouvre sa fiche. */
+.observatory-supports li:has(> .observatory-support-link) { display: block; padding: 0; }
+.observatory-support-link {
+  display: grid;
+  grid-template-columns: 44px 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 56px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  color: inherit;
+  text-decoration: none;
+}
+.observatory-support-link > svg:last-child { color: var(--ink-faint); }
+@media (hover: hover) { .observatory-support-link:hover { background: #fff; } }
+
+/* Fiche support (INVESTMENT_UX E8). */
+.support-sheet { gap: 14px; }
+.support-sheet-back { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--ink-soft); font-weight: 800; text-decoration: none; }
+.support-sheet-back svg { transform: scaleX(-1); }
+.support-sheet-head { display: flex; align-items: center; gap: 14px; }
+.support-sheet-head h1 { margin: 0; font-size: clamp(26px, 6vw, 34px); }
+.support-sheet-head .scene-kicker { margin: 0 0 2px; color: #8f5b24; }
+.support-sheet-emblem { width: 64px; height: 64px; }
+.support-sheet-block { display: grid; gap: 8px; padding: 16px; border: 1px solid var(--parchment-line); border-radius: 16px; background: var(--surface-raised); }
+.support-sheet-block h2 { margin: 0; font-size: 18px; }
+.support-sheet-block p { margin: 0; line-height: 1.5; }
+.support-sheet-risk { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+.support-sheet-duration { grid-template-columns: auto 1fr; align-items: center; }
+.support-trail { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.support-trail li { min-width: 44px; padding: 6px 10px; border-radius: 10px; text-align: center; font-weight: 800; background: var(--parchment-dim); }
+.support-trail li:last-child { color: #fff; background: var(--ink); }
+.support-curve { width: 100%; height: auto; }
+.support-curve-base { stroke: var(--parchment-line); stroke-dasharray: 4 4; }
+.support-curve-line { fill: none; stroke: var(--sky); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }

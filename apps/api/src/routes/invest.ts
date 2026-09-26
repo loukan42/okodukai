@@ -5,7 +5,7 @@ import { prisma } from "../lib/prisma.js";
 import { pedagogyBand } from "../lib/pedagogy.js";
 import { validateBody } from "../lib/validation.js";
 import { attachSession, requireChild, requireParent, childSession, parentSession } from "../middleware/requireAuth.js";
-import { RHYTHMS, listRendezVous, portfolioRiskLevel } from "../lib/financeSim/index.js";
+import { RHYTHMS, SUPPORTS, SUPPORT_CODES, listRendezVous, portfolioRiskLevel, type FeeSchedule, type MarketPath, type SupportCode } from "../lib/financeSim/index.js";
 import {
   FINANCE_XP,
   ORCHARD,
@@ -239,4 +239,54 @@ investRouter.put("/household/children/:childId/invest-settings", requireParent, 
   const settings = await prisma.investSettings.upsert({ where: { childId: child.id }, create: { childId: child.id, ...data }, update: data });
   await prisma.auditLog.create({ data: { householdId, actorUserId: userId, action: "invest_settings_updated", targetType: "ChildProfile", targetId: child.id, metadata: data } });
   res.json({ settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths } });
+});
+
+// ---------------------------------------------------------------------------
+// Fiche support (INVESTMENT_UX E8) : sa propre part, son évolution révélée, son risque
+// ---------------------------------------------------------------------------
+
+/** Durée recommandée « dans ce jeu » (E8) : 8-9 en mots, 10-12 en années. */
+const DURATIONS: Record<SupportCode, { young: string; old: string }> = {
+  SECURISE: { young: "un peu", old: "à tout moment" },
+  PRETER: { young: "un peu", old: "2 ans ou plus" },
+  MONDE: { young: "longtemps", old: "5 ans ou plus" },
+  ENTREPRISES: { young: "longtemps", old: "5 ans ou plus" },
+};
+const SUPPORT_XP = 5;
+
+investRouter.get("/child/invest/supports/:code", requireChild, async (req, res) => {
+  const parsed = z.enum(SUPPORT_CODES as unknown as [SupportCode, ...SupportCode[]]).safeParse(req.params.code);
+  if (!parsed.success) return res.status(404).json({ error: "Support introuvable" });
+  const code = parsed.data;
+  const { childId } = childSession(req);
+  const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId } });
+  const band = pedagogyBand(child);
+  const young = band === "AGE_8_9";
+  // Première ouverture d'une fiche : +5 XP d'exploration, une fois par support (FINANCIAL_EDUCATION §7.1).
+  const xp = await prisma.$transaction((tx) => grantXp(tx, { childId, amount: SUPPORT_XP, sourceType: "FINANCE_LEARNING", sourceId: code, idempotencyKey: `fin:explore:${childId}:support:${code}` }));
+  const base = { code, riskLevel: SUPPORTS[code].riskLevel, duration: DURATIONS[code][young ? "young" : "old"], xpAwarded: xp ? SUPPORT_XP : 0 };
+
+  const run = await activeRun(prisma, childId, modeOf(req.query.mode));
+  if (!run) return res.json({ ...base, held: false });
+  const view = await runView(prisma, run, band);
+  const prices = (run.marketPath as unknown as MarketPath).prices[code];
+  const revealed = view.clock.revealedSteps;
+  const snapshots = await prisma.simulationSnapshot.findMany({ where: { runId: run.id }, orderBy: { rendezVousIndex: "asc" }, select: { rendezVousIndex: true, step: true, bySupport: true } });
+  const previousStep = snapshots.length >= 2 ? snapshots[snapshots.length - 2].step : 0;
+  const fees = run.fees as unknown as FeeSchedule;
+  const managementRate = typeof fees.managementRateAnnual === "number" ? fees.managementRateAnnual : fees.managementRateAnnual[code];
+  res.json({
+    ...base,
+    held: (view.bySupport[code] ?? 0) > 0.005,
+    units: view.bySupport[code] ?? 0,
+    actualPercent: view.actualAllocation[code] ?? 0,
+    targetPercent: view.targetAllocation[code] ?? 0,
+    // Rien au-delà de l'étape révélée : la trajectoire du support s'arrête au dernier relevé.
+    sinceStart: revealed > 0 ? prices[revealed] / prices[0] - 1 : 0,
+    lastPeriod: snapshots.length > 0 ? prices[revealed] / prices[previousStep] - 1 : 0,
+    lastChange: view.lastStatement?.bySupportChange[code] ?? 0,
+    trail: snapshots.slice(-5).map((s) => ({ index: s.rendezVousIndex, value: (s.bySupport as Record<string, number>)[code] ?? 0 })),
+    curve: young ? [] : prices.slice(0, revealed + 1).map((value, step) => ({ step, value })),
+    managementRate: young ? null : managementRate,
+  });
 });
