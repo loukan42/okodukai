@@ -186,7 +186,8 @@ body { background: var(--parchment); color: var(--ink); }
 .album-card-frame .gilded-inner,.album-card-frame .gilded-aspect { display:block; }
 .album-card-frame .gilded-inner { border-radius:7px; background:#152b3d; }
 .album-card-frame .gilded-aspect { border-radius:6px; overflow:hidden; background:#20374a; aspect-ratio:2/3; }
-.album-card-frame .gilded-image { position:absolute; left:-3%; top:-3%; width:106%; height:106%; max-width:none; object-fit:fill; }
+/* Image entière (marges des illustrations variables selon l'univers : pas de recadrage fixe). */
+.album-card-frame .gilded-image { position:absolute; inset:0; width:100%; height:100%; max-width:none; object-fit:contain; }
 .album-card:not(.album-card--locked) { transform:perspective(850px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg)); transform-style:preserve-3d; transition:transform 160ms var(--ease-out); }
 @media (hover:hover) and (pointer:fine) { .album-card:not(.album-card--locked):hover { transform:perspective(850px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg)) translateY(-4px); } .album-card:not(.album-card--locked):hover .card-pointer-glint { opacity:.5; } }
 .album-card--locked .gilded-image { filter:grayscale(1) brightness(.42); }
@@ -201,7 +202,7 @@ body { background: var(--parchment); color: var(--ink); }
 .album-theatre-inner .card-modal-close { position:absolute; z-index:2; top:0; right:0; width:44px; height:44px; }
 .album-theatre-kicker { color:#f0d294; margin:0; font-size:13px; font-weight:800; }
 .album-theatre-card { position:relative; width:min(64vw,330px); aspect-ratio:2/3; display:grid; place-items:center; overflow:hidden; border:2px solid #dfbc77; border-radius:16px; background:#142739; box-shadow:0 20px 45px rgba(0,0,0,.44),0 0 28px rgba(212,156,63,.22); }
-.album-theatre-card img { position:absolute; left:-3%; top:-3%; width:106%; height:106%; max-width:none; object-fit:fill; }
+.album-theatre-card img { position:absolute; inset:0; width:100%; height:100%; max-width:none; object-fit:contain; }
 .album-theatre-shine { position:absolute; inset:0; pointer-events:none; background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.22) 48%,transparent 59%); transform:translateX(-160%); animation:ok-shine 1.1s .45s ease-out both; }
 @keyframes ok-shine { to { transform:translateX(160%); } }
 .album-theatre-inner h2 { margin:3px 0 0; color:#fff4df; font-size:clamp(24px,4vw,32px); text-align:center; }
