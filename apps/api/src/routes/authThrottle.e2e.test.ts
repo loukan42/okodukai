@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import { createApp } from "../app.js";
 import { prisma } from "../lib/prisma.js";
 import { childPinThrottleKey, parentThrottleKey } from "../lib/throttle.js";
+import { DEVICE_COOKIE, signDevice } from "../lib/auth.js";
 
 config({ path: fileURLToPath(new URL("../../.env", import.meta.url)) });
 
@@ -25,14 +26,22 @@ describe.skipIf(!process.env.DATABASE_URL)("limitation des tentatives de connexi
     });
     const pinKey = childPinThrottleKey(child.id);
     const parentKey = parentThrottleKey(email);
+    const device = { ...json, cookie: `${DEVICE_COOKIE}=${signDevice(household.id)}` };
     const pin = (value: string) =>
-      fetch(`${base}/auth/households/${household.id}/children/${child.id}/login`, { method: "POST", headers: json, body: JSON.stringify({ pin: value }) });
+      fetch(`${base}/auth/households/${household.id}/children/${child.id}/login`, { method: "POST", headers: device, body: JSON.stringify({ pin: value }) });
     const signIn = (path: string, password: string) => fetch(`${base}${path}`, { method: "POST", headers: json, body: JSON.stringify({ email, password }) });
     const endLock = (key: string) =>
       prisma.authThrottle.update({ where: { key }, data: { lockedUntil: new Date(Date.now() - 1000), windowStartedAt: new Date(Date.now() - 1000) } });
 
     try {
       await prisma.householdMembership.create({ data: { householdId: household.id, userId: user.id, role: "PARENT_ADMIN" } });
+
+      // Sans appareil familial (cookie posé à la connexion d'un parent) : ni liste des profils, ni PIN.
+      expect((await fetch(`${base}/auth/households/${household.id}/children`)).status).toBe(403);
+      expect((await fetch(`${base}/auth/households/${household.id}/children/${child.id}/login`, { method: "POST", headers: json, body: JSON.stringify({ pin: "1234" }) })).status).toBe(403);
+      const otherDevice = { cookie: `${DEVICE_COOKIE}=${signDevice(randomUUID())}` };
+      expect((await fetch(`${base}/auth/households/${household.id}/children`, { headers: otherDevice })).status).toBe(403);
+      expect((await fetch(`${base}/auth/households/${household.id}/children`, { headers: device })).status).toBe(200);
 
       // PIN : 4 erreurs, la 5e bloque, et même le bon code attend la fin du blocage.
       for (let i = 0; i < 4; i++) expect((await pin("0000")).status).toBe(401);

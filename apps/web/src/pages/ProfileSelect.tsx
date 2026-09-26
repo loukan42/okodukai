@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useAuth, LAST_HOUSEHOLD_KEY } from "../lib/AuthContext";
 import { Avatar } from "../components/Avatar";
@@ -20,19 +20,27 @@ export function ProfileSelect() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const householdId = localStorage.getItem(LAST_HOUSEHOLD_KEY);
+  // Appareil pas encore « familial » (aucun parent connecté ici depuis la mise à jour) : on le dit.
+  const [needsParent, setNeedsParent] = useState(false);
 
   useEffect(() => {
     if (!householdId) return;
     api
       .get<{ children: ChildOption[] }>(`/auth/households/${householdId}/children`)
       .then((res) => setChildren(res.children))
-      .catch(() => setChildren([]));
+      .catch((err) => {
+        setChildren([]);
+        if (err instanceof ApiError && err.status === 403) setNeedsParent(true);
+      });
   }, [householdId]);
 
-  if (!householdId) {
+  if (!householdId || needsParent) {
     return (
       <div className="centered-auth">
         <p className="text-faint">Connectez-vous d'abord en tant que parent sur cet appareil.</p>
+        <Link to="/connexion" className="btn btn-primary">
+          Connexion parent
+        </Link>
       </div>
     );
   }

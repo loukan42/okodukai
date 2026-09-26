@@ -39,3 +39,26 @@ export const SESSION_COOKIE_OPTIONS = {
   secure: isProduction,
   maxAge: 30 * 24 * 60 * 60 * 1000,
 };
+
+// -- Appareil familial ------------------------------------------------------------
+// Le choix du profil enfant et la connexion par PIN ne s'ouvrent que sur un appareil où un parent
+// s'est connecté : un cookie signé y retient le foyer. Connaître l'identifiant d'un foyer ne suffit
+// plus pour lister ses enfants ou essayer des PIN.
+
+export const DEVICE_COOKIE = "okodukai_device";
+export const DEVICE_COOKIE_OPTIONS = { ...SESSION_COOKIE_OPTIONS, maxAge: 365 * 24 * 60 * 60 * 1000 };
+
+export function signDevice(householdId: string): string {
+  if (!JWT_SECRET) throw new Error("JWT_SECRET manquant");
+  return jwt.sign({ kind: "device", householdId }, JWT_SECRET, { expiresIn: "365d" });
+}
+
+export function verifyDevice(token: string | undefined): string | null {
+  if (!token || !JWT_SECRET) return null;
+  try {
+    const payload = jwt.verify(token, JWT_SECRET) as { kind?: string; householdId?: string };
+    return payload.kind === "device" && payload.householdId ? payload.householdId : null;
+  } catch {
+    return null;
+  }
+}

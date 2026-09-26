@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
-import { signSession, SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from "../lib/auth.js";
+import { DEVICE_COOKIE, DEVICE_COOKIE_OPTIONS, signDevice, signSession, SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from "../lib/auth.js";
 import { validateBody } from "../lib/validation.js";
 import { seedDatabase } from "../lib/devSeed.js";
 
@@ -54,6 +54,7 @@ devRouter.post("/dev/login-as-parent", validateBody(loginAsParentSchema), async 
     role: membership.role,
   });
   res.cookie(SESSION_COOKIE, token, SESSION_COOKIE_OPTIONS);
+  res.cookie(DEVICE_COOKIE, signDevice(membership.householdId), DEVICE_COOKIE_OPTIONS);
   res.json({ ok: true, householdId: membership.householdId });
 });
 
@@ -65,6 +66,7 @@ devRouter.post("/dev/login-as-child", validateBody(loginAsChildSchema), async (r
 
   const token = signSession({ kind: "child", childId: child.id, householdId: child.householdId });
   res.cookie(SESSION_COOKIE, token, SESSION_COOKIE_OPTIONS);
+  res.cookie(DEVICE_COOKIE, signDevice(child.householdId), DEVICE_COOKIE_OPTIONS);
   res.json({ ok: true, householdId: child.householdId });
 });
 

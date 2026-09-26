@@ -4,7 +4,7 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { pedagogyBand } from "../lib/pedagogy.js";
-import { signSession, SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from "../lib/auth.js";
+import { DEVICE_COOKIE, DEVICE_COOKIE_OPTIONS, signDevice, signSession, verifyDevice, SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from "../lib/auth.js";
 import { validateBody } from "../lib/validation.js";
 import {
   CHILD_PIN,
@@ -21,6 +21,12 @@ export const authRouter = Router();
 authRouter.use(attachSession);
 
 const cookieOptions = SESSION_COOKIE_OPTIONS;
+
+/** Un parent connecté sur cet appareil en fait un appareil familial (profils enfants et PIN). */
+function rememberDevice(res: import("express").Response, householdId: string) {
+  res.cookie(DEVICE_COOKIE, signDevice(householdId), DEVICE_COOKIE_OPTIONS);
+}
+const DEVICE_REQUIRED = "Un parent doit d'abord se connecter sur cet appareil.";
 
 /** Les comptes créés avant la normalisation peuvent contenir des majuscules : recherche insensible à la casse. */
 function findUserByEmail(email: string) {
@@ -57,6 +63,7 @@ authRouter.post("/continue", validateBody(continueSchema), async (req, res) => {
     }
     const token = signSession({ kind: "parent", userId: existing.id, householdId: membership.householdId, role: membership.role });
     res.cookie(SESSION_COOKIE, token, cookieOptions);
+    rememberDevice(res, membership.householdId);
     return res.json({ outcome: "signed_in", onboardingCompleted: Boolean(membership.household.onboardingCompletedAt) });
   }
 
@@ -105,6 +112,7 @@ authRouter.post("/continue", validateBody(continueSchema), async (req, res) => {
 
   const token = signSession({ kind: "parent", userId: created.user.id, householdId: created.household.id, role: "PARENT_ADMIN" });
   res.cookie(SESSION_COOKIE, token, cookieOptions);
+  rememberDevice(res, created.household.id);
   res.status(201).json({ outcome: "created", onboardingCompleted: false });
 });
 
@@ -122,6 +130,8 @@ authRouter.get("/me", async (req, res) => {
       prisma.household.findUnique({ where: { id: req.session.householdId } }),
     ]);
     if (!user || !household) return res.status(401).json({ error: "Non authentifié" });
+    // Un parent déjà connecté (avant l'arrivée de ce cookie) rend l'appareil familial sans rien refaire.
+    rememberDevice(res, req.session.householdId);
     return res.json({
       kind: "parent",
       user: { id: user.id, email: user.email, displayName: user.displayName },
@@ -143,6 +153,7 @@ authRouter.get("/me", async (req, res) => {
 // -- Sélection de profil enfant sur l'appareil familial --------------------
 
 authRouter.get("/households/:householdId/children", async (req, res) => {
+  if (verifyDevice(req.cookies?.[DEVICE_COOKIE]) !== req.params.householdId) return res.status(403).json({ error: DEVICE_REQUIRED });
   const children = await prisma.childProfile.findMany({
     where: { householdId: req.params.householdId },
     select: { id: true, displayName: true, avatarId: true, ageBand: true },
@@ -156,6 +167,7 @@ authRouter.post(
   "/households/:householdId/children/:childId/login",
   validateBody(childLoginSchema),
   async (req, res) => {
+    if (verifyDevice(req.cookies?.[DEVICE_COOKIE]) !== req.params.householdId) return res.status(403).json({ error: DEVICE_REQUIRED });
     const child = await prisma.childProfile.findFirst({
       where: { id: req.params.childId, householdId: req.params.householdId },
     });
@@ -196,5 +208,6 @@ authRouter.post("/exit-child-mode", validateBody(exitChildModeSchema), async (re
     role: membership.role,
   });
   res.cookie(SESSION_COOKIE, token, cookieOptions);
+  rememberDevice(res, membership.householdId);
   res.json({ ok: true });
 });
