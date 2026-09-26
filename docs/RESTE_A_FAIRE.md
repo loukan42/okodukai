@@ -1,5 +1,13 @@
 # Reste à faire : passation (26 septembre 2026)
 
+## Point d’étape du 27 septembre 2026 — refonte enfant en cours
+
+- Accueil enfant remplacé par la Vallée d’Okodukai, avec fonds WebP distincts pour ordinateur et mobile, lieux cliquables, HUD et accès aux quêtes. Un profil enfant permet de choisir un avatar du roster existant.
+- Le parent peut définir un PIN parent, passer sur l’espace d’un enfant sur le même téléphone, puis revenir avec ce PIN. Il peut aussi créer un lien à usage unique valable 24 h pour le téléphone personnel de l’enfant ; l’enfant entre son PIN habituel. Le lien ne donne jamais accès au compte parent.
+- Migration `20260927090000_child_device_access` appliquée en local ; elle doit être appliquée sur les autres bases au déploiement. Tests API : 74/74 verts. Build complet des trois workspaces : vert. Accueil et dialogue parent vérifiés en navigateur à 375 px et sur ordinateur.
+- Direction et inventaire : `CHILD_ART_DIRECTION.md` et `CHILD_ASSET_PLAN.md`. Ce point d’étape ne clôt pas la refonte demandée. À poursuivre : l’ensemble des écrans enfant, personnages et récompenses, variantes de village par niveau, textes i18n des nouveaux composants, mouvements, documentation de motion/UI/audit, registre d’assets et captures tablette/desktop/mobile finales. Deux sources PNG de récompenses ont été générées localement dans le dossier `C:\Users\Lou\.codex\generated_images\01a0dfbf-50f4-7450-ba2a-2582050362c2` et restent à évaluer avant intégration.
+- Une reprise automatique de cette tâche est programmée après la remise à zéro du quota à 04 h 05 (Europe/Paris) le 27 septembre. Elle doit vérifier le quota, finir la refonte, relancer les validations et pousser les étapes terminées sur `main`.
+
 Point de reprise pour la prochaine session (locale ou cloud). Tout ce qui est listé comme **fait** est
 sur `main`. Lire aussi `CLAUDE.md` (règles produit) et `AGENTS.md` (skills).
 

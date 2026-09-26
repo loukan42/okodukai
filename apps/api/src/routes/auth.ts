@@ -1,10 +1,11 @@
 import { Router } from "express";
+import { createHash, randomBytes } from "node:crypto";
 import argon2 from "argon2";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { pedagogyBand } from "../lib/pedagogy.js";
-import { DEVICE_COOKIE, DEVICE_COOKIE_OPTIONS, signDevice, signSession, verifyDevice, SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from "../lib/auth.js";
+import { DEVICE_COOKIE, DEVICE_COOKIE_OPTIONS, signDevice, signSession, verifyDevice, verifyDeviceDetails, SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from "../lib/auth.js";
 import { validateBody } from "../lib/validation.js";
 import { signedClientIp } from "../lib/clientIp.js";
 import {
@@ -28,8 +29,8 @@ authRouter.use(attachSession);
 const cookieOptions = SESSION_COOKIE_OPTIONS;
 
 /** Un parent connecté sur cet appareil en fait un appareil familial (profils enfants et PIN). */
-function rememberDevice(res: import("express").Response, householdId: string) {
-  res.cookie(DEVICE_COOKIE, signDevice(householdId), DEVICE_COOKIE_OPTIONS);
+function rememberDevice(res: import("express").Response, householdId: string, parentUserId?: string) {
+  res.cookie(DEVICE_COOKIE, signDevice(householdId, parentUserId), DEVICE_COOKIE_OPTIONS);
 }
 /**
  * Limite par adresse (seulement derrière le relais signé) : chaque essai compte, succès compris,
@@ -81,7 +82,7 @@ authRouter.post("/continue", validateBody(continueSchema), async (req, res) => {
     }
     const token = signSession({ kind: "parent", userId: existing.id, householdId: membership.householdId, role: membership.role });
     res.cookie(SESSION_COOKIE, token, cookieOptions);
-    rememberDevice(res, membership.householdId);
+    rememberDevice(res, membership.householdId, existing.id);
     return res.json({ outcome: "signed_in", onboardingCompleted: Boolean(membership.household.onboardingCompletedAt) });
   }
 
@@ -130,7 +131,7 @@ authRouter.post("/continue", validateBody(continueSchema), async (req, res) => {
 
   const token = signSession({ kind: "parent", userId: created.user.id, householdId: created.household.id, role: "PARENT_ADMIN" });
   res.cookie(SESSION_COOKIE, token, cookieOptions);
-  rememberDevice(res, created.household.id);
+  rememberDevice(res, created.household.id, created.user.id);
   res.status(201).json({ outcome: "created", onboardingCompleted: false });
 });
 
@@ -149,13 +150,14 @@ authRouter.get("/me", async (req, res) => {
     ]);
     if (!user || !household) return res.status(401).json({ error: "Non authentifié" });
     // Un parent déjà connecté (avant l'arrivée de ce cookie) rend l'appareil familial sans rien refaire.
-    rememberDevice(res, req.session.householdId);
+    rememberDevice(res, req.session.householdId, req.session.userId);
     return res.json({
       kind: "parent",
       user: { id: user.id, email: user.email, displayName: user.displayName },
       householdId: req.session.householdId,
       household: { name: household.name, onboardingCompleted: Boolean(household.onboardingCompletedAt) },
       role: req.session.role,
+      hasParentPin: Boolean(user.parentPinHash),
     });
   }
 
@@ -205,6 +207,98 @@ authRouter.post(
   }
 );
 
+const parentPinSchema = z.object({ password: z.string().min(1), pin: z.string().regex(/^\d{4}$/) });
+
+/** Le parent définit son code sur une session parent, après vérification du mot de passe. */
+authRouter.post("/parent-pin", validateBody(parentPinSchema), async (req, res) => {
+  if (req.session?.kind !== "parent") return res.status(403).json({ error: "Accès parent requis" });
+  const user = await prisma.user.findUnique({ where: { id: req.session.userId } });
+  if (!user) return res.status(401).json({ error: "Non authentifié" });
+  const blocked = await addressLimit(req);
+  if (blocked) return tooManyFromAddress(res, blocked);
+  const check = await throttledVerify(parentThrottleKey(user.email), PARENT_PASSWORD, () => argon2.verify(user.passwordHash, req.body.password));
+  if (!check.ok) {
+    if (check.retryAfterMs) return tooManyParentAttempts(res, check.retryAfterMs);
+    return res.status(401).json({ error: "Mot de passe incorrect" });
+  }
+  await prisma.user.update({ where: { id: user.id }, data: { parentPinHash: await argon2.hash(req.body.pin) } });
+  rememberDevice(res, req.session.householdId, user.id);
+  res.json({ ok: true });
+});
+
+/** Téléphone partagé : la session parent choisit le profil sans saisir le PIN de l'enfant. */
+authRouter.post("/switch-child/:childId", async (req, res) => {
+  if (req.session?.kind !== "parent") return res.status(403).json({ error: "Accès parent requis" });
+  const user = await prisma.user.findUnique({ where: { id: req.session.userId }, select: { parentPinHash: true } });
+  if (!user?.parentPinHash) return res.status(409).json({ error: "Définissez d'abord votre code parent." });
+  const child = await prisma.childProfile.findFirst({ where: { id: req.params.childId, householdId: req.session.householdId } });
+  if (!child) return res.status(404).json({ error: "Profil introuvable" });
+  rememberDevice(res, child.householdId, req.session.userId);
+  res.cookie(SESSION_COOKIE, signSession({ kind: "child", childId: child.id, householdId: child.householdId }), cookieOptions);
+  res.json({ child: { id: child.id, displayName: child.displayName, avatarId: child.avatarId } });
+});
+
+const exitWithPinSchema = z.object({ pin: z.string().regex(/^\d{4}$/) });
+
+/** Seul l'appareil où ce parent s'est authentifié peut utiliser son code de retour. */
+authRouter.post("/exit-child-mode/pin", validateBody(exitWithPinSchema), async (req, res) => {
+  if (req.session?.kind !== "child") return res.status(403).json({ error: "Espace enfant requis" });
+  const device = verifyDeviceDetails(req.cookies?.[DEVICE_COOKIE]);
+  if (!device?.parentUserId || device.householdId !== req.session.householdId) return res.status(403).json({ error: "Connectez-vous avec le mot de passe parent sur cet appareil." });
+  const membership = await prisma.householdMembership.findUnique({ where: { householdId_userId: { householdId: device.householdId, userId: device.parentUserId } } });
+  const user = membership ? await prisma.user.findUnique({ where: { id: device.parentUserId } }) : null;
+  if (!user?.parentPinHash) return res.status(403).json({ error: "Code parent indisponible" });
+  const blocked = await addressLimit(req);
+  if (blocked) return tooManyPinAttempts(res, blocked);
+  const check = await throttledVerify(`parent-pin:${user.id}`, CHILD_PIN, () => argon2.verify(user.parentPinHash!, req.body.pin));
+  if (!check.ok) {
+    if (check.retryAfterMs) return tooManyPinAttempts(res, check.retryAfterMs);
+    return res.status(401).json({ error: "Code incorrect" });
+  }
+  res.cookie(SESSION_COOKIE, signSession({ kind: "parent", userId: user.id, householdId: membership!.householdId, role: membership!.role }), cookieOptions);
+  res.json({ ok: true });
+});
+
+const inviteTtlMs = 24 * 60 * 60 * 1000;
+const tokenHash = (token: string) => createHash("sha256").update(token).digest("hex");
+
+/** Lien individuel, aléatoire, valable 24 h et utilisable une seule fois. */
+authRouter.post("/child-link/create/:childId", async (req, res) => {
+  if (req.session?.kind !== "parent") return res.status(403).json({ error: "Accès parent requis" });
+  const child = await prisma.childProfile.findFirst({ where: { id: req.params.childId, householdId: req.session.householdId } });
+  if (!child) return res.status(404).json({ error: "Profil introuvable" });
+  const token = randomBytes(32).toString("base64url");
+  const expiresAt = new Date(Date.now() + inviteTtlMs);
+  await prisma.childDeviceInvite.create({ data: { tokenHash: tokenHash(token), householdId: child.householdId, childId: child.id, createdById: req.session.userId, expiresAt } });
+  res.status(201).json({ token, expiresAt: expiresAt.toISOString(), childName: child.displayName });
+});
+
+const inviteTokenSchema = z.string().regex(/^[\w-]{43}$/);
+authRouter.get("/child-link/:token", async (req, res) => {
+  if (!inviteTokenSchema.safeParse(req.params.token).success) return res.status(404).json({ error: "Lien invalide" });
+  const invite = await prisma.childDeviceInvite.findUnique({ where: { tokenHash: tokenHash(req.params.token) }, include: { child: { select: { displayName: true, avatarId: true } } } });
+  if (!invite || invite.usedAt || invite.expiresAt <= new Date()) return res.status(404).json({ error: "Ce lien a expiré ou a déjà été utilisé." });
+  res.json({ childName: invite.child.displayName, avatarId: invite.child.avatarId });
+});
+
+const redeemInviteSchema = z.object({ token: inviteTokenSchema, pin: z.string().regex(/^\d{4}$/) });
+authRouter.post("/child-link/redeem", validateBody(redeemInviteSchema), async (req, res) => {
+  const invite = await prisma.childDeviceInvite.findUnique({ where: { tokenHash: tokenHash(req.body.token) }, include: { child: true } });
+  if (!invite || invite.usedAt || invite.expiresAt <= new Date()) return res.status(404).json({ error: "Ce lien a expiré ou a déjà été utilisé." });
+  const blocked = await addressLimit(req);
+  if (blocked) return tooManyPinAttempts(res, blocked);
+  const check = await throttledVerify(childPinThrottleKey(invite.childId), CHILD_PIN, () => argon2.verify(invite.child.pinHash, req.body.pin));
+  if (!check.ok) {
+    if (check.retryAfterMs) return tooManyPinAttempts(res, check.retryAfterMs);
+    return res.status(401).json({ error: "Code incorrect" });
+  }
+  const consumed = await prisma.childDeviceInvite.updateMany({ where: { id: invite.id, usedAt: null, expiresAt: { gt: new Date() } }, data: { usedAt: new Date() } });
+  if (consumed.count !== 1) return res.status(409).json({ error: "Ce lien a déjà été utilisé." });
+  rememberDevice(res, invite.householdId);
+  res.cookie(SESSION_COOKIE, signSession({ kind: "child", childId: invite.childId, householdId: invite.householdId }), cookieOptions);
+  res.json({ child: { id: invite.childId, displayName: invite.child.displayName, avatarId: invite.child.avatarId } });
+});
+
 /** Le parent ressaisit son mot de passe pour repasser en mode administration. */
 const exitChildModeSchema = z.object({ email: z.string().trim().toLowerCase().email(), password: z.string().min(1) });
 
@@ -230,6 +324,6 @@ authRouter.post("/exit-child-mode", validateBody(exitChildModeSchema), async (re
     role: membership.role,
   });
   res.cookie(SESSION_COOKIE, token, cookieOptions);
-  rememberDevice(res, membership.householdId);
+  rememberDevice(res, membership.householdId, user.id);
   res.json({ ok: true });
 });

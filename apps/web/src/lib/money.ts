@@ -1,5 +1,7 @@
 // Types et formats de « Mon argent » (voir docs/FINANCIAL_EDUCATION.md §11).
 import type { ChestState } from "../art/ChestArt";
+import { defineCopy, pick } from "../i18n";
+import { dateFormatter } from "../i18n/format";
 
 export type Place = "account" | "vault";
 export type LineKind = "entree" | "sortie" | "transfert" | "remboursement" | "correction" | "bonus_epargne" | "prime_coffre";
@@ -76,11 +78,42 @@ export interface MoneyOverview {
   };
 }
 
-const plural = new Intl.PluralRules("fr");
+const COPY = defineCopy({
+  fr: {
+    coins: (n: number) => `${n} ${Math.abs(n) < 2 ? "pièce" : "pièces"}`,
+    kinds: {
+      entree: "Entrée",
+      sortie: "Sortie",
+      transfert: "Transfert",
+      remboursement: "Remboursement",
+      correction: "Correction",
+      bonus_epargne: "Bonus d'épargne",
+      prime_coffre: "Prime du coffre",
+    } as Record<LineKind, string>,
+    today: "Aujourd'hui",
+    yesterday: "Hier",
+    at: (day: string, time: string) => `${day} à ${time}`,
+  },
+  en: {
+    coins: (n: number) => `${n} ${Math.abs(n) === 1 ? "coin" : "coins"}`,
+    kinds: {
+      entree: "Money in",
+      sortie: "Money out",
+      transfert: "Transfer",
+      remboursement: "Refund",
+      correction: "Correction",
+      bonus_epargne: "Savings bonus",
+      prime_coffre: "Vault bonus",
+    },
+    today: "Today",
+    yesterday: "Yesterday",
+    at: (day: string, time: string) => `${day} at ${time}`,
+  },
+});
 
-/** « 0 pièce », « 1 pièce », « 2 pièces ». */
+/** « 0 pièce », « 1 pièce », « 2 pièces » ; « 0 coins », « 1 coin », « 2 coins ». */
 export function pieces(n: number) {
-  return `${n} ${plural.select(Math.abs(n)) === "one" ? "pièce" : "pièces"}`;
+  return pick(COPY).coins(n);
 }
 
 /** Signe toujours écrit : « +15 », « −30 » (vrai signe moins, U+2212). */
@@ -89,15 +122,10 @@ export function signed(n: number) {
   return `${n > 0 ? "+" : "−"}${Math.abs(n)}`;
 }
 
-export const KIND_WORD: Record<LineKind, string> = {
-  entree: "Entrée",
-  sortie: "Sortie",
-  transfert: "Transfert",
-  remboursement: "Remboursement",
-  correction: "Correction",
-  bonus_epargne: "Bonus d'épargne",
-  prime_coffre: "Prime du coffre",
-};
+/** Nom d'un type de ligne : « Entrée », « Sortie »… */
+export function kindWord(kind: LineKind) {
+  return pick(COPY).kinds[kind];
+}
 
 /** Une clé par intention de transfert : un double appui n'en crée pas deux. */
 export function intentKey() {
@@ -118,9 +146,9 @@ export function chestStateFor(vault: number, goals: GoalView[]): ChestState {
   return "low";
 }
 
-const DAY = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" });
-const WEEKDAY = new Intl.DateTimeFormat("fr-FR", { weekday: "long" });
-const TIME = new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" });
+const DAY = dateFormatter({ weekday: "long", day: "numeric", month: "long" });
+const WEEKDAY = dateFormatter({ weekday: "long" });
+const TIME = dateFormatter({ hour: "2-digit", minute: "2-digit" });
 
 function sameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
@@ -131,8 +159,8 @@ export function dayLabel(iso: string, now = new Date()) {
   const d = new Date(iso);
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
-  if (sameDay(d, now)) return "Aujourd'hui";
-  if (sameDay(d, yesterday)) return "Hier";
+  if (sameDay(d, now)) return pick(COPY).today;
+  if (sameDay(d, yesterday)) return pick(COPY).yesterday;
   const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   if (now.getTime() - d.getTime() < 6 * 86_400_000) return capital(WEEKDAY.format(d));
   return capital(DAY.format(d));
@@ -144,7 +172,7 @@ export function timeLabel(iso: string) {
 
 export function fullDate(iso: string) {
   const d = new Date(iso);
-  return `${DAY.format(d)} à ${TIME.format(d)}`;
+  return pick(COPY).at(DAY.format(d), TIME.format(d));
 }
 
 /** Regroupe des lignes (déjà triées du plus récent au plus ancien) par jour. */

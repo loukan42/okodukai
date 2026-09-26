@@ -48,17 +48,21 @@ export const SESSION_COOKIE_OPTIONS = {
 export const DEVICE_COOKIE = "okodukai_device";
 export const DEVICE_COOKIE_OPTIONS = { ...SESSION_COOKIE_OPTIONS, maxAge: 365 * 24 * 60 * 60 * 1000 };
 
-export function signDevice(householdId: string): string {
+export function signDevice(householdId: string, parentUserId?: string): string {
   if (!JWT_SECRET) throw new Error("JWT_SECRET manquant");
-  return jwt.sign({ kind: "device", householdId }, JWT_SECRET, { expiresIn: "365d" });
+  return jwt.sign({ kind: "device", householdId, parentUserId }, JWT_SECRET, { expiresIn: "365d" });
 }
 
-export function verifyDevice(token: string | undefined): string | null {
+export function verifyDeviceDetails(token: string | undefined): { householdId: string; parentUserId?: string } | null {
   if (!token || !JWT_SECRET) return null;
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as { kind?: string; householdId?: string };
-    return payload.kind === "device" && payload.householdId ? payload.householdId : null;
+    const payload = jwt.verify(token, JWT_SECRET) as { kind?: string; householdId?: string; parentUserId?: string };
+    return payload.kind === "device" && payload.householdId ? { householdId: payload.householdId, parentUserId: payload.parentUserId } : null;
   } catch {
     return null;
   }
+}
+
+export function verifyDevice(token: string | undefined): string | null {
+  return verifyDeviceDetails(token)?.householdId ?? null;
 }

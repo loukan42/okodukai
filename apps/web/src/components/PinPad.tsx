@@ -29,7 +29,9 @@ export function PinPad({
 
   return (
     <div style={{ textAlign: "center" }}>
-      <div className="row" style={{ justifyContent: "center", gap: 12, marginBottom: 20 }}>
+      <label htmlFor="profile-pin" className="sr-only">Code à {length} chiffres</label>
+      <input id="profile-pin" className="pin-pad-input" type="text" inputMode="numeric" autoComplete="one-time-code" pattern={`[0-9]{${length}}`} maxLength={length} value={pin} disabled={submitting} onChange={(event) => { const next = event.target.value.replace(/\D/g, "").slice(0, length); setPin(next); if (next.length === length) { onSubmit(next); setTimeout(() => setPin(""), 400); } }} />
+      <div className="row" aria-hidden="true" style={{ justifyContent: "center", gap: 12, marginBottom: 20 }}>
         {Array.from({ length }).map((_, i) => (
           <div
             key={i}

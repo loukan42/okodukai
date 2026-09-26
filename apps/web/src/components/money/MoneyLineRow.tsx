@@ -1,5 +1,5 @@
 import { ArrowCounterClockwise, ArrowsLeftRight, DownloadSimple, PencilSimple, PlusCircle, Sparkle, UploadSimple } from "@phosphor-icons/react";
-import { KIND_WORD, dayLabel, signed, timeLabel, type LineKind, type MoneyLine } from "../../lib/money";
+import { kindWord, dayLabel, signed, timeLabel, type LineKind, type MoneyLine } from "../../lib/money";
 
 /** Icône de sens : elle accompagne toujours le mot, elle ne le remplace jamais. */
 export function KindIcon({ kind, amount }: { kind: LineKind; amount: number }) {
@@ -31,7 +31,7 @@ interface MoneyLineRowProps {
 
 /** Une ligne de relevé : ce qui s'est passé, le mot de sens, le montant signé. */
 export function MoneyLineRow({ line, showBalance = false, when = "time", onOpen }: MoneyLineRowProps) {
-  const word = KIND_WORD[line.kind];
+  const word = kindWord(line.kind);
   const spoken = `${word}, ${Math.abs(line.amount)} ${Math.abs(line.amount) > 1 ? "pièces" : "pièce"}, ${line.label}${line.pending ? ", en attente de validation" : ""}`;
   const content = (
     <>

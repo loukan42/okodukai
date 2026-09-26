@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../../../lib/api";
 import { useAuth } from "../../../lib/AuthContext";
-import { RISK_NOTE, RISK_SENTENCE, RISK_WORD, SUPPORTS, TREND_GLYPH, signedPercent, signedUnits, trendOf, units, type SupportCode } from "../../../lib/invest";
+import { riskNote, RISK_SENTENCE, RISK_WORD, SUPPORTS, TREND_GLYPH, signedPercent, signedUnits, trendOf, units, type SupportCode } from "../../../lib/invest";
 import { RiskMeter, SupportEmblem } from "../../../components/invest/SupportEmblem";
 import { XpEarned } from "../../../components/invest/XpEarned";
 import { FinanceTip } from "../../../components/finance/FinanceTip";
@@ -125,7 +125,7 @@ export function SupportSheet() {
           <RiskMeter level={sheet.riskLevel} label={`Niveau de risque ${sheet.riskLevel} sur 5`} />
           <span>{young ? RISK_WORD[sheet.riskLevel] : RISK_SENTENCE[sheet.riskLevel]}</span>
         </p>
-        <p className="money-hint">{RISK_NOTE}</p>
+        <p className="money-hint">{riskNote()}</p>
         <p>{young ? copy.young : copy.older}</p>
       </section>
 

@@ -29,13 +29,27 @@ export type RedemptionStatus = "DEMANDEE" | "ACCEPTEE" | "A_UTILISER" | "UTILISE
 export type CardRarity = "COMMUNE" | "PEU_COMMUNE" | "RARE" | "EPIQUE" | "LEGENDAIRE";
 export type MasteryTier = "DECOUVERTE" | "CONNAISSEUR" | "EXPERT" | "MAITRE" | null;
 
-export const RARITY_LABELS: Record<CardRarity, string> = {
-  COMMUNE: "Commune",
-  PEU_COMMUNE: "Peu commune",
-  RARE: "Rare",
-  EPIQUE: "Épique",
-  LEGENDAIRE: "Légendaire",
+export type Locale = "fr" | "en";
+
+export const RARITY_LABELS_BY_LOCALE: Record<Locale, Record<CardRarity, string>> = {
+  fr: {
+    COMMUNE: "Commune",
+    PEU_COMMUNE: "Peu commune",
+    RARE: "Rare",
+    EPIQUE: "Épique",
+    LEGENDAIRE: "Légendaire",
+  },
+  en: {
+    COMMUNE: "Common",
+    PEU_COMMUNE: "Uncommon",
+    RARE: "Rare",
+    EPIQUE: "Epic",
+    LEGENDAIRE: "Legendary",
+  },
 };
+
+/** Libellés français ; côté site, préférer la table qui suit la langue (`lib/rarity.ts`). */
+export const RARITY_LABELS: Record<CardRarity, string> = RARITY_LABELS_BY_LOCALE.fr;
 
 export const RARITY_ICONS: Record<CardRarity, string> = {
   COMMUNE: "⚪",

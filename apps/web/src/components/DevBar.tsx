@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
-import { RARITY_LABELS, type CardRarity } from "@okodukai/shared";
+import type { CardRarity } from "@okodukai/shared";
+import { RARITY_LABELS } from "../lib/rarity";
 import { useAuth, LAST_HOUSEHOLD_KEY } from "../lib/AuthContext";
 import { GameIcon } from "./GameIcon";
 import { BoosterOpenOverlay, type RevealedCard } from "./booster/BoosterOpenOverlay";

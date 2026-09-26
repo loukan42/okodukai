@@ -2,29 +2,33 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
 import { useAuth } from "../../lib/AuthContext";
-import { chestStateFor, pieces, type MoneyOverview } from "../../lib/money";
-import { CoinPill } from "../../components/CoinPill";
+import { type MoneyOverview } from "../../lib/money";
 import { ProgressBar } from "../../components/ProgressBar";
-import { GameIcon } from "../../components/GameIcon";
+import { GameIcon, type GameIconName } from "../../components/GameIcon";
 import { Avatar } from "../../components/Avatar";
 import { CoinArt } from "../../art/CoinArt";
-import { ChestArt } from "../../art/ChestArt";
-import { ObjectArt } from "../../art/ObjectArt";
 import { BoosterPack } from "../../components/booster/BoosterPack";
-import { FinanceTip } from "../../components/finance/FinanceTip";
 
 interface QuestRow { id: string; title: string; status: string; rewardCoins: number; rewardXp: number }
-interface BoosterRow { id: string; definition: { title: string; universe: { title: string } } }
 interface Level { level: number; xpIntoLevel: number; xpForNextLevel: number }
 
-/** Accueil enfant : le monde en bandeau, l'argent d'abord, puis les quêtes et les boosters. */
+const places: { key: string; to: string; title: string; icon: GameIconName; description: string }[] = [
+  { key: "quests", to: "/enfant/quetes", title: "Quêtes", icon: "quest", description: "Choisir une mission" },
+  { key: "vault", to: "/enfant/argent/coffre", title: "Mon coffre", icon: "vault", description: "Garder des pièces" },
+  { key: "shop", to: "/enfant/boutique", title: "Boutique", icon: "shop", description: "Voir les récompenses" },
+  { key: "collection", to: "/enfant/collection", title: "Collection", icon: "collection", description: "Ouvrir mon album" },
+  { key: "observatory", to: "/enfant/argent/investir", title: "Observatoire", icon: "xp", description: "Explorer le temps" },
+  { key: "library", to: "/enfant/apprendre", title: "Bibliothèque", icon: "learn", description: "Apprendre" },
+];
+
+/** Les destinations du village restent de vrais liens HTML, accessibles au clavier. */
 export function Home() {
   const { session } = useAuth();
   const childId = session?.kind === "child" ? session.child.id : null;
   const [money, setMoney] = useState<MoneyOverview | null>(null);
   const [level, setLevel] = useState<Level>({ level: 1, xpIntoLevel: 0, xpForNextLevel: 100 });
   const [quests, setQuests] = useState<QuestRow[]>([]);
-  const [boosters, setBoosters] = useState<BoosterRow[]>([]);
+  const [boosterCount, setBoosterCount] = useState(0);
   const [statementReady, setStatementReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -32,169 +36,43 @@ export function Home() {
   async function load() {
     try {
       const [moneyRes, me, questsRes, boostersRes] = await Promise.all([
-        api.get<MoneyOverview>("/child/money"),
-        api.get<{ level: Level }>("/child/me"),
-        api.get<{ quests: QuestRow[] }>("/child/quests"),
-        api.get<{ boosters: BoosterRow[] }>("/child/boosters"),
+        api.get<MoneyOverview>("/child/money"), api.get<{ level: Level }>("/child/me"),
+        api.get<{ quests: QuestRow[] }>("/child/quests"), api.get<{ boosters: { id: string }[] }>("/child/boosters"),
       ]);
-      setMoney(moneyRes);
-      setLevel(me.level);
+      setMoney(moneyRes); setLevel(me.level);
       setQuests(questsRes.quests.filter((q) => ["DISPONIBLE", "ACCEPTEE", "A_REFAIRE"].includes(q.status)));
-      setBoosters(boostersRes.boosters);
-      setError(false);
-      // Pastille « Ton bilan est prêt » : facultative, jamais bloquante.
-      api
-        .get<{ run: { unseen: number } | null }>("/child/invest")
-        .then((res) => setStatementReady((res.run?.unseen ?? 0) > 0))
-        .catch(() => setStatementReady(false));
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
+      setBoosterCount(boostersRes.boosters.length); setError(false);
+      api.get<{ run: { unseen: number } | null }>("/child/invest")
+        .then((res) => setStatementReady((res.run?.unseen ?? 0) > 0)).catch(() => setStatementReady(false));
+    } catch { setError(true); } finally { setLoading(false); }
   }
 
-  useEffect(() => {
-    if (childId) {
-      setLoading(true);
-      void load();
-    }
-  }, [childId]);
-
+  useEffect(() => { if (childId) { setLoading(true); void load(); } }, [childId]);
   if (session?.kind !== "child") return null;
-  if (loading) return <p className="loading-message" role="status">Ton espace se prépare…</p>;
-  if (error || !money)
-    return (
-      <div className="empty-state">
-        <strong>Impossible de charger ton espace.</strong>
-        <button className="btn btn-primary" onClick={() => void load()}>
-          Réessayer
-        </button>
-      </div>
-    );
+  if (loading) return <div className="village-loading" role="status"><CoinArt size={80}/><p>Le village se prépare…</p></div>;
+  if (error || !money) return <div className="empty-state"><strong>Le village ne s'ouvre pas.</strong><button className="btn btn-primary" onClick={() => void load()}>Réessayer</button></div>;
 
-  const { available, vault } = money.balances;
   const goal = money.goals[0];
-
-  return (
-    <div className="home">
-      <section className="home-banner" aria-labelledby="welcome-title">
-        <div className="home-banner-identity">
-          <Avatar avatarId={session.child.avatarId} size="lg" />
-          <div>
-            <h1 id="welcome-title">Bonjour {session.child.displayName}</h1>
-            <div className="home-banner-level">
-              <span className="level-seal">Niv. {level.level}</span>
-              <div className="home-banner-xp">
-                <ProgressBar value={level.xpIntoLevel} max={level.xpForNextLevel} />
-                <small>
-                  {level.xpIntoLevel} / {level.xpForNextLevel} XP
-                </small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="home-money" aria-label="Mon argent">
-        <Link to="/enfant/argent" className="home-money-card home-money-card--account">
-          <CoinArt size={88} className="home-money-art" />
-          <span className="home-money-text">
-            <span>Mon compte</span>
-            <strong>
-              {available} <small>{available > 1 ? "pièces" : "pièce"}</small>
-            </strong>
-            <span className="home-money-link">
-              Voir mon argent <GameIcon name="arrow" size={16} />
-            </span>
-          </span>
-        </Link>
-        <Link to="/enfant/argent/coffre" className="home-money-card home-money-card--vault">
-          <ChestArt state={chestStateFor(vault, money.goals)} size={112} className="home-money-art home-money-art--chest" />
-          <span className="home-money-text">
-            <span>Coffre magique</span>
-            <strong>
-              {vault} <small>{vault > 1 ? "pièces" : "pièce"}</small>
-            </strong>
-            {goal ? (
-              <span className="home-money-goal">
-                <span>
-                  {goal.title} : {goal.reached ? "objectif atteint" : `il te manque ${pieces(goal.missing)}`}
-                </span>
-                <ProgressBar value={goal.present} max={goal.targetCoins} />
-              </span>
-            ) : (
-              <span className="home-money-link">
-                Choisir un objectif <GameIcon name="arrow" size={16} />
-              </span>
-            )}
-          </span>
-        </Link>
-      </section>
-      <FinanceTip screen="home" />
-
-      <div className="home-columns">
-        <div className="home-main-column">
-          <section className="home-section" aria-labelledby="quest-title">
-            <div className="section-heading home-section-heading">
-              <ObjectArt name="quest-board" folder="quests" size={64} />
-              <h2 id="quest-title">Journal de quêtes</h2>
-              <Link to="/enfant/quetes">
-                Toutes les quêtes <GameIcon name="arrow" size={16} />
-              </Link>
-            </div>
-            {quests.length === 0 ? (
-              <div className="home-empty">
-                <ObjectArt name="quest-scroll" size={88} />
-                <div>
-                  <strong>Pas encore de quête</strong>
-                  <p>Demande à un parent de t'en proposer une.</p>
-                </div>
-              </div>
-            ) : (
-              <div className="quest-list">
-                {quests.slice(0, 3).map((q, index) => (
-                  <Link to="/enfant/quetes" className="quest-entry" key={q.id}>
-                    <span className="quest-entry-number">{index + 1}</span>
-                    <span className="quest-entry-copy">
-                      <strong>{q.title}</strong>
-                      <small>{q.status === "ACCEPTEE" ? "Quête en cours" : "À commencer"}</small>
-                    </span>
-                    <span className="quest-entry-rewards">
-                      <CoinPill amount={q.rewardCoins} />
-                      <span className="xp-badge">
-                        <GameIcon name="xp" size={15} />
-                        {q.rewardXp} XP
-                      </span>
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </section>
-        </div>
-        <aside className="home-side-column">
-          <Link to="/enfant/collection" className="booster-callout">
-            <span className="booster-callout-copy">
-              <span>Ton inventaire</span>
-              <strong>{boosters.length > 0 ? `${boosters.length} booster${boosters.length > 1 ? "s" : ""} à ouvrir` : "Tes boosters"}</strong>
-              <small>{boosters.length > 0 ? "Ouvre-les quand tu veux dans ta collection." : "Chaque quête validée te donne un booster."}</small>
-              <span className="booster-callout-action">
-                {boosters.length > 0 ? "Ouvrir un booster" : "Voir ma collection"} <GameIcon name="arrow" size={16} />
-              </span>
-            </span>
-            <BoosterPack className="booster-callout-pack" />
-          </Link>
-          <Link to="/enfant/argent/investir" className="home-callout">
-            <ObjectArt name="coin-sprout" size={72} />
-            <span>
-              <strong>Investir</strong>
-              <small>{statementReady ? "Ton bilan est prêt." : "Place des pièces gagnées et suis leur valeur au fil de la partie."}</small>
-            </span>
-            <GameIcon name="arrow" size={18} />
-          </Link>
-        </aside>
-      </div>
+  const activeQuest = quests.find((q) => q.status === "ACCEPTEE") ?? quests[0];
+  const tier = level.level >= 30 ? 30 : level.level >= 20 ? 20 : level.level >= 10 ? 10 : level.level >= 5 ? 5 : 1;
+  return <main className="village-home" data-world-tier={tier}>
+    <div className="village-hud" aria-label="Ma progression">
+      <Link className="village-hud-profile" to="/enfant/profil" aria-label={`Profil de ${session.child.displayName}, niveau ${level.level}`}><Avatar avatarId={session.child.avatarId}/><span><small>Bienvenue dans ton monde</small><strong>{session.child.displayName}</strong></span><span className="village-level">Niv. {level.level}</span></Link>
+      <div className="village-hud-xp"><span>Expérience</span><ProgressBar value={level.xpIntoLevel} max={level.xpForNextLevel}/><small>{level.xpIntoLevel} / {level.xpForNextLevel} XP</small></div>
+      <Link className="village-hud-coins" to="/enfant/argent" aria-label={`Mon compte, ${money.balances.available} pièces`}><CoinArt size={49}/><span><small>Mon compte</small><strong>{money.balances.available} <em>pièces</em></strong></span></Link>
     </div>
-  );
+    <section className="village-section" aria-labelledby="village-title">
+      <div className="village-heading"><h1 id="village-title">La Vallée d'Okodukai</h1><p>Choisis un lieu et poursuis ton aventure.</p></div>
+      <nav className="village-stage" aria-label="Explorer la vallée">
+        <picture className="village-landscape" aria-hidden="true"><source media="(max-width: 640px)" srcSet="/assets/backgrounds/child-hub-tall-720.webp 720w, /assets/backgrounds/child-hub-tall-1080.webp 1080w" sizes="100vw"/><img src="/assets/backgrounds/child-hub-wide-1280.webp" srcSet="/assets/backgrounds/child-hub-wide-1280.webp 1280w, /assets/backgrounds/child-hub-wide-1920.webp 1920w" sizes="(max-width: 1180px) 100vw, 1180px" alt="" fetchPriority="high" /></picture>
+        <span className="village-light" aria-hidden="true" />
+        {places.map((place) => <Link key={place.key} className={`village-place village-place--${place.key}`} to={place.to} aria-label={`${place.title} : ${place.description}`}><span className="village-place-icon"><GameIcon name={place.icon} size={21}/></span><span className="village-place-label">{place.title}</span>{place.key === "observatory" && statementReady && <span className="village-place-alert">Bilan prêt</span>}</Link>)}
+        <Link to="/enfant/profil" className="village-character" aria-label="Voir mon personnage"><Avatar avatarId={session.child.avatarId} size="lg"/><span>Mon personnage</span></Link>
+      </nav>
+    </section>
+    <div className="village-dispatch" aria-label="En ce moment dans ton village">
+      <Link to="/enfant/quetes" className="village-dispatch-quest"><span className="village-dispatch-icon"><GameIcon name="quest" size={27}/></span><span><small>Sur le tableau des quêtes</small><strong>{activeQuest ? activeQuest.title : "Une nouvelle quête t'attend bientôt"}</strong><span>{activeQuest ? `À gagner après validation : ${activeQuest.rewardCoins} pièces et ${activeQuest.rewardXp} XP` : "Demande à un parent de t'en proposer une."}</span></span><GameIcon name="arrow" size={20}/></Link>
+      <Link to={boosterCount ? "/enfant/collection" : goal ? "/enfant/argent/coffre" : "/enfant/collection"} className="village-dispatch-find"><BoosterPack className="village-dispatch-pack"/><span><small>{boosterCount ? "Dans ta galerie" : goal ? "Sur le chemin du coffre" : "Dans ta galerie"}</small><strong>{boosterCount ? `${boosterCount} booster${boosterCount > 1 ? "s" : ""} à ouvrir` : goal ? goal.title : "Découvre tes cartes"}</strong><span>{boosterCount ? "Ouvrir un booster" : goal ? `${goal.present} / ${goal.targetCoins} pièces de côté` : "Voir la collection"}</span></span></Link>
+    </div>
+  </main>;
 }

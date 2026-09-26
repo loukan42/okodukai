@@ -2,6 +2,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { api } from "../../lib/api";
 import { useAuth } from "../../lib/AuthContext";
 import { Logo } from "../../art/Logo";
+import { ParentChildAccess } from "../../components/ParentChildAccess";
 
 export function ParentLayout() {
   const { session, refresh } = useAuth();
@@ -25,6 +26,7 @@ export function ParentLayout() {
           <span className="text-sm" style={{ opacity: 0.8 }}>
             {session.user.displayName}
           </span>
+          <ParentChildAccess />
           <button className="btn btn-ghost btn-sm parent-logout" onClick={logout}>
             Déconnexion
           </button>

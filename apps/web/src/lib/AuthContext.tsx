@@ -8,6 +8,7 @@ export interface ParentSession {
   role: "PARENT_ADMIN" | "PARENT";
   /** Foyer du parent ; `onboardingCompleted` est faux tant que l'accueil n'est pas terminé. */
   household: { name: string; onboardingCompleted: boolean };
+  hasParentPin: boolean;
 }
 
 export interface ChildSession {

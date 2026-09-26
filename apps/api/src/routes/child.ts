@@ -1,10 +1,12 @@
 import { Router } from "express";
+import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { pedagogyBand } from "../lib/pedagogy.js";
 import { attachSession, requireChild, childSession } from "../middleware/requireAuth.js";
 import { getBalances } from "../lib/ledger.js";
 import { catchUpMoney } from "../lib/moneyCatchUp.js";
 import { levelFromTotalXp } from "../lib/levels.js";
+import { validateBody } from "../lib/validation.js";
 
 export const childRouter = Router();
 childRouter.use(attachSession);
@@ -36,4 +38,10 @@ childRouter.get("/child/me", requireChild, async (req, res) => {
     },
     level,
   });
+});
+
+/** Le portrait est purement cosmétique et modifiable par l'enfant pour son propre profil. */
+childRouter.patch("/child/me/avatar", requireChild, validateBody(z.object({ avatarId: z.string().regex(/^aventurier-(0[1-9]|1[0-6])$/) })), async (req, res) => {
+  const child = await prisma.childProfile.update({ where: { id: childSession(req).childId }, data: { avatarId: req.body.avatarId }, select: { avatarId: true } });
+  res.json(child);
 });

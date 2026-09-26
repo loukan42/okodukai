@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
-import { RARITY_LABELS, type CardRarity } from "@okodukai/shared";
+import type { CardRarity } from "@okodukai/shared";
+import { RARITY_LABELS } from "../../lib/rarity";
 import { useDialogFocus } from "../../lib/useDialogFocus";
 import { COPY } from "./copy";
 import { BoosterPack } from "./BoosterPack";

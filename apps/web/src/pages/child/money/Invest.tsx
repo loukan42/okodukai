@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { api, ApiError } from "../../../lib/api";
 import { intentKey } from "../../../lib/money";
 import {
-  RISK_NOTE,
+  riskNote,
   RISK_SENTENCE,
   RISK_WORD,
   SUPPORTS,
@@ -127,7 +127,7 @@ function Onboarding({ state, onDone }: { state: InvestState; onDone: () => Promi
       {step === 3 && (
         <section className="invest-step">
           <h1>Les supports</h1>
-          <p className="money-hint">{RISK_NOTE}</p>
+          <p className="money-hint">{riskNote()}</p>
           <ul className="support-cards">
             {SUPPORT_ORDER.filter((c) => allowed.includes(c)).map((code) => (
               <li key={code} className="support-card">

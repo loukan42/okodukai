@@ -6,6 +6,7 @@ import { FamilyStep } from "./pages/onboarding/FamilyStep";
 import { ChildrenStep } from "./pages/onboarding/ChildrenStep";
 import { ReadyStep } from "./pages/onboarding/ReadyStep";
 import { ProfileSelect } from "./pages/ProfileSelect";
+import { ChildInvitation } from "./pages/ChildInvitation";
 import { ParentLayout } from "./pages/parent/ParentLayout";
 import { Dashboard } from "./pages/parent/Dashboard";
 import { QuestsManage } from "./pages/parent/QuestsManage";
@@ -14,6 +15,7 @@ import { ChildrenManage } from "./pages/parent/ChildrenManage";
 import { UniversesManage } from "./pages/parent/UniversesManage";
 import { ChildLayout } from "./pages/child/ChildLayout";
 import { Home } from "./pages/child/Home";
+import { Profile } from "./pages/child/Profile";
 import { Quests } from "./pages/child/Quests";
 import { Shop } from "./pages/child/Shop";
 import { Collection } from "./pages/child/Collection";
@@ -67,6 +69,7 @@ export default function App() {
       <Route path="/accueil/enfants" element={<OnboardingRoute step="enfants" />} />
       <Route path="/accueil/pret" element={<OnboardingRoute step="pret" />} />
       <Route path="/profils" element={<ProfileSelect />} />
+      <Route path="/invitation-enfant/:token" element={<ChildInvitation />} />
 
       <Route
         path="/parent/*"
@@ -93,6 +96,7 @@ export default function App() {
         element={session?.kind === "child" ? <ChildLayout /> : <Navigate to="/profils" replace />}
       >
         <Route index element={<Home />} />
+        <Route path="profil" element={<Profile />} />
         <Route path="quetes" element={<Quests />} />
         <Route path="boutique" element={<Shop />} />
         <Route path="collection" element={<Collection />} />

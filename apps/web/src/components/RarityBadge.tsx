@@ -1,4 +1,5 @@
-import { RARITY_LABELS, type CardRarity } from "@okodukai/shared";
+import type { CardRarity } from "@okodukai/shared";
+import { RARITY_LABELS } from "../lib/rarity";
 
 export function RarityBadge({ rarity }: { rarity: CardRarity }) {
   return (

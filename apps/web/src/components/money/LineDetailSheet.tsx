@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDialogFocus } from "../../lib/useDialogFocus";
-import { KIND_WORD, fullDate, signed, type MoneyLine } from "../../lib/money";
+import { kindWord, fullDate, signed, type MoneyLine } from "../../lib/money";
 import { KindIcon } from "./MoneyLineRow";
 
 const PLACE_NAME = { account: "Ton compte", vault: "Coffre magique" } as const;
@@ -28,7 +28,7 @@ export function LineDetailSheet({ line, onClose }: { line: MoneyLine; onClose: (
           <div>
             <h2 id="money-sheet-title">{line.label}</h2>
             <p>
-              {KIND_WORD[line.kind]} · {PLACE_NAME[line.place]}
+              {kindWord(line.kind)} · {PLACE_NAME[line.place]}
             </p>
           </div>
         </div>

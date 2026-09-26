@@ -1,3 +1,5 @@
+import { defineCopy, getLocale, pick } from "../i18n";
+
 // Toujours la même origine que le site : en local le serveur Vite relaie /api vers
 // l'API (:4000), en production la fonction Vercel `apps/web/api/proxy.js` fait de
 // même. Appeler l'API sur un autre domaine rendrait le cookie de session « tiers »,
@@ -12,7 +14,18 @@ export class ApiError extends Error {
   }
 }
 
-const UNREACHABLE = "Impossible de joindre le serveur. Vérifie ta connexion et réessaie.";
+const COPY = defineCopy({
+  fr: {
+    unreachable: "Impossible de joindre le serveur. Vérifie ta connexion et réessaie.",
+    serverError: "Le serveur a rencontré un problème. Réessaie dans un instant.",
+    error: (status: number) => `Erreur ${status}`,
+  },
+  en: {
+    unreachable: "We can't reach the server. Check your connection and try again.",
+    serverError: "Something went wrong on the server. Try again in a moment.",
+    error: (status: number) => `Error ${status}`,
+  },
+});
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   let res: Response;
@@ -22,17 +35,19 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
+        // Langue des textes calculés par le serveur (encarts, relevés, messages d'erreur).
+        "X-Locale": getLocale(),
         ...options.headers,
       },
     });
   } catch {
-    throw new ApiError(0, UNREACHABLE);
+    throw new ApiError(0, pick(COPY).unreachable);
   }
 
   const isJson = (res.headers.get("content-type") ?? "").includes("application/json");
 
   if (!res.ok) {
-    let message = res.status >= 500 ? "Le serveur a rencontré un problème. Réessaie dans un instant." : `Erreur ${res.status}`;
+    let message = res.status >= 500 ? pick(COPY).serverError : pick(COPY).error(res.status);
     if (isJson) {
       try {
         const body = await res.json();
@@ -47,7 +62,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (res.status === 204) return undefined as T;
   // Une page HTML à la place du JSON signifie que /api n'atteint pas l'API
   // (réécriture ou proxy mal configuré) : on le dit plutôt que d'échouer au parsing.
-  if (!isJson) throw new ApiError(res.status, UNREACHABLE);
+  if (!isJson) throw new ApiError(res.status, pick(COPY).unreachable);
   return res.json() as Promise<T>;
 }
 

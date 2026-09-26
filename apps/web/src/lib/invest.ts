@@ -1,5 +1,7 @@
 // Placements école : libellés, formats et types (docs/INVESTMENT_UX.md §0).
 // Les valeurs viennent toutes du serveur ; ici on ne fait que les écrire.
+import { defineCopy, getLocale, localized, pick } from "../i18n";
+import { dateFormatter, numberFormatter, percentText } from "../i18n/format";
 
 export type SupportCode = "SECURISE" | "PRETER" | "MONDE" | "ENTREPRISES";
 export const SUPPORT_ORDER: SupportCode[] = ["SECURISE", "PRETER", "MONDE", "ENTREPRISES"];
@@ -13,51 +15,127 @@ export interface SupportCopy {
   realLife: string;
 }
 
-export const SUPPORTS: Record<SupportCode, SupportCopy> = {
-  SECURISE: {
-    name: "Sécurisé",
-    realWord: "épargne sécurisée",
-    place: "La tour de garde",
-    young: "Ta part est gardée à l'abri. Elle grandit tout doucement et ne baisse pas.",
-    older: "Ta part grandit lentement et régulièrement. Dans ce jeu, elle ne baisse pas avec les marchés.",
-    realLife: "Cela ressemble à un livret d'épargne, ou au « fonds en euros » d'une assurance-vie.",
+export const SUPPORTS: Record<SupportCode, SupportCopy> = localized<Record<SupportCode, SupportCopy>>({
+  fr: {
+    SECURISE: {
+      name: "Sécurisé",
+      realWord: "épargne sécurisée",
+      place: "La tour de garde",
+      young: "Ta part est gardée à l'abri. Elle grandit tout doucement et ne baisse pas.",
+      older: "Ta part grandit lentement et régulièrement. Dans ce jeu, elle ne baisse pas avec les marchés.",
+      realLife: "Cela ressemble à un livret d'épargne, ou au « fonds en euros » d'une assurance-vie.",
+    },
+    PRETER: {
+      name: "Prêter",
+      realWord: "obligations",
+      place: "Le pont en construction",
+      young: "Tu prêtes tes unités à une ville imaginaire. Elle te les rend plus tard, avec un petit supplément.",
+      older: "Tu prêtes à des villes et à des entreprises imaginaires. Elles te remboursent avec des intérêts. Sa valeur bouge un peu.",
+      realLife: "Un prêt qu'on peut acheter et revendre s'appelle une obligation.",
+    },
+    MONDE: {
+      name: "Panier Monde",
+      realWord: "fonds",
+      place: "Le marché aux mille échoppes",
+      young: "Un panier avec un tout petit morceau de très nombreuses entreprises.",
+      older: "Un panier qui contient une petite part de très nombreuses entreprises du monde entier. Quand certaines baissent, d'autres peuvent monter.",
+      realLife: "Cela ressemble à un fonds qui suit un indice mondial.",
+    },
+    ENTREPRISES: {
+      name: "Entreprises",
+      realWord: "actions",
+      place: "Trois ateliers d'artisans",
+      young: "Tu as un morceau de quelques entreprises imaginaires : la Forge, la Verrerie, le Moulin. Leur valeur peut beaucoup bouger.",
+      older: "Tu possèdes une petite part de quelques entreprises imaginaires. Si elles réussissent, ta part peut monter ; si elles ont des difficultés, elle peut baisser fortement.",
+      realLife: "Une petite part d'une entreprise s'appelle une action.",
+    },
   },
-  PRETER: {
-    name: "Prêter",
-    realWord: "obligations",
-    place: "Le pont en construction",
-    young: "Tu prêtes tes unités à une ville imaginaire. Elle te les rend plus tard, avec un petit supplément.",
-    older: "Tu prêtes à des villes et à des entreprises imaginaires. Elles te remboursent avec des intérêts. Sa valeur bouge un peu.",
-    realLife: "Un prêt qu'on peut acheter et revendre s'appelle une obligation.",
+  en: {
+    SECURISE: {
+      name: "Safe",
+      realWord: "secure savings",
+      place: "The watchtower",
+      young: "Your share is kept safe. It grows very slowly and never goes down.",
+      older: "Your share grows slowly and steadily. In this game, it doesn't drop when the markets do.",
+      realLife: "It works like a savings account, or the guaranteed fund inside a life insurance contract.",
+    },
+    PRETER: {
+      name: "Lending",
+      realWord: "bonds",
+      place: "The bridge being built",
+      young: "You lend your units to a made-up town. It gives them back later, with a little extra.",
+      older: "You lend to made-up towns and companies. They pay you back with interest. Its value moves a little.",
+      realLife: "A loan that people can buy and sell is called a bond.",
+    },
+    MONDE: {
+      name: "World basket",
+      realWord: "fund",
+      place: "The market of a thousand stalls",
+      young: "A basket with a tiny piece of lots and lots of companies.",
+      older: "A basket holding a small share of a great many companies from all over the world. When some go down, others can go up.",
+      realLife: "It's like a fund that follows a world index.",
+    },
+    ENTREPRISES: {
+      name: "Companies",
+      realWord: "shares",
+      place: "Three craft workshops",
+      young: "You own a piece of a few made-up companies: the Forge, the Glassworks and the Mill. Their value can move a lot.",
+      older: "You own a small share of a few made-up companies. If they do well, your share can go up. If they struggle, it can drop a long way.",
+      realLife: "A small piece of a company is called a share.",
+    },
   },
-  MONDE: {
-    name: "Panier Monde",
-    realWord: "fonds",
-    place: "Le marché aux mille échoppes",
-    young: "Un panier avec un tout petit morceau de très nombreuses entreprises.",
-    older: "Un panier qui contient une petite part de très nombreuses entreprises du monde entier. Quand certaines baissent, d'autres peuvent monter.",
-    realLife: "Cela ressemble à un fonds qui suit un indice mondial.",
-  },
-  ENTREPRISES: {
-    name: "Entreprises",
-    realWord: "actions",
-    place: "Trois ateliers d'artisans",
-    young: "Tu as un morceau de quelques entreprises imaginaires : la Forge, la Verrerie, le Moulin. Leur valeur peut beaucoup bouger.",
-    older: "Tu possèdes une petite part de quelques entreprises imaginaires. Si elles réussissent, ta part peut monter ; si elles ont des difficultés, elle peut baisser fortement.",
-    realLife: "Une petite part d'une entreprise s'appelle une action.",
-  },
-};
+});
 
-export const RISK_WORD = ["", "Très calme", "Calme", "Ça bouge", "Ça bouge beaucoup", "Ça bouge très fort"];
-export const RISK_SENTENCE = [
-  "",
-  "Niveau 1 sur 5 : la valeur varie très peu.",
-  "Niveau 2 sur 5 : la valeur varie un peu.",
-  "Niveau 3 sur 5 : la valeur peut varier.",
-  "Niveau 4 sur 5 : la valeur peut varier fortement.",
-  "Niveau 5 sur 5 : la valeur peut varier très fortement, vers le haut comme vers le bas.",
-];
-export const RISK_NOTE = "Plus le niveau est élevé, plus la valeur peut varier fortement. Cela ne dit pas si elle va monter ou baisser.";
+const RISK = defineCopy({
+  fr: {
+    word: ["", "Très calme", "Calme", "Ça bouge", "Ça bouge beaucoup", "Ça bouge très fort"],
+    detail: [
+      "",
+      "la valeur varie très peu.",
+      "la valeur varie un peu.",
+      "la valeur peut varier.",
+      "la valeur peut varier fortement.",
+      "la valeur peut varier très fortement, vers le haut comme vers le bas.",
+    ],
+    sentence: [
+      "",
+      "Niveau 1 sur 5 : la valeur varie très peu.",
+      "Niveau 2 sur 5 : la valeur varie un peu.",
+      "Niveau 3 sur 5 : la valeur peut varier.",
+      "Niveau 4 sur 5 : la valeur peut varier fortement.",
+      "Niveau 5 sur 5 : la valeur peut varier très fortement, vers le haut comme vers le bas.",
+    ],
+    note: "Plus le niveau est élevé, plus la valeur peut varier fortement. Cela ne dit pas si elle va monter ou baisser.",
+  },
+  en: {
+    word: ["", "Very calm", "Calm", "Some movement", "Lots of movement", "Big swings"],
+    detail: [
+      "",
+      "the value barely changes.",
+      "the value changes a little.",
+      "the value can change.",
+      "the value can change a lot.",
+      "the value can change a great deal, up or down.",
+    ],
+    sentence: [
+      "",
+      "Level 1 of 5: the value barely changes.",
+      "Level 2 of 5: the value changes a little.",
+      "Level 3 of 5: the value can change.",
+      "Level 4 of 5: the value can change a lot.",
+      "Level 5 of 5: the value can change a great deal, up or down.",
+    ],
+    note: "The higher the level, the more the value can swing. It doesn't tell you whether it will go up or down.",
+  },
+});
+
+export const RISK_WORD: string[] = localized({ fr: RISK.fr.word, en: RISK.en.word });
+/** Fin de phrase seule (« la valeur peut varier. »), pour l'insérer après un autre début. */
+export const RISK_DETAIL: string[] = localized({ fr: RISK.fr.detail, en: RISK.en.detail });
+export const RISK_SENTENCE: string[] = localized({ fr: RISK.fr.sentence, en: RISK.en.sentence });
+export function riskNote() {
+  return pick(RISK).note;
+}
 
 export interface InvestRun {
   id: string;
@@ -118,9 +196,9 @@ export interface InvestState {
   orchard?: { gate: "hidden" | "locked" | "onboarding" | "open"; run: InvestRun | null };
 }
 
-const UNITS_2 = new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const UNITS_0 = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
-const PCT = new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const UNITS_2 = numberFormatter({ minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const UNITS_0 = numberFormatter({ maximumFractionDigits: 0 });
+const PCT = numberFormatter({ minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
 /** 8-9 : unités entières ; 10-12 : deux décimales. */
 export function units(value: number, young: boolean) {
@@ -134,11 +212,11 @@ export function signedUnits(delta: number, young: boolean) {
   return `${rounded > 0 ? "+" : "−"}${units(Math.abs(rounded), young)}`;
 }
 
-/** Pourcentage signé (10-12 seulement) : « +4,2 % ». */
+/** Pourcentage signé (10-12 seulement) : « +4,2 % », « +4.2% ». */
 export function signedPercent(fraction: number) {
   const v = Math.round(fraction * 1000) / 10;
-  if (v === 0) return "0,0 %";
-  return `${v > 0 ? "+" : "−"}${PCT.format(Math.abs(v))} %`;
+  if (v === 0) return percentText(PCT.format(0));
+  return `${v > 0 ? "+" : "−"}${percentText(PCT.format(Math.abs(v)))}`;
 }
 
 export type Trend = "up" | "down" | "flat";
@@ -151,24 +229,47 @@ export function trendOf(delta: number, base: number, young: boolean): Trend {
 
 export const TREND_GLYPH: Record<Trend, string> = { up: "▲", down: "▼", flat: "=" };
 
-export function trendWords(trend: Trend, delta: number, young: boolean) {
-  if (trend === "flat") return "presque pas bougé";
-  const n = units(Math.abs(delta), young);
-  return trend === "up" ? `${n} de plus` : `${n} de moins`;
+const TREND = defineCopy({
+  fr: {
+    flat: "presque pas bougé",
+    up: (n: string) => `${n} de plus`,
+    down: (n: string) => `${n} de moins`,
+    todayAt: (hour: string) => `aujourd'hui à ${hour}`,
+    tomorrow: "demain",
+  },
+  en: {
+    flat: "barely moved",
+    up: (n: string) => `${n} more`,
+    down: (n: string) => `${n} less`,
+    todayAt: (hour: string) => `today at ${hour}`,
+    tomorrow: "tomorrow",
+  },
+});
+
+/** « presque pas bougé », « 4 de plus », « 3 de moins ». */
+export function flatWords() {
+  return pick(TREND).flat;
 }
 
-const DAY = new Intl.DateTimeFormat("fr-FR", { weekday: "long" });
-const HOUR = new Intl.DateTimeFormat("fr-FR", { hour: "numeric" });
+export function trendWords(trend: Trend, delta: number, young: boolean) {
+  if (trend === "flat") return pick(TREND).flat;
+  const n = units(Math.abs(delta), young);
+  return trend === "up" ? pick(TREND).up(n) : pick(TREND).down(n);
+}
 
-/** « aujourd'hui à 17 h », « demain », « jeudi ». */
+const DAY = dateFormatter({ weekday: "long" });
+const HOUR_FR = dateFormatter({ hour: "numeric" });
+const HOUR_EN = dateFormatter({ hour: "numeric", hour12: true });
+
+/** « aujourd'hui à 17 h », « demain », « jeudi » ; « today at 5 pm », « tomorrow », « Thursday ». */
 export function rendezVousLabel(iso: string | null | undefined, now = new Date()) {
   if (!iso) return "";
   const d = new Date(iso);
   const same = (a: Date, b: Date) => a.toDateString() === b.toDateString();
   const tomorrow = new Date(now);
   tomorrow.setDate(now.getDate() + 1);
-  if (same(d, now)) return `aujourd'hui à ${HOUR.format(d).replace(" ", " ")}`;
-  if (same(d, tomorrow)) return "demain";
+  if (same(d, now)) return pick(TREND).todayAt((getLocale() === "fr" ? HOUR_FR : HOUR_EN).format(d).replace(" ", " "));
+  if (same(d, tomorrow)) return pick(TREND).tomorrow;
   return DAY.format(d);
 }
 
