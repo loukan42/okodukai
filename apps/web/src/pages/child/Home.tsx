@@ -10,7 +10,7 @@ import { Avatar } from "../../components/Avatar";
 import { CoinArt } from "../../art/CoinArt";
 import { ChestArt } from "../../art/ChestArt";
 import { ObjectArt } from "../../art/ObjectArt";
-import boosterImage from "../../assets/cards/card-booster.webp";
+import { BoosterPack } from "../../components/booster/BoosterPack";
 
 interface QuestRow { id: string; title: string; status: string; rewardCoins: number; rewardXp: number }
 interface BoosterRow { id: string; definition: { title: string; universe: { title: string } } }
@@ -181,7 +181,7 @@ export function Home() {
                 {boosters.length > 0 ? "Ouvrir un booster" : "Voir ma collection"} <GameIcon name="arrow" size={16} />
               </span>
             </span>
-            <img src={boosterImage} alt="" />
+            <BoosterPack className="booster-callout-pack" />
           </Link>
           <Link to="/enfant/argent/investir" className="home-callout">
             <ObjectArt name="coin-sprout" size={72} />

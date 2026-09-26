@@ -64,7 +64,7 @@ export function Shop() {
       )}
 
       {loading ? <p className="loading-message" role="status">La boutique se prépare…</p> : error && !confirming ? <p className="form-error" role="alert">{error}</p> : rewards.length === 0 ? (
-        <EmptyState icon="gift" title="Boutique vide" subtitle="Reviens bientôt, tes parents préparent des récompenses." />
+        <EmptyState art="coin-pouch" title="Boutique vide" subtitle="Reviens bientôt, tes parents préparent des récompenses." />
       ) : (
         <div className="reward-grid">
           {rewards.map((r) => (
@@ -78,7 +78,7 @@ export function Shop() {
                 disabled={balance < r.priceCoins}
                 onClick={() => setConfirming(r)}
               >
-                {balance < r.priceCoins ? `Il manque ${r.priceCoins - balance} pièces` : "Demander cette récompense"}
+                {balance < r.priceCoins ? `Il manque ${r.priceCoins - balance} pièces` : <><span className="label-long">Demander cette récompense</span><span className="label-short">Demander</span></>}
               </button>
             </article>
           ))}

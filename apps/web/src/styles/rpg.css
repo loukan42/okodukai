@@ -95,7 +95,6 @@ body { background: var(--parchment); color: var(--ink); }
 .xp-badge { display:inline-flex; align-items:center; gap:3px; color:#466c83; font-size:12px; font-weight:800; }
 .booster-callout { position:relative; width:100%; min-height:190px; overflow:hidden; display:flex; align-items:center; text-align:left; text-decoration:none; border:1px solid #af8847; border-radius:20px; background:radial-gradient(circle at 78% 45%,rgba(222,172,73,.3),transparent 35%),#233348; color:#fff5dc; padding:22px; cursor:pointer; }
 .booster-callout::before { content:""; position:absolute; inset:6px; border:1px solid rgba(245,211,142,.35); border-radius:14px; pointer-events:none; }
-.booster-callout img { width:105px; height:145px; object-fit:contain; margin-left:auto; filter:drop-shadow(0 10px 12px rgba(0,0,0,.4)); transform:rotate(8deg); }
 .booster-callout-copy { display:grid; gap:8px; z-index:1; max-width:170px; }
 .booster-callout-copy > span:first-child { font-size:12px; color:#e7c985; font-weight:800; }
 .booster-callout-copy strong { font:700 21px/1.14 var(--font-display); }
@@ -145,18 +144,9 @@ body { background: var(--parchment); color: var(--ink); }
 .booster-inventory-heading h2 span { display:inline-grid; place-items:center; min-width:30px; height:30px; border-radius:50%; margin-left:5px; padding:0 6px; background:#d9a34f; color:#1d3248; font:800 15px var(--font-interface); vertical-align:middle; }
 .booster-inventory-heading > svg { color:#e7bd72; }
 .booster-inventory-empty { display:flex; align-items:center; gap:24px; padding:15px 0 2px; }
-.booster-inventory-empty img { width:105px; height:130px; object-fit:contain; flex-shrink:0; filter:drop-shadow(0 8px 13px rgba(0,0,0,.35)); }
 .booster-inventory-empty strong { font:700 19px var(--font-display); }
 .booster-inventory-empty p { max-width:47ch; margin:7px 0 16px; color:#e0e4e4; font-size:14px; line-height:1.45; }
 .booster-inventory-empty .btn { display:inline-flex; align-items:center; gap:7px; }
-.booster-inventory-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(235px,1fr)); gap:13px; padding-top:18px; }
-.booster-inventory-item { display:flex; align-items:center; gap:10px; min-width:0; padding:13px; border:1px solid rgba(227,194,132,.48); border-radius:15px; background:rgba(9,26,42,.36); }
-.booster-inventory-item > img { width:80px; height:122px; object-fit:contain; flex-shrink:0; filter:drop-shadow(0 6px 10px rgba(0,0,0,.38)); }
-.booster-inventory-item > div { min-width:0; }
-.booster-inventory-item small { color:#e4c58c; font-weight:800; }
-.booster-inventory-item h3 { margin:5px 0; color:#fff3d6; font:700 17px/1.15 var(--font-display); }
-.booster-inventory-item p { margin:0 0 12px; color:#d8e1e6; font-size:12px; }
-.booster-inventory-item .btn { display:inline-flex; align-items:center; gap:5px; min-height:44px; padding:8px 10px; font-size:12px; }
 .collection-page > section:last-of-type { display:grid; gap:13px; }
 .collection-page > section:last-of-type .section-heading { margin:0; }
 .collection-page,.album-page { display:grid; gap:20px; }
@@ -217,8 +207,22 @@ body { background: var(--parchment); color: var(--ink); }
 .album-theatre-inner h2 { margin:3px 0 0; color:#fff4df; font-size:clamp(24px,4vw,32px); text-align:center; }
 .album-theatre-details { display:flex; justify-content:center; align-items:center; gap:11px; color:#f4ebdb; font-size:13px; font-weight:700; }
 .album-none { padding:24px; text-align:center; color:var(--ink-soft); }
-@media (max-width:650px) { .collection-universes { grid-template-columns:1fr; } .universe-tile,.universe-tile-content { min-height:240px; } .collection-header,.album-header { align-items:start; } .collection-total,.album-count { min-width:100px; } }
-@media (max-width:480px) { .booster-inventory-empty { gap:10px; } .booster-inventory-empty img { width:82px; height:110px; } .booster-inventory-grid { grid-template-columns:1fr; } }
+@media (max-width:650px) { .collection-header,.album-header { align-items:start; } .collection-total,.album-count { min-width:100px; } }
+/* Téléphone : deux univers par ligne, illustration en haut, texte en bas (la liste reste courte). */
+@media (max-width:650px) {
+  .collection-universes { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .universe-tile,.universe-tile-content { min-height:218px; }
+  .universe-tile { border-radius:16px; }
+  .universe-tile::after { border-radius:11px; inset:5px; }
+  .universe-tile-art { width:78%; height:76%; right:-14%; top:-8%; transform:rotate(8deg); }
+  .universe-tile-shade { background:linear-gradient(180deg,rgba(27,48,71,.05) 0%,rgba(27,48,71,.7) 42%,#1b3047 64%); }
+  .universe-tile-content { width:100%; justify-content:flex-end; gap:6px; padding:14px; }
+  .universe-tile-content > small { font-size:11px; }
+  .universe-tile-content > strong { font-size:17px; }
+  .universe-tile-description { display:none; }
+  .universe-tile-progress { width:100%; margin-top:2px; font-size:11px; }
+  .universe-tile-link { font-size:12px; }
+}
 @media (max-width:380px) { .collection-header,.album-header { flex-direction:column; } .collection-total,.album-count { display:flex; align-items:center; padding:9px 12px; } .album-theatre-card { width:76vw; } }
 @media (prefers-reduced-motion:reduce) { .album-theatre-shine { animation:none; } }
 
@@ -275,8 +279,10 @@ body { background: var(--parchment); color: var(--ink); }
 .reward-item-price { display:flex; align-items:center; gap:8px; margin-top:auto; font-size:12px; color:var(--ink-soft); font-weight:800; }
 .reward-item .btn { margin-top:4px; font-size:13px; }
 .reward-dialog { width:min(100%,400px); text-align:center; }
-@media (max-width:540px) { .shop-header { align-items:start; } .shop-header .page-scene-icon { display:none; } .shop-wallet { min-width:95px; } .reward-grid { grid-template-columns:1fr 1fr; gap:9px; } .reward-item { min-height:275px; padding:14px; } .reward-item h2 { font-size:18px; } .reward-item .btn { padding:8px; } }
-@media (max-width:380px) { .reward-grid { grid-template-columns:1fr; } .reward-item { min-height:230px; } }
+@media (max-width:540px) { .shop-header { align-items:start; } .shop-header .page-scene-icon { display:none; } .shop-wallet { min-width:95px; } .reward-grid { grid-template-columns:1fr 1fr; gap:10px; } .reward-item { min-height:0; gap:8px; padding:14px; } .reward-item-icon { width:50px; height:50px; border-radius:13px; } .reward-item-icon svg { width:26px; height:26px; } .reward-item h2 { font-size:17px; } .reward-item .btn { min-height:44px; padding:8px; } }
+@media (max-width:330px) { .reward-grid { grid-template-columns:1fr; } }
+.label-short { display:none; }
+@media (max-width:540px) { .label-long { display:none; } .label-short { display:inline; } }
 
 /* Parent cockpit */
 .parent-dashboard { display:grid; gap:29px; }
@@ -328,3 +334,25 @@ body { background: var(--parchment); color: var(--ink); }
 .learn-page > button.card { border-left:5px solid #80a0aa !important; }
 .learn-page > button.card:hover { background:#f3eddf; }
 .learn-complete-icon { display:inline-grid; place-items:center; width:64px; height:64px; border:2px solid #519465; border-radius:50%; background:#ddf0df; color:#286841; }
+
+/* Réglage des univers (parent) : la case reste à droite, même avec un titre long. */
+.universe-toggle { flex-wrap: nowrap; gap: 14px; }
+.universe-toggle > div { flex: 1; min-width: 0; }
+.universe-toggle input { flex-shrink: 0; accent-color: var(--forest); }
+
+/* Tableau de bord parent : la vallée en bandeau discret, sous un voile sobre (pas de chrome de jeu). */
+.parent-dashboard-header {
+  background:
+    linear-gradient(90deg, #1b3147 0%, #1b3147 34%, rgba(27, 49, 71, 0.78) 58%, rgba(27, 49, 71, 0.42) 100%),
+    url(/assets/backgrounds/valley-golden-wide-1280.webp) right 42% / cover no-repeat,
+    #1b3147;
+}
+@media (max-width: 600px) {
+  .parent-dashboard-header { background: linear-gradient(180deg, rgba(27, 49, 71, 0.55), #1b3147 78%), url(/assets/backgrounds/valley-golden-wide-1280.webp) center 40% / cover no-repeat, #1b3147; }
+}
+
+/* États vides illustrés (enfant) : un objet du monde flotte doucement au-dessus du message. */
+.empty-state--art { padding-top: 26px; }
+.empty-state-art { width: 112px; height: 112px; object-fit: contain; filter: drop-shadow(0 12px 14px rgba(70, 45, 12, 0.25)); animation: empty-art-float 4.2s ease-in-out infinite; }
+@keyframes empty-art-float { 50% { transform: translateY(-6px) rotate(-2deg); } }
+@media (prefers-reduced-motion: reduce) { .empty-state-art { animation: none; } }

@@ -43,7 +43,7 @@ export function UniversesManage() {
       {error && <p className="form-error" role="alert">{error}</p>}
       <div className="stack">
         {universes.map((u) => (
-          <label key={u.id} className="card card-row" style={{ cursor: "pointer" }}>
+          <label key={u.id} className="card card-row universe-toggle" style={{ cursor: "pointer" }}>
             <div>
               <p style={{ fontWeight: 700, margin: 0 }}>{u.title}</p>
               <p className="text-sm text-faint" style={{ margin: 0 }}>

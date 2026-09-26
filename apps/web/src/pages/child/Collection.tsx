@@ -5,7 +5,7 @@ import { EmptyState } from "../../components/EmptyState";
 import { ProgressBar } from "../../components/ProgressBar";
 import { GameIcon } from "../../components/GameIcon";
 import { BoosterOpenOverlay, type RevealedCard } from "../../components/booster/BoosterOpenOverlay";
-import boosterImage from "../../assets/cards/card-booster.webp";
+import { BoosterPack } from "../../components/booster/BoosterPack";
 import { useAuth } from "../../lib/AuthContext";
 
 interface Universe { id: string; code: string; title: string; description: string | null }
@@ -45,17 +45,33 @@ export function Collection() {
   if (loading) return <p className="loading-message" role="status">Ouverture de l'album…</p>;
   if (error) return <div className="empty-state"><strong>L'album ne charge pas.</strong><p>Vérifie ta connexion et réessaie.</p><button className="btn btn-primary" onClick={() => void load()}>Réessayer</button></div>;
 
+  const universeGroups = [...boosters.reduce((groups, booster) => {
+    const title = booster.definition.universe.title;
+    groups.set(title, [...(groups.get(title) ?? []), booster]);
+    return groups;
+  }, new Map<string, BoosterRow[]>())];
   const totalOwned = universes.reduce((sum, u) => sum + u.owned, 0);
   const totalCards = universes.reduce((sum, u) => sum + u.total, 0);
 
   return <div className="collection-page">
     <header className="collection-header"><div><p className="scene-kicker">Ton album</p><h1>Ma collection</h1><p>Explore tes univers et retrouve les cartes gagnées.</p></div><div className="collection-total"><GameIcon name="collection" size={26}/><strong>{totalOwned} / {totalCards}</strong><span>cartes trouvées</span></div></header>
     <section className="booster-inventory" aria-labelledby="inventory-title"><div className="booster-inventory-heading"><div><p className="scene-kicker">À ouvrir quand tu veux</p><h2 id="inventory-title">Mes boosters <span>{boosters.length}</span></h2></div><GameIcon name="gift" size={28}/></div>
-      {boosters.length === 0 ? <div className="booster-inventory-empty"><img src={boosterImage} alt=""/><div><strong>Aucun booster pour le moment</strong><p>Termine une quête et fais-la valider par un parent. Tu recevras un booster à garder ici.</p><Link to="/enfant/quetes" className="btn btn-gold">Voir mes quêtes <GameIcon name="arrow" size={17}/></Link></div></div>
-        : <div className="booster-inventory-grid">{boosters.map((booster) => <article className="booster-inventory-item" key={booster.id}><img src={boosterImage} alt=""/><div><small>Booster gagné</small><h3>{booster.definition.universe.title}</h3><p>{booster.definition.title}</p><button className="btn btn-gold" onClick={() => setOpeningBooster(booster)}>Ouvrir ce booster <GameIcon name="arrow" size={17}/></button></div></article>)}</div>}
+      {boosters.length === 0 ? <div className="booster-inventory-empty"><BoosterPack className="booster-pack--resting"/><div><strong>Aucun booster pour le moment</strong><p>Termine une quête et fais-la valider par un parent. Tu recevras un booster à garder ici.</p><Link to="/enfant/quetes" className="btn btn-gold">Voir mes quêtes <GameIcon name="arrow" size={17}/></Link></div></div>
+        : <div className="booster-altar">
+          <button type="button" className="booster-stack" onClick={() => setOpeningBooster(boosters[0])} aria-label={`Ouvrir le booster ${boosters[0].definition.universe.title}`}>
+            <span className="booster-stack-glow" aria-hidden="true"/>
+            {boosters.slice(0, 3).reverse().map((booster, i, shown) => <BoosterPack key={booster.id} universe={booster.definition.universe.title} className={`booster-stack-pack booster-stack-pack--${shown.length - 1 - i}`}/>)}
+          </button>
+          <div className="booster-altar-copy">
+            <strong>{boosters.length === 1 ? "Un booster t'attend." : `${boosters.length} boosters t'attendent.`}</strong>
+            <p>Le prochain vient de l'univers {boosters[0].definition.universe.title}.</p>
+            <button type="button" className="btn btn-gold booster-open-cta" onClick={() => setOpeningBooster(boosters[0])}>Ouvrir un booster <GameIcon name="arrow" size={17}/></button>
+            {universeGroups.length > 1 && <div className="booster-chips" role="group" aria-label="Choisir un univers">{universeGroups.map(([title, rows]) => <button type="button" key={title} className="booster-chip" onClick={() => setOpeningBooster(rows[0])}>{title}<span>×{rows.length}</span></button>)}</div>}
+          </div>
+        </div>}
     </section>
     <section aria-labelledby="albums-title"><div className="section-heading"><h2 id="albums-title">Mes univers</h2></div>
-    {universes.length === 0 ? <EmptyState icon="collection" title="Aucun univers activé" subtitle="Demande à un parent d'activer un univers de collection."/> : <div className="collection-universes">{universes.map((universe, index) => <Link key={universe.id} to={`/enfant/collection/${universe.id}`} className="universe-tile">
+    {universes.length === 0 ? <EmptyState art="hourglass" title="Aucun univers activé" subtitle="Demande à un parent d'activer un univers de collection."/> : <div className="collection-universes">{universes.map((universe, index) => <Link key={universe.id} to={`/enfant/collection/${universe.id}`} className="universe-tile">
       {universe.imageUrl ? <img className="universe-tile-art" src={universe.imageUrl} alt="" loading="lazy"/> : <span className="universe-tile-pattern" aria-hidden="true"/>}
       <span className="universe-tile-shade"/><span className="universe-tile-content"><small>Univers {String(index + 1).padStart(2,"0")}</small><strong>{universe.title}</strong><span className="universe-tile-description">{universe.description}</span><span className="universe-tile-progress"><span>{universe.owned} / {universe.total} cartes</span><ProgressBar value={universe.owned} max={universe.total}/></span><span className="universe-tile-link">Ouvrir l'album <GameIcon name="arrow" size={17}/></span></span>
     </Link>)}</div>}</section>

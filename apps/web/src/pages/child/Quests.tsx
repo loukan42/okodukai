@@ -28,7 +28,7 @@ export function Quests() {
   }
 
   return <div className="quests-page"><header className="page-scene-title page-scene-title--art"><ObjectArt name="quest-board" folder="quests" size={132} /><div><p className="scene-kicker">À faire et à gagner</p><h1>Journal de quêtes</h1><p>Choisis une quête, puis préviens un parent quand elle est terminée.</p></div></header>
-    {loading ? <p className="loading-message" role="status">Chargement des quêtes…</p> : quests.length === 0 && !error ? <EmptyState icon="quest" title="Pas encore de quête" subtitle="Demande à un parent de t'en proposer une."/> : null}
+    {loading ? <p className="loading-message" role="status">Chargement des quêtes…</p> : quests.length === 0 && !error ? <EmptyState art="quest-scroll" title="Pas encore de quête" subtitle="Demande à un parent de t'en proposer une."/> : null}
     {error && <p className="form-error" role="alert">{error}</p>}
     <div className="quest-journal">{quests.map((q, index) => <article className={`quest-sheet quest-sheet--${q.status.toLowerCase()}`} key={q.id}>
       <div className="quest-sheet-index"><GameIcon name="quest" size={21}/><span>{String(index+1).padStart(2,"0")}</span></div>

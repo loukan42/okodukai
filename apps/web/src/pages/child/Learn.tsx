@@ -142,7 +142,7 @@ export function Learn() {
   }
 
   if (modules.length === 0) {
-    return <EmptyState icon="learn" title="Pas encore de module" subtitle="Reviens bientôt pour apprendre de nouvelles choses." />;
+    return <EmptyState art="coin-sprout" title="Pas encore de module" subtitle="Reviens bientôt pour apprendre de nouvelles choses." />;
   }
 
   return (

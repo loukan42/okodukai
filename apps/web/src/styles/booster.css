@@ -142,12 +142,27 @@
 }
 .summon-orb:disabled { cursor: default; }
 .summon-orb:focus-visible { outline-offset: 16px; border-radius: 50%; }
-.summon-orb--forming { pointer-events: none; animation: orb-form 1500ms var(--ease-out) both; }
-@keyframes orb-form {
-  0% { opacity: 0; transform: scale(0.15); filter: blur(12px) brightness(2); }
-  60% { opacity: 1; filter: blur(2px) brightness(1.4); }
-  100% { opacity: 1; transform: scale(0.82); filter: none; }
+.summon-pack { position: relative; width: 36%; pointer-events: none; animation: pack-descend 1600ms var(--ease-out) both; }
+@keyframes pack-descend {
+  0% { opacity: 0; transform: translateY(-38%) rotate(-6deg) scale(0.9); }
+  30% { opacity: 1; transform: translateY(0) rotate(0) scale(1); filter: drop-shadow(0 0 0 rgba(255, 220, 130, 0)); }
+  72% { transform: translateY(-3%) scale(1.03); filter: drop-shadow(0 0 26px rgba(255, 220, 130, 0.9)) brightness(1.15); }
+  100% { opacity: 0; transform: scale(0.42); filter: drop-shadow(0 0 40px #fff) brightness(3) blur(6px); }
 }
+/* Graine de lumière laissée par le sachet : elle patiente si le tirage tarde, puis devient le cristal. */
+.summon-seed {
+  position: absolute;
+  width: 16%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 18%, #cfe8ff 40%, rgba(120, 180, 255, 0) 72%);
+  opacity: 0;
+  animation: seed-in 500ms 1250ms var(--ease-out) forwards, seed-pulse 1.3s 1750ms ease-in-out infinite;
+}
+@keyframes seed-in { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: scale(1); } }
+@keyframes seed-pulse { 50% { transform: scale(1.35); opacity: 0.75; } }
+.summon--crystal .summon-orb { animation: orb-appear 650ms var(--ease-out) both; }
+@keyframes orb-appear { from { opacity: 0; transform: scale(0.35); filter: brightness(2.6) blur(6px); } }
 .summon-orb-wobble { position: absolute; inset: 0; border-radius: 50%; animation: orb-float 3.4s ease-in-out infinite; }
 .summon-altar--hits-1 .summon-orb-wobble,
 .summon-altar--hits-2 .summon-orb-wobble,
@@ -679,4 +694,158 @@
   .rune-stroke { stroke-dashoffset: 0; }
   .rune-tick,
   .rune-text { opacity: 1; }
+}
+
+/* ==========================================================================
+   Sachet de booster (accueil, collection) et pile de boosters à ouvrir
+   ========================================================================== */
+.booster-pack {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 640 / 960;
+  container-type: inline-size;
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.42));
+  -webkit-user-select: none;
+  user-select: none;
+}
+.booster-pack-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+/* Halo nocturne derrière le logo : masque l'ancien titre sans casser la matière du sachet. */
+.booster-pack-halo {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  top: 15.5%;
+  height: 23%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(7, 13, 32, 0.97) 64%, rgba(7, 13, 32, 0.72) 82%, rgba(7, 13, 32, 0));
+}
+.booster-pack-logo {
+  position: absolute;
+  left: 15%;
+  width: 70%;
+  top: 15.4%;
+  height: auto;
+  filter: drop-shadow(0 0 6px rgba(255, 214, 120, 0.45)) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.6));
+}
+/* Ruban doré au nom de l'univers, posé sur l'ancien crâne. */
+.booster-pack-ribbon {
+  position: absolute;
+  left: 13%;
+  right: 13%;
+  top: 76.2%;
+  height: 10%;
+  display: grid;
+  place-items: center;
+  padding: 0 11%;
+  clip-path: polygon(0 0, 100% 0, 93% 50%, 100% 100%, 0 100%, 7% 50%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55), transparent 38%),
+    linear-gradient(180deg, #ffe7a3 0%, #e6b04c 48%, #b97c1f 100%);
+  box-shadow: inset 0 -2px 0 rgba(90, 52, 8, 0.45);
+}
+.booster-pack-ribbon span {
+  max-width: 100%;
+  overflow: hidden;
+  color: #3b2206;
+  font: 800 clamp(6px, 6cqw, 14px) / 1 var(--font-display);
+  font-variation-settings: "SOFT" 60, "opsz" 36;
+  text-align: center;
+  text-wrap: balance;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.booster-pack-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 38%, rgba(255, 246, 214, 0.42) 48%, transparent 58%);
+  background-size: 260% 100%;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  mix-blend-mode: screen;
+  animation: pack-sheen 4.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes pack-sheen { 0%, 55% { background-position: 120% 0; } 100% { background-position: -60% 0; } }
+.booster-pack--resting { width: 96px; flex-shrink: 0; opacity: 0.6; filter: grayscale(0.35) drop-shadow(0 10px 14px rgba(0, 0, 0, 0.35)); }
+.booster-pack--resting .booster-pack-sheen { animation: none; opacity: 0; }
+
+.booster-callout-pack { width: 104px; margin-left: auto; flex-shrink: 0; transform: rotate(8deg); transition: transform 260ms var(--ease-out); }
+@media (hover: hover) { .booster-callout:hover .booster-callout-pack { transform: rotate(4deg) translateY(-6px) scale(1.04); } }
+
+.booster-altar { display: flex; align-items: center; gap: clamp(18px, 4vw, 44px); padding-top: 20px; }
+.booster-stack {
+  position: relative;
+  width: clamp(150px, 30vw, 210px);
+  aspect-ratio: 1 / 1.05;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: none;
+  cursor: pointer;
+}
+.booster-stack:focus-visible { outline: 3px solid #f3cf7a; outline-offset: 6px; }
+.booster-stack-glow {
+  position: absolute;
+  inset: 4% 0 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(243, 207, 122, 0.42), transparent 64%);
+  animation: glow-breathe 2.8s ease-in-out infinite;
+}
+.booster-stack-pack {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 62%;
+  transition: transform 320ms var(--ease-out);
+}
+.booster-stack-pack--0 { z-index: 3; transform: translate(-50%, -50%); animation: pack-float 3.2s ease-in-out infinite; }
+.booster-stack-pack--1 { z-index: 2; transform: translate(-22%, -48%) rotate(10deg); filter: brightness(0.8) drop-shadow(0 12px 16px rgba(0, 0, 0, 0.4)); }
+.booster-stack-pack--2 { z-index: 1; transform: translate(-78%, -46%) rotate(-11deg); filter: brightness(0.7) drop-shadow(0 12px 16px rgba(0, 0, 0, 0.4)); }
+@keyframes pack-float { 50% { transform: translate(-50%, -54%); } }
+@media (hover: hover) {
+  .booster-stack:hover .booster-stack-pack--1 { transform: translate(-10%, -50%) rotate(15deg); }
+  .booster-stack:hover .booster-stack-pack--2 { transform: translate(-90%, -48%) rotate(-16deg); }
+}
+.booster-stack:active .booster-stack-pack--0 { animation: none; transform: translate(-50%, -50%) scale(0.96); }
+
+.booster-altar-copy { min-width: 0; display: grid; justify-items: start; gap: 8px; }
+.booster-altar-copy strong { font: 800 clamp(22px, 3vw, 28px) / 1.1 var(--font-display); color: #fff3d6; }
+.booster-altar-copy p { margin: 0; color: #d8e1e6; font-size: 14px; line-height: 1.45; }
+.booster-open-cta { display: inline-flex; align-items: center; gap: 7px; min-height: 48px; margin-top: 4px; }
+.booster-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.booster-chip {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid rgba(231, 198, 135, 0.45);
+  border-radius: 999px;
+  color: #fff3d6;
+  background: rgba(9, 26, 42, 0.4);
+  font: 700 13px var(--font-interface);
+  cursor: pointer;
+  transition: border-color 140ms ease, transform 140ms var(--ease-out);
+}
+.booster-chip span { color: #e7bd72; font-weight: 800; }
+.booster-chip:active { transform: scale(0.97); }
+@media (hover: hover) { .booster-chip:hover { border-color: #e7bd72; } }
+
+@media (max-width: 560px) {
+  .booster-altar { flex-direction: column; align-items: stretch; gap: 10px; }
+  .booster-stack { width: min(62vw, 220px); align-self: center; }
+  .booster-altar-copy { justify-items: stretch; text-align: center; }
+  .booster-open-cta { justify-content: center; }
+  .booster-chips { justify-content: center; }
+  .booster-inventory-empty { gap: 12px; }
+  .booster-pack--resting { width: 76px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .booster-pack-sheen,
+  .booster-stack-glow,
+  .booster-stack-pack--0 { animation: none; }
 }

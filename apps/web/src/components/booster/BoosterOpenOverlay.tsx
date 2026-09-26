@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { RARITY_LABELS, type CardRarity } from "@okodukai/shared";
 import { useDialogFocus } from "../../lib/useDialogFocus";
 import { COPY } from "./copy";
+import { BoosterPack } from "./BoosterPack";
 import { RuneCircle } from "./RuneCircle";
 import { createSkyEngine, type SkyEngine } from "./skyEngine";
 import { setSoundEnabled, sfx, soundEnabled } from "./sfx";
@@ -383,9 +384,13 @@ export function BoosterOpenOverlay({ open, onOpen, onClose, universeTitle, remai
               <RuneCircle />
               <span className="summon-circle-glow" aria-hidden="true" />
               {phase === "summon" ? (
-                <span className="summon-orb summon-orb--forming" aria-hidden="true">
-                  <span className="summon-orb-core" />
-                </span>
+                // Le sachet descend dans le cercle puis se dissout en lumière : il devient le cristal.
+                <>
+                  <span className="summon-seed" aria-hidden="true" />
+                  <span className="summon-pack" aria-hidden="true">
+                    <BoosterPack universe={universeTitle} />
+                  </span>
+                </>
               ) : (
                 <button
                   ref={orbRef}
