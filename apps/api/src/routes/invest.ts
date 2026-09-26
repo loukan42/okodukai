@@ -5,7 +5,8 @@ import { prisma } from "../lib/prisma.js";
 import { validateBody } from "../lib/validation.js";
 import { attachSession, requireChild, requireParent, childSession, parentSession } from "../middleware/requireAuth.js";
 import { RHYTHMS, listRendezVous, portfolioRiskLevel } from "../lib/financeSim/index.js";
-import { TIME_ZONE, activeRun, allocationStep, createRun, investSettingsFor, runView, supportsFor, syncRun, validateAllocation } from "../lib/invest.js";
+import { ORCHARD, TIME_ZONE, activeRun, allocationStep, createRun, investSettingsFor, runView, supportsFor, syncRun, validateAllocation } from "../lib/invest.js";
+import type { AgeBand, SimMode, SimulationRun } from "@prisma/client";
 
 export const investRouter = Router();
 investRouter.use(attachSession);
@@ -14,6 +15,28 @@ investRouter.use(attachSession);
 async function hasSaved(childId: string) {
   const count = await prisma.walletTransaction.count({ where: { wallet: { childId }, type: "SAVINGS_LOCK" } });
   return count > 0;
+}
+
+/**
+ * Le verger du temps long (assurance-vie simulée) : 10-12 ans seulement, ouvert après un premier
+ * bilan lu dans l'observatoire (les bases avant l'enveloppe).
+ */
+async function orchardState(childId: string, ageBand: AgeBand, mirror: SimulationRun | null, rhythm: keyof typeof RHYTHMS) {
+  if (ageBand !== "AGE_10_12") return { gate: "hidden" as const, run: null };
+  const run = await activeRun(prisma, childId, "ASSURANCE_VIE");
+  if (run) return { gate: "open" as const, run: await runView(prisma, run, ageBand) };
+  const seen = mirror ? await prisma.simulationSnapshot.count({ where: { runId: mirror.id, seenAt: { not: null } } }) : 0;
+  if (seen === 0) return { gate: "locked" as const, run: null };
+  const [firstRendezVousAt] = listRendezVous(RHYTHMS[rhythm], new Date(), 1, { timeZone: TIME_ZONE });
+  return {
+    gate: "onboarding" as const,
+    run: null,
+    firstRendezVousAt,
+    fees: { entry: ORCHARD.fees.entryRate, managementAnnual: ORCHARD.fees.managementRateAnnual, arbitrage: ORCHARD.fees.arbitrageRate },
+    monthlyChoices: ORCHARD.monthlyChoices,
+    contributionCap: ORCHARD.contributionCap,
+    horizonMonths: ORCHARD.horizonMonths,
+  };
 }
 
 async function investState(childId: string) {
@@ -25,11 +48,16 @@ async function investState(childId: string) {
     settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths },
     allocationStep: allocationStep(child.ageBand),
   };
-  if (!settings.enabled) return { ...base, gate: "disabled" as const, run: null };
-  if (run) return { ...base, gate: "open" as const, run: await runView(prisma, run, child.ageBand) };
-  if (!(await hasSaved(childId))) return { ...base, gate: "locked" as const, run: null };
+  if (!settings.enabled) return { ...base, gate: "disabled" as const, run: null, orchard: { gate: "hidden" as const, run: null } };
+  const orchard = await orchardState(childId, child.ageBand, run, settings.rhythm);
+  if (run) return { ...base, gate: "open" as const, run: await runView(prisma, run, child.ageBand), orchard };
+  if (!(await hasSaved(childId))) return { ...base, gate: "locked" as const, run: null, orchard };
   const [firstRendezVousAt] = listRendezVous(RHYTHMS[settings.rhythm], new Date(), 1, { timeZone: TIME_ZONE });
-  return { ...base, gate: "onboarding" as const, run: null, allowedSupports: supportsFor(child.ageBand, false), firstRendezVousAt };
+  return { ...base, gate: "onboarding" as const, run: null, allowedSupports: supportsFor(child.ageBand, false), firstRendezVousAt, orchard };
+}
+
+function modeOf(value: unknown): SimMode {
+  return value === "ASSURANCE_VIE" ? "ASSURANCE_VIE" : "MIROIR";
 }
 
 investRouter.get("/child/invest", requireChild, async (req, res) => {
@@ -73,16 +101,38 @@ investRouter.post("/child/invest/start", requireChild, validateBody(startSchema)
   res.status(201).json(await investState(childId));
 });
 
+const orchardSchema = z.object({ allocation: allocationSchema, monthly: z.union([z.literal(0), z.literal(2), z.literal(5)]), idempotencyKey: z.string().uuid() });
+
+investRouter.post("/child/invest/orchard/start", requireChild, validateBody(orchardSchema), async (req, res) => {
+  const { childId, householdId } = childSession(req);
+  const key = `sim-orchard:${childId}:${req.body.idempotencyKey}`;
+  if (await prisma.simulationRun.findUnique({ where: { idempotencyKey: key } })) return res.json(await investState(childId));
+  const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId } });
+  const settings = await investSettingsFor(prisma, childId, child.ageBand);
+  const orchard = await orchardState(childId, child.ageBand, await activeRun(prisma, childId), settings.rhythm);
+  if (!settings.enabled || orchard.gate !== "onboarding") return res.status(409).json({ error: "Le verger n'est pas encore ouvert." });
+  const allocation = validateAllocation(req.body.allocation, child.ageBand, supportsFor(child.ageBand, true));
+  if (!allocation) return res.status(400).json({ error: "Ta répartition doit placer exactement 100 %." });
+  try {
+    await prisma.$transaction((tx) =>
+      createRun(tx, { childId, householdId, mode: "ASSURANCE_VIE", rhythm: settings.rhythm, horizonMonths: ORCHARD.horizonMonths, allocation, monthly: req.body.monthly, idempotencyKey: key })
+    );
+  } catch (err) {
+    if (!(err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002")) throw err;
+  }
+  res.status(201).json(await investState(childId));
+});
+
 investRouter.post("/child/invest/statements/:index/seen", requireChild, async (req, res) => {
   const { childId } = childSession(req);
-  const run = await activeRun(prisma, childId);
+  const run = await activeRun(prisma, childId, modeOf(req.query.mode));
   const index = Number(req.params.index);
   if (!run || !Number.isInteger(index)) return res.status(404).json({ error: "Bilan introuvable" });
   await prisma.simulationSnapshot.updateMany({ where: { runId: run.id, rendezVousIndex: { lte: index }, seenAt: null }, data: { seenAt: new Date() } });
   res.json(await investState(childId));
 });
 
-const rebalanceSchema = z.object({ allocation: allocationSchema, idempotencyKey: z.string().uuid() });
+const rebalanceSchema = z.object({ allocation: allocationSchema, idempotencyKey: z.string().uuid(), mode: z.enum(["MIROIR", "ASSURANCE_VIE"]).optional() });
 
 /**
  * Changer sa répartition (arbitrage) : appliqué au prochain relevé, à la valeur de ce relevé
@@ -94,7 +144,7 @@ investRouter.post("/child/invest/rebalance", requireChild, validateBody(rebalanc
   if (await prisma.simulationOperation.findUnique({ where: { idempotencyKey: key } })) return res.json(await investState(childId));
 
   const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId } });
-  const run = await activeRun(prisma, childId);
+  const run = await activeRun(prisma, childId, modeOf(req.body.mode));
   if (!run || run.status !== "EN_COURS") return res.status(409).json({ error: "Aucune partie en cours." });
   const { clock, operations } = await syncRun(prisma, run);
   if (clock.finished) return res.status(409).json({ error: "Ta partie est terminée." });
@@ -117,7 +167,7 @@ investRouter.post("/child/invest/rebalance", requireChild, validateBody(rebalanc
 /** Nouvelle partie une fois la précédente terminée (le scénario suivant est tiré sans remise). */
 investRouter.post("/child/invest/new-game", requireChild, async (req, res) => {
   const { childId } = childSession(req);
-  const run = await activeRun(prisma, childId);
+  const run = await activeRun(prisma, childId, modeOf(req.body?.mode));
   if (run) {
     const { clock } = await syncRun(prisma, run);
     if (!clock.finished && run.status === "EN_COURS") return res.status(409).json({ error: "Ta partie n'est pas terminée." });

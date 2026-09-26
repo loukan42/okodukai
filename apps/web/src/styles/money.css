@@ -1476,3 +1476,17 @@
   height: 20px;
   accent-color: #253c51;
 }
+
+.home-callout--locked {
+  opacity: 0.75;
+  border-style: dashed;
+}
+
+.orchard-head {
+  background-image: url("/assets/backgrounds/valley-golden-wide-1280.webp");
+  background-position: center 70%;
+}
+
+.orchard-head::before {
+  background: linear-gradient(90deg, rgba(30, 44, 22, 0.82), rgba(30, 44, 22, 0.35));
+}

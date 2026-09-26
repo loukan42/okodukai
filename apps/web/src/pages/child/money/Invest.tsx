@@ -406,6 +406,22 @@ function Observatory({ state, reload }: { state: InvestState; reload: () => Prom
         )
       )}
 
+      {state.orchard && state.orchard.gate !== "hidden" && (
+        <Link to="/enfant/argent/investir/verger" className={`home-callout${state.orchard.gate === "locked" ? " home-callout--locked" : ""}`}>
+          <ObjectArt name="hourglass" size={64} />
+          <span>
+            <strong>Le verger du temps long</strong>
+            <small>
+              {state.orchard.gate === "locked"
+                ? "S'ouvre après ton premier bilan lu."
+                : state.orchard.gate === "onboarding"
+                  ? "Un nouveau lieu est ouvert : un contrat pour placer sur de longues années."
+                  : `Mon contrat école : ${units(state.orchard.run!.value, false)} unités.`}
+            </small>
+          </span>
+        </Link>
+      )}
+
       <Link to="/enfant/argent/investir/bibliotheque" className="home-callout">
         <ObjectArt name="quest-scroll" size={64} />
         <span>

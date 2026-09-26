@@ -12,6 +12,7 @@ config({ path: fileURLToPath(new URL("../../.env", import.meta.url)) });
 type Invest = {
   gate: string;
   allowedSupports?: string[];
+  orchard: { gate: string; run: null | { mode: string; value: number; feesPaid: number; contributed: number; monthlyPlan: number } };
   run: null | { id: string; value: number; statements: { index: number; seen: boolean }[]; unseen: number; pendingOperations: number; clock: { revealedSteps: number }; scenarioRevealed: string | null };
 };
 
@@ -64,9 +65,21 @@ describe.skipIf(!process.env.DATABASE_URL)("placements école : moteur, relevés
       expect((await get()).run!.pendingOperations).toBe(1);
       expect((await post("/child/invest/rebalance", { allocation: { SECURISE: 100 }, idempotencyKey: randomUUID() })).status).toBe(409);
 
+      expect(state.orchard.gate).toBe("locked");
       const last = state.run!.statements.at(-1)!.index;
       expect((await post(`/child/invest/statements/${last}/seen`, {})).status).toBe(200);
       expect((await get()).run!.unseen).toBe(0);
+
+      // Le verger (assurance-vie simulée) s'ouvre après un premier bilan lu : frais d'exemple de 2 % sur versement.
+      expect((await get()).orchard.gate).toBe("onboarding");
+      const orchard = await post("/child/invest/orchard/start", { allocation: { SECURISE: 50, MONDE: 50 }, monthly: 2, idempotencyKey: randomUUID() });
+      expect(orchard.status).toBe(201);
+      const opened = (await get()).orchard.run!;
+      expect(opened).toMatchObject({ mode: "ASSURANCE_VIE", value: 98, feesPaid: 2, contributed: 100, monthlyPlan: 2 });
+      await prisma.simulationRun.updateMany({ where: { childId: child.id, mode: "ASSURANCE_VIE" }, data: { startedAt: new Date(Date.now() - 2 * 86_400_000) } });
+      const grown = (await get()).orchard.run!;
+      expect(grown.contributed).toBeGreaterThan(100);
+      expect(grown.feesPaid).toBeGreaterThan(2);
 
       const view = (await (await fetch(`${base}/household/children/${child.id}/invest`, { headers: parent })).json()) as { run: { value: number } };
       expect(view.run.value).toBe((await get()).run!.value);

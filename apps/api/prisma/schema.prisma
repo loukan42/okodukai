@@ -679,6 +679,12 @@ enum SimRunStatus {
   ARRETEE
 }
 
+/// MIROIR : l'observatoire (sans frais). ASSURANCE_VIE : le verger du temps long (10-12 ans, frais d'exemple).
+enum SimMode {
+  MIROIR
+  ASSURANCE_VIE
+}
+
 /// Réglages parent des placements école d'un enfant.
 model InvestSettings {
   childId       String   @id
@@ -697,6 +703,9 @@ model SimulationRun {
   childId               String
   child                 ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
   householdId           String
+  mode                  SimMode  @default(MIROIR)
+  /// Plafond de capital école (versements cumulés), ASSURANCE_VIE uniquement.
+  contributionCap       Int?
   engineVersion         String
   parametersFingerprint String
   seed                  String
@@ -716,7 +725,7 @@ model SimulationRun {
   operations SimulationOperation[]
   snapshots  SimulationSnapshot[]
 
-  @@index([childId, status])
+  @@index([childId, mode, status])
 }
 
 /// Journal immuable des décisions de l'enfant (versement initial, arbitrages…).

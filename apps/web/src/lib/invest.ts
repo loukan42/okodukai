@@ -61,7 +61,12 @@ export const RISK_NOTE = "Plus le niveau est élevé, plus la valeur peut varier
 
 export interface InvestRun {
   id: string;
+  mode: "MIROIR" | "ASSURANCE_VIE";
   status: "EN_COURS" | "TERMINEE";
+  feesPaid: number;
+  feeRates: { entry: number; managementAnnual: number | null; arbitrage: number };
+  monthlyPlan: number;
+  ageYears: number;
   horizonMonths: number;
   rhythm: "RAPIDE" | "STANDARD" | "LONG";
   clock: { revealedSteps: number; elapsed: { years: number; months: number }; nextRendezVousAt: string | null; rendezVousCount: number };
@@ -79,7 +84,7 @@ export interface InvestRun {
   series: { step: number; value: number; contributed: number }[];
   statements: { index: number; step: number; scheduledAt: string; value: number; seen: boolean }[];
   unseen: number;
-  lastStatement: null | { fromStep: number; toStep: number; startValue: number; endValue: number; performance: number; bySupportChange: Record<SupportCode, number> };
+  lastStatement: null | { fromStep: number; toStep: number; startValue: number; endValue: number; performance: number; netFlows: number; marketEffect: number; bySupportChange: Record<SupportCode, number> };
   pendingOperations: number;
   scenarioRevealed: string | null;
 }
@@ -92,6 +97,7 @@ export interface InvestState {
   allowedSupports?: SupportCode[];
   firstRendezVousAt?: string;
   run: InvestRun | null;
+  orchard?: { gate: "hidden" | "locked" | "onboarding" | "open"; run: InvestRun | null };
 }
 
 const UNITS_2 = new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
