@@ -13,7 +13,7 @@ Ce qui manque encore pour que chaque lieu de l'application ait sa matière. Les 
 | Observatoire 3D (lunette, lanternes) | En-tête de « Investir » | moyenne | **livré** (26/09) | Lunette `objects/telescope` ; lanternes CSS qui s'allument quand un bilan attend. |
 | Verger (arbres de pièces) | Verger du temps long | moyenne | **livré** (26/09) | `objects/orchard-tree` en en-tête. Reste possible : une variante « un hiver ». |
 | Bibliothèque (étagère, livres) | Bibliothèque | basse | **livré** (26/09) | `objects/bookshelf` en en-tête. |
-| Décors par lieu (bandeaux) | Mon argent, boutique, quêtes | basse | à faire | Recadrages de la vallée existante d'abord ; nouvelles scènes seulement si le recadrage ne suffit pas. |
+| Décors par lieu (bandeaux) | Mon argent, boutique, quêtes | basse | **abandonné** (26/09) | Chaque lieu a déjà son objet 3D en en-tête (tableau, échoppe, lunette, arbre, étagère) ; un bandeau de plus chargerait les écrans enfant. |
 | Boosters par univers | Collection, ouverture | basse | **livré** (26/09) | Ruban en six teintes (or, émeraude, rubis, saphir, améthyste, bronze), stable par univers. |
 | Stockage des images de cartes | Production | haute | décision attendue | S3, Supabase storage propre à Okodukai ou Git LFS (voir `RESTE_A_FAIRE.md` §1.4). |
 

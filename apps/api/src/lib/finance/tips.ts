@@ -123,12 +123,8 @@ const TIPS: TipDef[] = [
     },
   },
   // -- Mes placements école (§5.3) -------------------------------------------
-  {
-    code: "T25", screen: "bilan", notions: [],
-    young: "Ton placement vaut moins qu'au relevé d'avant. Ce n'est pas une erreur de ta part. Tes pièces n'ont pas bougé.",
-    old: "Ton placement vaut moins qu'au relevé d'avant. Ce n'est pas une erreur de ta part. Tes pièces n'ont pas bougé.",
-    detect: (c) => (c.run?.lastStatement && c.run.lastStatement.endValue < c.run.lastStatement.startValue ? {} : null),
-  },
+  // T23 (première hausse) et T25 (première baisse, réassurance) ne sont pas des feuillets : la phrase
+  // principale de chaque bilan les porte déjà mot pour mot (Invest.tsx, Statement), à chaque fois.
   {
     code: "T28", screen: "bilan", title: { old: "Perte réalisée" }, notions: [],
     young: "C'est une grosse baisse. Ça arrive avec certains placements. Tu n'as rien à faire tout de suite.",
@@ -158,12 +154,6 @@ const TIPS: TipDef[] = [
     young: null,
     old: "{p}, ça veut dire : {abs} unités de plus (ou de moins) pour 100 unités. Tes 100 unités de départ, c'était 100 %.",
     detect: (c) => (c.run?.lastStatement ? { p: pct(c.run.lastStatement.performance), abs: Math.abs(c.run.lastStatement.performance * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) } : null),
-  },
-  {
-    code: "T23", screen: "bilan", title: { young: "Monter", old: "Monter" }, notions: ["hausse_baisse"],
-    young: "Ton placement a monté cette fois. Ça ne veut pas dire qu'il montera toujours.",
-    old: "Ton placement a monté cette fois. Ça ne veut pas dire qu'il montera toujours.",
-    detect: (c) => (c.run?.lastStatement && c.run.lastStatement.endValue > c.run.lastStatement.startValue ? {} : null),
   },
   {
     code: "T24", screen: "bilan", title: { young: "Baisser", old: "Volatilité" }, notions: ["hausse_baisse", "volatilite"],

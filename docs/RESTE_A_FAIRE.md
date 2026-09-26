@@ -18,10 +18,20 @@ npm run dev:web             # site : http://localhost:5173
 ```
 
 - En dev, le bouton **Démo** (en bas à droite) connecte en un clic un parent ou un enfant de démo.
-- Tests API : `cd apps/api && set -a && . ./.env && set +a && npx vitest run` (67 tests, tous verts
+- Tests API : `cd apps/api && set -a && . ./.env && set +a && npx vitest run` (68 tests, tous verts
   au 26/09). Types : `npx tsc --noEmit -p apps/api` et `npm run build --workspace apps/web`.
 - Pour voir des relevés de placements sans attendre : reculer `startedAt` de la partie en base, par
   exemple `UPDATE "SimulationRun" SET "startedAt" = now() - interval '4 days' WHERE "childId" = '…';`.
+
+## Où en est-on (26/09, fin de journée)
+
+P1, P2 et P3 sont faits (détail dans chaque section). Ce qui reste demande le propriétaire :
+- **Mise en production** de la branche `feat/p1-securite-solidite` (pas encore poussée) : `migrate deploy`
+  appliquera les nouvelles migrations, dont le `DROP TABLE` des tables `Simulation{Scenario,Portfolio,Transaction}`
+  (inutilisées). Vérifier aussi qu'un déploiement de prévisualisation de l'API ne vise pas la base de production.
+- **Variables Vercel** : `PROXY_SECRET` (projets web et API), `CRON_SECRET`, `VAPID_PUBLIC_KEY`,
+  `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (projet API). Voir §P1 et §P2 ci-dessous.
+- **Stockage des images de cartes** (§1.4 et §2).
 
 ## 1. Production (Vercel) : à vérifier par le propriétaire
 
