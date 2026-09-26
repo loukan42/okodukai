@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { EmptyState } from "../../components/EmptyState";
 import { GameIcon } from "../../components/GameIcon";
+import { Lessons } from "../../components/invest/Lessons";
+import { useAuth } from "../../lib/AuthContext";
 
 interface ModuleContent {
   situation: string;
@@ -25,6 +27,8 @@ interface ModuleRow {
 type Step = "situation" | "consequence" | "quiz" | "done";
 
 export function Learn() {
+  const { session } = useAuth();
+  const older = session?.kind === "child" && session.child.ageBand === "AGE_10_12";
   const [modules, setModules] = useState<ModuleRow[]>([]);
   const [active, setActive] = useState<ModuleRow | null>(null);
   const [step, setStep] = useState<Step>("situation");
@@ -143,7 +147,8 @@ export function Learn() {
 
   return (
     <div className="stack learn-page">
-      <header className="page-scene-title"><span className="page-scene-icon"><GameIcon name="learn" size={30}/></span><div><p className="scene-kicker">Faire des choix</p><h1>Apprendre</h1><p>Comprends l'argent à ton rythme.</p></div></header>
+      <header className="page-scene-title"><span className="page-scene-icon"><GameIcon name="learn" size={30}/></span><div><p className="scene-kicker">La bibliothèque de l'observatoire</p><h1>Apprendre</h1><p>Comprends l'argent à ton rythme.</p></div></header>
+      {older && <Lessons />}
       {modules.map((m) => (
         <button
           key={m.id}

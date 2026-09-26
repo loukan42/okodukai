@@ -24,6 +24,7 @@ export function Home() {
   const [level, setLevel] = useState<Level>({ level: 1, xpIntoLevel: 0, xpForNextLevel: 100 });
   const [quests, setQuests] = useState<QuestRow[]>([]);
   const [boosters, setBoosters] = useState<BoosterRow[]>([]);
+  const [statementReady, setStatementReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -40,6 +41,11 @@ export function Home() {
       setQuests(questsRes.quests.filter((q) => ["DISPONIBLE", "ACCEPTEE", "A_REFAIRE"].includes(q.status)));
       setBoosters(boostersRes.boosters);
       setError(false);
+      // Pastille « Ton bilan est prêt » : facultative, jamais bloquante.
+      api
+        .get<{ run: { unseen: number } | null }>("/child/invest")
+        .then((res) => setStatementReady((res.run?.unseen ?? 0) > 0))
+        .catch(() => setStatementReady(false));
     } catch {
       setError(true);
     } finally {
@@ -181,7 +187,7 @@ export function Home() {
             <ObjectArt name="coin-sprout" size={72} />
             <span>
               <strong>Investir</strong>
-              <small>Découvre comment un placement évolue, avec des unités école.</small>
+              <small>{statementReady ? "Ton bilan est prêt." : "Découvre comment un placement évolue, avec des unités école."}</small>
             </span>
             <GameIcon name="arrow" size={18} />
           </Link>

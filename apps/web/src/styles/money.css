@@ -1490,3 +1490,152 @@
 .orchard-head::before {
   background: linear-gradient(90deg, rgba(30, 44, 22, 0.82), rgba(30, 44, 22, 0.35));
 }
+
+/* Bibliothèque : leçons chiffrées -------------------------------------------------------- */
+
+.lessons {
+  display: grid;
+  gap: 10px;
+}
+
+.lessons h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.lesson {
+  border-radius: 18px;
+  background: var(--surface-raised);
+  border: 1px solid var(--parchment-line);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.lesson-head {
+  width: 100%;
+  display: grid;
+  gap: 2px;
+  padding: 14px 16px;
+  border: 0;
+  background: none;
+  text-align: left;
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.lesson-head strong {
+  font-size: 16.5px;
+}
+
+.lesson-head small {
+  color: var(--ink-faint);
+}
+
+.lesson--open .lesson-head {
+  border-bottom: 1px solid var(--parchment-line);
+}
+
+.lesson-body {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px 16px;
+}
+
+.lesson-body p {
+  margin: 0;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.lesson-body b {
+  color: var(--night);
+}
+
+.lesson-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.lesson-table th,
+.lesson-table td {
+  padding: 6px 6px;
+  text-align: left;
+  font-size: 14px;
+  border-bottom: 1px solid #efe5cf;
+}
+
+.lesson-table thead th {
+  color: var(--ink-faint);
+  font-weight: 700;
+  font-size: 12.5px;
+}
+
+.lesson-table td {
+  position: relative;
+  width: 42%;
+}
+
+.lesson-bar {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  translate: 0 -50%;
+  height: 20px;
+  max-width: calc(100% - 12px);
+  border-radius: 6px;
+  opacity: 0.35;
+}
+
+.lesson-bar--0 {
+  background: repeating-linear-gradient(135deg, #7e9eae 0 3px, #8fb0c0 3px 6px);
+}
+
+.lesson-bar--1 {
+  background: repeating-linear-gradient(45deg, #c49a4a 0 3px, #d6ad5d 3px 6px);
+}
+
+.lesson-value {
+  position: relative;
+  font-weight: 800;
+  color: var(--night);
+  padding-left: 6px;
+}
+
+/* Motion : pièces qui volent vers le coffre, coffre qui sautille à l'arrivée. */
+.coin-flight {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-dialog);
+}
+
+.coin-flight-coin {
+  position: absolute;
+  line-height: 0;
+  filter: drop-shadow(0 6px 8px rgba(60, 36, 12, 0.35));
+}
+
+.money-vault-hero-chest-wrap {
+  line-height: 0;
+}
+
+.money-vault-hero-chest-wrap--bump {
+  animation: chest-bump 420ms var(--ease-out);
+}
+
+@keyframes chest-bump {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  35% {
+    transform: translateY(-10px) scale(1.03, 0.98);
+  }
+  70% {
+    transform: translateY(2px) scale(0.99, 1.01);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}

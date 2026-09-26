@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useReducedMotion } from "framer-motion";
+import { CoinFlight, type Flight } from "../../../art/CoinFlight";
 import { api, ApiError } from "../../../lib/api";
 import { chestStateFor, intentKey, pieces, type MoneyOverview } from "../../../lib/money";
 import { ChestArt } from "../../../art/ChestArt";
@@ -45,6 +47,11 @@ export function MoneyVault() {
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState<{ tone: "ok" | "info" | "error"; text: string } | null>(null);
   const key = useRef(intentKey());
+  const reduce = useReducedMotion();
+  const chestRef = useRef<HTMLDivElement>(null);
+  const actionRef = useRef<HTMLButtonElement>(null);
+  const [flight, setFlight] = useState<Flight | null>(null);
+  const [bump, setBump] = useState(false);
   const [goalTitle, setGoalTitle] = useState("");
   const [goalTarget, setGoalTarget] = useState(50);
   const [goalError, setGoalError] = useState<string | null>(null);
@@ -75,6 +82,7 @@ export function MoneyVault() {
     setMessage(null);
     try {
       const res = await api.post<{ outcome: "done" | "requested" }>(`/child/savings/${mode}`, { amount, idempotencyKey: key.current });
+      if (res.outcome === "done" && !reduce) launchCoins(mode === "lock" ? "toChest" : "fromChest");
       if (res.outcome === "requested") setMessage({ tone: "info", text: "Demande envoyée. Un parent va la regarder." });
       else setMessage({ tone: "ok", text: mode === "lock" ? `C'est fait. ${pieces(amount)} ${amount > 1 ? "sont" : "est"} dans Mon coffre. Ton total n'a pas changé.` : `C'est fait. ${pieces(amount)} ${amount > 1 ? "sont revenues" : "est revenue"} sur Mon compte.` });
       key.current = intentKey();
@@ -84,6 +92,16 @@ export function MoneyVault() {
     } finally {
       setSending(false);
     }
+  }
+
+  /** Les pièces volent du bouton vers le coffre (mise de côté) ou du coffre vers le bouton. */
+  function launchCoins(direction: "toChest" | "fromChest") {
+    const chest = chestRef.current?.getBoundingClientRect();
+    const button = actionRef.current?.getBoundingClientRect();
+    if (!chest || !button) return;
+    const a = { x: button.left + button.width / 2, y: button.top + button.height / 2 };
+    const b = { x: chest.left + chest.width / 2, y: chest.top + chest.height * 0.45 };
+    setFlight({ id: Date.now(), from: direction === "toChest" ? a : b, to: direction === "toChest" ? b : a, count: Math.min(6, Math.max(3, Math.round(amount / 5))) });
   }
 
   async function createGoal(e: FormEvent) {
@@ -107,8 +125,20 @@ export function MoneyVault() {
 
   return (
     <div className="money-page">
+      {flight && (
+        <CoinFlight
+          flight={flight}
+          onDone={() => {
+            setFlight(null);
+            setBump(true);
+            window.setTimeout(() => setBump(false), 420);
+          }}
+        />
+      )}
       <section className="money-vault-hero" aria-labelledby="vault-title">
-        <ChestArt state={chestStateFor(vault, data.goals)} size={300} className="money-vault-hero-chest" />
+        <div ref={chestRef} className={`money-vault-hero-chest-wrap${bump ? " money-vault-hero-chest-wrap--bump" : ""}`}>
+          <ChestArt state={chestStateFor(vault, data.goals)} size={300} className="money-vault-hero-chest" />
+        </div>
         <div className="money-vault-hero-text">
           <h1 id="vault-title">Mon coffre</h1>
           <p className="money-vault-hero-balance">
@@ -174,7 +204,7 @@ export function MoneyVault() {
               {needsApproval && <p>Un parent devra valider avant que les pièces reviennent sur Mon compte.</p>}
             </div>
 
-            <button type="button" className="btn btn-quest btn-block" onClick={() => void move()} disabled={!canMove || sending}>
+            <button ref={actionRef} type="button" className="btn btn-quest btn-block" onClick={() => void move()} disabled={!canMove || sending}>
               {sending ? "Un instant…" : action}
             </button>
           </>
