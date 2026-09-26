@@ -849,3 +849,15 @@
   .booster-stack-glow,
   .booster-stack-pack--0 { animation: none; }
 }
+
+/* Teinte du ruban par univers (le sachet garde sa matière dorée). */
+.booster-pack--emeraude .booster-pack-ribbon { background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 38%), linear-gradient(180deg, #9ee6c0 0%, #2f9e6c 50%, #17603f 100%); }
+.booster-pack--rubis .booster-pack-ribbon { background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 38%), linear-gradient(180deg, #ffb0a8 0%, #d2433b 50%, #7e1c1f 100%); }
+.booster-pack--saphir .booster-pack-ribbon { background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 38%), linear-gradient(180deg, #a9d4ff 0%, #3a78d0 50%, #1c3f86 100%); }
+.booster-pack--amethyste .booster-pack-ribbon { background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 38%), linear-gradient(180deg, #e0c2ff 0%, #8b5cd6 50%, #4b2791 100%); }
+.booster-pack--bronze .booster-pack-ribbon { background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), transparent 38%), linear-gradient(180deg, #f3c9a0 0%, #b56b35 50%, #6e3915 100%); }
+.booster-pack--emeraude .booster-pack-ribbon span,
+.booster-pack--rubis .booster-pack-ribbon span,
+.booster-pack--saphir .booster-pack-ribbon span,
+.booster-pack--amethyste .booster-pack-ribbon span,
+.booster-pack--bronze .booster-pack-ribbon span { color: #fff; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35); }
