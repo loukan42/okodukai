@@ -17,6 +17,7 @@ import {
   investSettingsFor,
   runView,
   scenarioLabel,
+  pausesFor,
   supportsFor,
   syncRun,
   validateAllocation,
@@ -61,7 +62,7 @@ async function investState(childId: string) {
   const run = await activeRun(prisma, childId);
   const base = {
     ageBand: pedagogyBand(child),
-    settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths },
+    settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths, contributionsEnabled: settings.contributionsEnabled, contributionCap: settings.contributionCap },
     allocationStep: allocationStep(pedagogyBand(child)),
   };
   if (!settings.enabled) return { ...base, gate: "disabled" as const, run: null, orchard: { gate: "hidden" as const, run: null } };
@@ -227,19 +228,38 @@ investRouter.get("/household/children/:childId/invest", requireParent, async (re
   if (!child) return res.status(404).json({ error: "Enfant introuvable" });
   const settings = await investSettingsFor(prisma, child.id, pedagogyBand(child));
   const run = await activeRun(prisma, child.id);
-  res.json({ settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths }, run: run ? await runView(prisma, run, pedagogyBand(child)) : null });
+  const { paused } = await pausesFor(prisma, child.id);
+  res.json({
+    settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths, contributionsEnabled: settings.contributionsEnabled, contributionCap: settings.contributionCap },
+    paused,
+    ageBand: pedagogyBand(child),
+    run: run ? await runView(prisma, run, pedagogyBand(child)) : null,
+  });
 });
 
-const settingsSchema = z.object({ enabled: z.boolean(), rhythm: z.enum(["RAPIDE", "STANDARD", "LONG"]), horizonMonths: z.union([z.literal(60), z.literal(120)]) });
+const settingsSchema = z.object({
+  enabled: z.boolean(),
+  rhythm: z.enum(["RAPIDE", "STANDARD", "LONG"]),
+  horizonMonths: z.union([z.literal(60), z.literal(120)]),
+  contributionsEnabled: z.boolean().optional(),
+  contributionCap: z.number().int().min(100).max(2000).optional(),
+});
 
 investRouter.put("/household/children/:childId/invest-settings", requireParent, validateBody(settingsSchema), async (req, res) => {
   const { householdId, userId } = parentSession(req);
   const child = await childOfHousehold(req.params.childId, householdId);
   if (!child) return res.status(404).json({ error: "Enfant introuvable" });
-  const data = { enabled: req.body.enabled, rhythm: req.body.rhythm, horizonMonths: req.body.horizonMonths, updatedById: userId };
+  const data = {
+    enabled: req.body.enabled,
+    rhythm: req.body.rhythm,
+    horizonMonths: req.body.horizonMonths,
+    ...(req.body.contributionsEnabled !== undefined ? { contributionsEnabled: req.body.contributionsEnabled } : {}),
+    ...(req.body.contributionCap !== undefined ? { contributionCap: req.body.contributionCap } : {}),
+    updatedById: userId,
+  };
   const settings = await prisma.investSettings.upsert({ where: { childId: child.id }, create: { childId: child.id, ...data }, update: data });
   await prisma.auditLog.create({ data: { householdId, actorUserId: userId, action: "invest_settings_updated", targetType: "ChildProfile", targetId: child.id, metadata: data } });
-  res.json({ settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths } });
+  res.json({ settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths, contributionsEnabled: settings.contributionsEnabled, contributionCap: settings.contributionCap } });
 });
 
 // ---------------------------------------------------------------------------
@@ -314,4 +334,77 @@ investRouter.get("/child/invest/games/:id", requireChild, async (req, res) => {
   // Une partie en cours n'a pas de bilan final : rien du futur ne sort d'ici.
   if (view.status !== "TERMINEE") return res.status(409).json({ error: "Cette partie n'est pas terminée." });
   res.json({ run: view });
+});
+
+// ---------------------------------------------------------------------------
+// Versements programmés dans l'observatoire (INVESTMENT_UX E11, Approfondi) et pause parentale (P1)
+// ---------------------------------------------------------------------------
+
+const contributionSchema = z.object({
+  amountPerMonth: z.union([z.literal(0), z.literal(5), z.literal(10), z.literal(20)]),
+  allocation: allocationSchema.optional(),
+  idempotencyKey: z.string().uuid(),
+});
+
+/**
+ * Programmer (ou arrêter, montant 0) des versements mensuels d'unités école : appliqué à partir du
+ * prochain relevé, dans la limite du plafond de capital école fixé par le parent, départ compris.
+ */
+investRouter.post("/child/invest/contributions", requireChild, validateBody(contributionSchema), async (req, res) => {
+  const { childId } = childSession(req);
+  const key = `sim-plan:${childId}:${req.body.idempotencyKey}`;
+  if (await prisma.simulationOperation.findUnique({ where: { idempotencyKey: key } })) return res.json(await investState(childId));
+
+  const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId } });
+  const band = pedagogyBand(child);
+  const settings = await investSettingsFor(prisma, childId, band);
+  if (band !== "AGE_10_12" || !settings.enabled || !settings.contributionsEnabled) return res.status(409).json({ error: "Les versements programmés ne sont pas ouverts." });
+  const run = await activeRun(prisma, childId, "MIROIR");
+  if (!run || run.status !== "EN_COURS") return res.status(409).json({ error: "Aucune partie en cours." });
+  const { clock, operations, valuation, paused } = await syncRun(prisma, run);
+  if (clock.finished) return res.status(409).json({ error: "Ta partie est terminée." });
+  if (paused) return res.status(409).json({ error: "L'observatoire est en pause." });
+  if (operations.some((o) => o.step > clock.revealedSteps && o.type === "VERSEMENTS_PROGRAMMES")) return res.status(409).json({ error: "Un changement de versements est déjà prévu pour le prochain relevé." });
+
+  const contributed = valuation.points[clock.revealedSteps].contributed;
+  if (req.body.amountPerMonth > 0 && contributed >= settings.contributionCap - 0.005) {
+    return res.status(409).json({ error: `Tu as placé tout ton capital école : ${settings.contributionCap} unités. Les versements s'arrêtent. Tes placements continuent d'évoluer.` });
+  }
+  let allocation: Record<string, number> | null = null;
+  if (req.body.amountPerMonth > 0) {
+    allocation = req.body.allocation ? validateAllocation(req.body.allocation, band, supportsFor(band, true)) : null;
+    if (!allocation) return res.status(400).json({ error: "Choisis où vont tes versements : il faut répartir exactement 100 %." });
+  }
+
+  const nextStep = Math.min(run.horizonMonths, clock.revealedSteps + RHYTHMS[run.rhythm].monthsPerRendezVous);
+  await prisma.$transaction(async (tx) => {
+    // Le plafond vaut pour la partie : le moteur réduit tout versement qui le dépasserait.
+    if (run.contributionCap === null) await tx.simulationRun.update({ where: { id: run.id }, data: { contributionCap: settings.contributionCap } });
+    await tx.simulationOperation.create({
+      data: {
+        runId: run.id,
+        step: nextStep,
+        type: "VERSEMENTS_PROGRAMMES",
+        amountPerMonth: req.body.amountPerMonth,
+        allocation: (allocation ?? undefined) as Prisma.InputJsonValue | undefined,
+        actorId: childId,
+        idempotencyKey: key,
+      },
+    });
+  });
+  res.status(201).json(await investState(childId));
+});
+
+const pauseSchema = z.object({ paused: z.boolean() });
+
+/** Pause parentale (vacances) : les relevés s'arrêtent ; ceux prévus pendant la pause ne sont pas rattrapés. */
+investRouter.post("/household/children/:childId/invest-pause", requireParent, validateBody(pauseSchema), async (req, res) => {
+  const { householdId, userId } = parentSession(req);
+  const child = await childOfHousehold(req.params.childId, householdId);
+  if (!child) return res.status(404).json({ error: "Enfant introuvable" });
+  const open = await prisma.investPause.findFirst({ where: { childId: child.id, to: null } });
+  if (req.body.paused && !open) await prisma.investPause.create({ data: { childId: child.id, createdById: userId } });
+  if (!req.body.paused && open) await prisma.investPause.update({ where: { id: open.id }, data: { to: new Date() } });
+  await prisma.auditLog.create({ data: { householdId, actorUserId: userId, action: req.body.paused ? "invest_paused" : "invest_resumed", targetType: "ChildProfile", targetId: child.id } });
+  res.json({ paused: req.body.paused });
 });

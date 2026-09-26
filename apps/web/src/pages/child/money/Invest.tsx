@@ -28,6 +28,7 @@ import { FinanceQuestion } from "../../../components/finance/FinanceQuestion";
 import { FinanceTip } from "../../../components/finance/FinanceTip";
 import { GameIcon } from "../../../components/GameIcon";
 import { GameEnd } from "../../../components/invest/GameEnd";
+import { Contributions } from "../../../components/invest/Contributions";
 import { ObjectArt } from "../../../art/ObjectArt";
 
 const RISKS: Record<SupportCode, number> = { SECURISE: 1, PRETER: 2, MONDE: 4, ENTREPRISES: 5 };
@@ -309,7 +310,9 @@ function Observatory({ state, reload }: { state: InvestState; reload: () => Prom
         subtitle={
           finished
             ? "Ta partie est terminée."
-            : run.clock.rendezVousCount === 0
+            : run.paused
+              ? "L'observatoire est en pause. Rien ne bouge jusqu'à la reprise."
+              : run.clock.rendezVousCount === 0
               ? `Ta répartition est prête. Le premier relevé aura lieu ${next}. D'ici là, rien ne bouge.`
               : `Année ${yearOf(run.clock.revealedSteps - 1)} ${young ? "de ta partie" : `sur ${Math.ceil(run.horizonMonths / 12)}`} · Prochain relevé : ${next}. Rien ne bouge d'ici là.`
         }
@@ -422,6 +425,10 @@ function Observatory({ state, reload }: { state: InvestState; reload: () => Prom
             Changer ma répartition
           </button>
         )
+      )}
+
+      {!finished && !young && !run.paused && state.settings.contributionsEnabled && run.clock.rendezVousCount > 0 && (
+        <Contributions run={run} cap={run.contributionCap ?? state.settings.contributionCap} onChanged={reload} />
       )}
 
       {state.orchard && state.orchard.gate !== "hidden" && (

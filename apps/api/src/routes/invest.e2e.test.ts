@@ -95,6 +95,62 @@ describe.skipIf(!process.env.DATABASE_URL)("placements école : moteur, relevés
     }
   });
 
+  it("programme des versements sous plafond et respecte la pause parentale", async () => {
+    const code = `invest-plan-${randomUUID()}`;
+    const server = createApp().listen(0);
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    const household = await prisma.household.create({ data: { name: code } });
+    const user = await prisma.user.create({ data: { email: `${code}@example.test`, displayName: "Maman", passwordHash: "test" } });
+    try {
+      await prisma.householdMembership.create({ data: { householdId: household.id, userId: user.id, role: "PARENT_ADMIN" } });
+      const child = await prisma.childProfile.create({ data: { householdId: household.id, displayName: "Nora", ageBand: "AGE_10_12", avatarId: "aventurier-03", pinHash: "test" } });
+      const wallet = await prisma.wallet.create({ data: { childId: child.id } });
+      await prisma.walletTransaction.create({ data: { walletId: wallet.id, amount: 5, type: "SAVINGS_LOCK", actorId: child.id, idempotencyKey: `${code}-lock` } });
+      const kid = { cookie: `okodukai_session=${signSession({ kind: "child", childId: child.id, householdId: household.id })}`, "content-type": "application/json" };
+      const parent = { cookie: `okodukai_session=${signSession({ kind: "parent", userId: user.id, householdId: household.id, role: "PARENT_ADMIN" })}`, "content-type": "application/json" };
+      type Run = { paused: boolean; monthlyPlan: number; contributed: number; pendingOperations: number; statements: unknown[]; clock: { nextRendezVousAt: string | null } };
+      const get = async () => (await (await fetch(`${base}/child/invest`, { headers: kid })).json()) as { run: Run };
+      const plan = (body: unknown) => fetch(`${base}/child/invest/contributions`, { method: "POST", headers: kid, body: JSON.stringify(body) });
+      const allocation = { SECURISE: 50, MONDE: 50 };
+
+      expect((await fetch(`${base}/child/invest/start`, { method: "POST", headers: kid, body: JSON.stringify({ allocation, idempotencyKey: randomUUID() }) })).status).toBe(201);
+      expect((await plan({ amountPerMonth: 10, allocation, idempotencyKey: randomUUID() })).status).toBe(409);
+      const settings = await fetch(`${base}/household/children/${child.id}/invest-settings`, { method: "PUT", headers: parent, body: JSON.stringify({ enabled: true, rhythm: "STANDARD", horizonMonths: 120, contributionsEnabled: true, contributionCap: 150 }) });
+      expect(settings.status).toBe(200);
+      expect((await plan({ amountPerMonth: 10, idempotencyKey: randomUUID() })).status).toBe(400);
+      expect((await plan({ amountPerMonth: 10, allocation, idempotencyKey: randomUUID() })).status).toBe(201);
+      expect((await plan({ amountPerMonth: 5, allocation, idempotencyKey: randomUUID() })).status).toBe(409);
+      expect((await get()).run.pendingOperations).toBe(1);
+
+      // Un an simulé plus tard : 10 unités par mois, jamais au-delà du plafond de 150.
+      await prisma.simulationRun.updateMany({ where: { childId: child.id }, data: { startedAt: new Date(Date.now() - 4 * 86_400_000) } });
+      let state = (await get()).run;
+      expect(state.monthlyPlan).toBe(10);
+      expect(state.contributed).toBeGreaterThan(100);
+      expect(state.contributed).toBeLessThanOrEqual(150);
+      await prisma.simulationRun.updateMany({ where: { childId: child.id }, data: { startedAt: new Date(Date.now() - 12 * 86_400_000) } });
+      expect((await get()).run.contributed).toBe(150);
+
+      // Pause (qui commence maintenant) : plus de prochain relevé annoncé, rien de nouveau n'est
+      // révélé ; à la reprise, l'horloge repart sans rattraper (le saut est testé dans clock.test.ts).
+      const count = (await get()).run.statements.length;
+      expect((await fetch(`${base}/household/children/${child.id}/invest-pause`, { method: "POST", headers: parent, body: JSON.stringify({ paused: true }) })).status).toBe(200);
+      state = (await get()).run;
+      expect(state).toMatchObject({ paused: true, clock: { nextRendezVousAt: null } });
+      expect(state.statements.length).toBe(count);
+      expect((await plan({ amountPerMonth: 0, idempotencyKey: randomUUID() })).status).toBe(409);
+      expect((await fetch(`${base}/household/children/${child.id}/invest-pause`, { method: "POST", headers: parent, body: JSON.stringify({ paused: false }) })).status).toBe(200);
+      state = (await get()).run;
+      expect(state.paused).toBe(false);
+      expect(state.clock.nextRendezVousAt).not.toBeNull();
+      expect(await prisma.investPause.count({ where: { childId: child.id, to: { not: null } } })).toBe(1);
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      await prisma.household.delete({ where: { id: household.id } });
+      await prisma.user.delete({ where: { id: user.id } });
+    }
+  });
+
   it("donne +20 XP à la première répartition et au bilan final lu, une seule fois chacun", async () => {
     const code = `invest-xp-${randomUUID()}`;
     const server = createApp().listen(0);

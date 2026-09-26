@@ -103,6 +103,7 @@ model ChildProfile {
   investSettings  InvestSettings?
   simulationRuns  SimulationRun[]
   financeNotions  FinanceNotionProgress[]
+  investPauses    InvestPause[]
   financeTips     FinanceTipLog[]
 
   @@index([householdId])
@@ -711,8 +712,24 @@ model InvestSettings {
   rhythm        SimRhythm @default(STANDARD)
   /// Durée d'une partie en mois simulés (24 à 120).
   horizonMonths Int      @default(60)
+  /// Versements programmés dans l'observatoire (Approfondi) et plafond du capital école, départ compris.
+  contributionsEnabled Boolean @default(false)
+  contributionCap      Int     @default(300)
   updatedById   String?
   updatedAt     DateTime @updatedAt
+}
+
+/// Pause parentale (vacances) : les relevés prévus pendant la pause sont sautés, jamais rattrapés.
+model InvestPause {
+  id          String   @id @default(uuid())
+  childId     String
+  child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  from        DateTime @default(now())
+  /// Fin de la pause ; nulle tant que l'observatoire est en pause.
+  to          DateTime?
+  createdById String?
+
+  @@index([childId])
 }
 
 /// Une partie de simulation : trajectoire de marché figée à la création (jamais envoyée au client).

@@ -66,6 +66,9 @@ export interface InvestRun {
   feesPaid: number;
   feeRates: { entry: number; managementAnnual: number | null; arbitrage: number };
   monthlyPlan: number;
+  /** Pause parentale en cours : aucun relevé n'est annoncé. */
+  paused: boolean;
+  contributionCap: number | null;
   ageYears: number;
   horizonMonths: number;
   rhythm: "RAPIDE" | "STANDARD" | "LONG";
@@ -101,7 +104,7 @@ export interface InvestRun {
 export interface InvestState {
   ageBand: "AGE_8_9" | "AGE_10_12";
   gate: "disabled" | "locked" | "onboarding" | "open";
-  settings: { enabled: boolean; rhythm: string; horizonMonths: number };
+  settings: { enabled: boolean; rhythm: string; horizonMonths: number; contributionsEnabled: boolean; contributionCap: number };
   allocationStep: number;
   allowedSupports?: SupportCode[];
   firstRendezVousAt?: string;

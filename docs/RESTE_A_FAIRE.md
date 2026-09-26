@@ -107,6 +107,12 @@ Suites possibles :
 
 ### P2 : mission financière (compléments)
 
+**Fait le 26/09** : 1 (encarts T01-T46, journal serveur, file de priorité), 2 (questions Q01-Q16 corrigées par le
+serveur, Q04 à l'onboarding, carnet dans la bibliothèque), 3 (fiche support), 4 (bilan final complet et « Mes
+parties »), 5 (versements programmés sous plafond parent), 7 (pause parentale), 9 (niveau pédagogique).
+**Reste** : 6 (vue parent des placements), 8 (patrimoine, « Mon mois en pièces »), 10 (argent régulier et
+cadeaux), 11 (objectifs liés à la boutique, réordonner), 12 (notification « Ton relevé est prêt »).
+
 Spécifications : `docs/INVESTMENT_UX.md`, `docs/FINANCIAL_EDUCATION.md`, `docs/INSURANCE_LIFE_SIMULATION.md`.
 
 1. **Encarts pédagogiques contextuels** (T01 à T46) avec journal serveur « vu une fois par enfant »,

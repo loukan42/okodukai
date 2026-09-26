@@ -73,7 +73,7 @@ export const scenarioLabel = (code: string) => SCENARIO_LABEL[code as ScenarioCo
 
 export async function investSettingsFor(client: Client, childId: string, ageBand: AgeBand) {
   const stored = await client.investSettings.findUnique({ where: { childId } });
-  return stored ?? { childId, enabled: true, rhythm: "STANDARD" as SimRhythm, horizonMonths: ageBand === "AGE_8_9" ? 60 : 120 };
+  return stored ?? { childId, enabled: true, rhythm: "STANDARD" as SimRhythm, horizonMonths: ageBand === "AGE_8_9" ? 60 : 120, contributionsEnabled: false, contributionCap: 300 };
 }
 
 /**
@@ -164,9 +164,17 @@ export async function createRun(
  * Rattrape les rendez-vous passés : un relevé par rendez-vous, avec la valeur découverte à ce
  * moment-là. Idempotent grâce à l'unicité (runId, rendezVousIndex).
  */
+/** Pauses parentales d'un enfant ; une pause en cours court jusqu'à un futur lointain. */
+export async function pausesFor(client: Client, childId: string) {
+  const rows = await client.investPause.findMany({ where: { childId }, orderBy: { from: "asc" } });
+  const FAR = new Date("2999-01-01T00:00:00Z");
+  return { pauses: rows.map((r) => ({ from: r.from, to: r.to ?? FAR })), paused: rows.some((r) => r.to === null) };
+}
+
 export async function syncRun(client: Client, run: SimulationRun, now = new Date()) {
   const rhythm = RHYTHMS[run.rhythm];
-  const clock = clockState({ rhythm, startAt: run.startedAt, now, horizonMonths: run.horizonMonths, timeZone: run.timeZone });
+  const { pauses, paused } = await pausesFor(client, run.childId);
+  const clock = clockState({ rhythm, startAt: run.startedAt, now, horizonMonths: run.horizonMonths, timeZone: run.timeZone, pauses });
   const market = run.marketPath as unknown as MarketPath;
   const ops = await client.simulationOperation.findMany({ where: { runId: run.id }, orderBy: [{ step: "asc" }, { createdAt: "asc" }] });
   // Les décisions prévues pour un relevé futur ne comptent qu'une fois ce relevé révélé.
@@ -181,7 +189,7 @@ export async function syncRun(client: Client, run: SimulationRun, now = new Date
 
   const done = await client.simulationSnapshot.count({ where: { runId: run.id } });
   if (clock.rendezVousCount > done) {
-    const dates = listRendezVous(rhythm, run.startedAt, clock.rendezVousCount, { timeZone: run.timeZone });
+    const dates = listRendezVous(rhythm, run.startedAt, clock.rendezVousCount, { timeZone: run.timeZone, pauses });
     const rows = [];
     for (let k = done + 1; k <= clock.rendezVousCount; k++) {
       const step = stepAtRendezVous(rhythm, k, run.horizonMonths);
@@ -203,12 +211,12 @@ export async function syncRun(client: Client, run: SimulationRun, now = new Date
   if (clock.finished && run.status === "EN_COURS") {
     await client.simulationRun.update({ where: { id: run.id }, data: { status: "TERMINEE", finishedAt: now } });
   }
-  return { clock, valuation, operations: ops };
+  return { clock, valuation, operations: ops, paused };
 }
 
 /** Vue exposable au client (enfant ou parent) : rien au-delà de l'étape révélée. */
 export async function runView(client: Client, run: SimulationRun, ageBand: AgeBand, now = new Date()) {
-  const { clock, valuation, operations } = await syncRun(client, run, now);
+  const { clock, valuation, operations, paused } = await syncRun(client, run, now);
   const snapshots = await client.simulationSnapshot.findMany({ where: { runId: run.id }, orderBy: { rendezVousIndex: "asc" } });
   const points = valuation.points;
   const current = points[clock.revealedSteps];
@@ -230,6 +238,8 @@ export async function runView(client: Client, run: SimulationRun, ageBand: AgeBa
     feesPaid: current.fees.total,
     feeRates: { entry: fees.entryRate, managementAnnual: typeof fees.managementRateAnnual === "number" ? fees.managementRateAnnual : null, arbitrage: fees.arbitrageRate },
     monthlyPlan: valuation.monthlyPlan?.amountPerMonth ?? 0,
+    paused,
+    contributionCap: run.contributionCap,
     ageYears: Math.floor(clock.revealedSteps / 12),
     horizonMonths: run.horizonMonths,
     rhythm: run.rhythm,
@@ -237,7 +247,8 @@ export async function runView(client: Client, run: SimulationRun, ageBand: AgeBa
     clock: {
       revealedSteps: clock.revealedSteps,
       elapsed: simulatedElapsed(clock.revealedSteps),
-      nextRendezVousAt: clock.nextRendezVousAt,
+      // En pause : pas de prochain relevé annoncé (il n'y en a pas tant que la pause dure).
+      nextRendezVousAt: paused ? null : clock.nextRendezVousAt,
       rendezVousCount: clock.rendezVousCount,
     },
     value: current.value,
