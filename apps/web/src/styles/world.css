@@ -30,53 +30,6 @@
   font-variation-settings: "SOFT" 100;
 }
 
-/* Bouton de quête : or frappé, tranche visible, s'enfonce au clic. ------------ */
-
-.btn.btn-quest {
-  min-height: 54px;
-  padding: 0 28px;
-  border-radius: 14px;
-  border: 1px solid var(--gold-deep);
-  background: linear-gradient(180deg, #ffe7a6 0%, #f4be4c 46%, #dc922b 100%);
-  color: #3a2208;
-  font-weight: 800;
-  font-size: 17px;
-  letter-spacing: 0.005em;
-  text-shadow: 0 1px 0 rgba(255, 240, 200, 0.55);
-  box-shadow:
-    0 4px 0 var(--gold-deep),
-    0 12px 24px -6px rgba(90, 50, 10, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.75),
-    inset 0 -2px 0 rgba(138, 84, 16, 0.25);
-  transition:
-    transform var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out),
-    filter var(--duration-fast);
-}
-
-.btn.btn-quest:hover:not(:disabled) {
-  transform: translateY(-1px);
-  filter: saturate(1.08) brightness(1.03);
-  box-shadow:
-    0 5px 0 var(--gold-deep),
-    0 16px 28px -6px rgba(90, 50, 10, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    inset 0 -2px 0 rgba(138, 84, 16, 0.25);
-}
-
-.btn.btn-quest:active:not(:disabled) {
-  transform: translateY(3px);
-  box-shadow:
-    0 1px 0 var(--gold-deep),
-    0 6px 12px -6px rgba(90, 50, 10, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-.btn.btn-quest:focus-visible {
-  outline: 3px solid var(--night);
-  outline-offset: 3px;
-}
-
 /* Coquille des écrans d'entrée ------------------------------------------------- */
 
 .world {

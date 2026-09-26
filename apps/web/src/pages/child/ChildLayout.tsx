@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { api, ApiError } from "../../lib/api";
 import { useAuth } from "../../lib/AuthContext";
 import { Avatar } from "../../components/Avatar";
@@ -19,6 +20,7 @@ const navigation: { to: string; label: string; icon: GameIconName; end?: boolean
 export function ChildLayout() {
   const { session, refresh } = useAuth();
   const navigate = useNavigate();
+  const reduce = useReducedMotion();
   const [showExit, setShowExit] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -56,7 +58,10 @@ export function ChildLayout() {
 
       <nav className="child-nav" aria-label="Navigation enfant">
         {navigation.map((item) => <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => (isActive ? "active" : "")}>
-          <GameIcon name={item.icon} size={23} /><span>{item.label}</span>
+          {({ isActive }) => <>
+            {isActive && <motion.span layoutId="child-nav-pill" className="nav-pill" transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 520, damping: 40 }} />}
+            <GameIcon name={item.icon} size={23} /><span>{item.label}</span>
+          </>}
         </NavLink>)}
       </nav>
 

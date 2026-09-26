@@ -1,55 +1,23 @@
+import { ArrowCounterClockwise, ArrowsLeftRight, DownloadSimple, PencilSimple, PlusCircle, Sparkle, UploadSimple } from "@phosphor-icons/react";
 import { KIND_WORD, dayLabel, signed, timeLabel, type LineKind, type MoneyLine } from "../../lib/money";
 
 /** Icône de sens : elle accompagne toujours le mot, elle ne le remplace jamais. */
 export function KindIcon({ kind, amount }: { kind: LineKind; amount: number }) {
-  const common = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
+  const props = { size: 20, weight: "duotone" as const, "aria-hidden": true };
   switch (kind) {
     case "transfert":
-      return (
-        <svg {...common}>
-          <path d="M4 8h14m-4-4 4 4-4 4M20 16H6m4 4-4-4 4-4" />
-        </svg>
-      );
+      return <ArrowsLeftRight {...props} />;
     case "remboursement":
-      return (
-        <svg {...common}>
-          <path d="M9 14 4 9l5-5" />
-          <path d="M4 9h10a6 6 0 0 1 0 12h-3" />
-        </svg>
-      );
+      return <ArrowCounterClockwise {...props} />;
     case "correction":
-      return (
-        <svg {...common}>
-          <path d="M4 20h4L19 9l-4-4L4 16z" />
-          <path d="m13 7 4 4" />
-        </svg>
-      );
+      return <PencilSimple {...props} />;
     case "prime_coffre":
-      return (
-        <svg {...common}>
-          <circle cx="12" cy="12" r="8" />
-          <path d="M12 8v8M8 12h8" />
-        </svg>
-      );
+      return <PlusCircle {...props} />;
     case "bonus_epargne":
-      return (
-        <svg {...common}>
-          <path d="m12 3 2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z" />
-        </svg>
-      );
+      return <Sparkle {...props} />;
     default:
       // Entrée : la flèche entre dans la bourse ; sortie : elle en sort.
-      return amount >= 0 ? (
-        <svg {...common}>
-          <path d="M12 3v11m-4-4 4 4 4-4" />
-          <path d="M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" />
-        </svg>
-      ) : (
-        <svg {...common}>
-          <path d="M12 14V3m-4 4 4-4 4 4" />
-          <path d="M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" />
-        </svg>
-      );
+      return amount >= 0 ? <DownloadSimple {...props} /> : <UploadSimple {...props} />;
   }
 }
 

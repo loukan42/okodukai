@@ -11,12 +11,14 @@ Fraunces : titre de scène et de chapitre. Manrope : lecture, boutons, chiffres 
 ## Composants
 
 - `.game-panel` : panneau structurant à filet intérieur ; `.card` : formulaire ou contenu parent simple.
-- `.wallet-hero` : solde et coffre avec chiffre lisible ; `CoinPill` : pièce custom et quantité avec nom accessible.
+- `.wallet-hero` : solde et coffre avec chiffre lisible ; `CoinPill` : la vraie pièce Okodukai (rendu 3D `CoinArt`) et la quantité, avec un nom accessible.
 - `.quest-entry` : journal, état en texte, récompenses et CTA explicite.
 - `.goal-panel` / `.progress-track` : progression numérique et graphique.
 - `.reward-item` : boutique ; prix puis action d'achat.
 - `.album-card`, `.gilded-*`, `.booster-*` : conserver l'ossature des cartes/booster existants et appliquer la rareté comme matière, jamais comme seul signal.
-- `.btn-primary`, `.btn-gold`, `.btn-ghost`, `.btn-danger` : focus visible, état pressé, désactivé et tailles tactiles de 44 px ; `.btn-sm` réservé aux groupes denses côté parent.
+- `.btn-primary` (bleu nuit), `.btn-gold` et `.btn-quest` (or frappé, reflet qui balaie une fois au survol), `.btn-ghost` (papier), `.btn-danger` : des matières en pilule, avec biseau intérieur et ombres teintées en couches. Jamais d'ombre pleine décalée « tranche » ni de bordure seule. Focus visible, état pressé (`scale(0.97)`), désactivé, et 44 px de haut au minimum ; `.btn-sm` est réservé aux groupes denses côté parent. Une seule définition : `app.css`.
+- `GameIcon` : pictogrammes Phosphor (`@phosphor-icons/react`), en duotone pour les objets et en gras pour les signes (flèche, validation, fermeture). Aucun pictogramme n'est dessiné à la main.
+- `.nav-pill` : pastille active qui glisse d'un onglet à l'autre (framer-motion `layoutId`), dans la navigation enfant et les onglets de « Mon argent ».
 - `.empty-state` : titre, raison et prochaine action possible.
 
 ## États et accessibilité
@@ -25,4 +27,4 @@ Chaque requête doit distinguer chargement, vide et erreur lorsqu'elle peut bloq
 
 ## Règles de composition
 
-La home enfant commence par identité + argent, puis objectif, quête active et booster. La home parent commence par une vue familiale, puis les validations. La navigation enfant garde cinq destinations avec pictogrammes SVG et texte ; « Apprendre » est accessible depuis la home et le coffre. Les grilles deviennent une colonne sur écran étroit ; le contenu reste dans une largeur de lecture limitée sur desktop.
+La home enfant commence par identité + argent, puis objectif, quête active et booster. La home parent commence par une vue familiale, puis les validations. La navigation enfant garde cinq destinations avec pictogrammes et texte ; « Apprendre » est accessible depuis la home et le coffre. Les grilles deviennent une colonne sur écran étroit ; le contenu reste dans une largeur de lecture limitée sur desktop.

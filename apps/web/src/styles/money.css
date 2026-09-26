@@ -24,6 +24,8 @@
 }
 
 .money-tab {
+  position: relative;
+  isolation: isolate;
   flex: 1 1 auto;
   min-height: 44px;
   display: grid;
@@ -42,14 +44,10 @@
   background: rgba(255, 250, 240, 0.7);
 }
 
-.money-tab--on {
-  background: #253c51;
-  color: #fff8e7;
-  box-shadow: inset 0 0 0 1px #47627b;
-}
-
+.money-tab--on,
 .money-tab--on:hover {
-  background: #253c51;
+  background: transparent;
+  color: #fff8e7;
 }
 
 .money-page {
