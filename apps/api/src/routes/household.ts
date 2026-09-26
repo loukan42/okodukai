@@ -222,3 +222,18 @@ householdRouter.get("/children/:childId/wallet", async (req, res) => {
   const level = levelFromTotalXp(child.currentXp);
   res.json({ balances, transactions, level });
 });
+
+const pedagogySchema = z.object({ level: z.enum(["AUTO", "DECOUVERTE", "APPROFONDI"]) });
+
+/**
+ * Niveau pédagogique d'un enfant (docs/FINANCIAL_EDUCATION.md §4.1) : prioritaire sur l'âge pour les
+ * mots, les pourcentages et les fonctionnalités de placement. Le portefeuille continue sans rupture.
+ */
+householdRouter.put("/children/:childId/pedagogy", validateBody(pedagogySchema), async (req, res) => {
+  const { householdId, userId } = parentSession(req);
+  const child = await prisma.childProfile.findFirst({ where: { id: req.params.childId, householdId } });
+  if (!child) return res.status(404).json({ error: "Enfant introuvable" });
+  await prisma.childProfile.update({ where: { id: child.id }, data: { pedagogyLevel: req.body.level } });
+  await prisma.auditLog.create({ data: { householdId, actorUserId: userId, action: "pedagogy_level_updated", targetType: "ChildProfile", targetId: child.id, metadata: { level: req.body.level } } });
+  res.json({ level: req.body.level });
+});

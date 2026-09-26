@@ -5,6 +5,7 @@ import { groupByDay, signed, type MoneyLine, type Place, type WeekSummary } from
 import { MoneyLineRow } from "../../../components/money/MoneyLineRow";
 import { LineDetailSheet } from "../../../components/money/LineDetailSheet";
 import { MoneyLoadError } from "./MoneyAccount";
+import { FinanceTip } from "../../../components/finance/FinanceTip";
 
 type Filter = "all" | "in" | "out" | "transfer";
 
@@ -73,6 +74,8 @@ export function MoneyHistory() {
           {place === "account" ? "Mon compte" : "Mon coffre"} : <strong>{balance}</strong>
         </p>
       </header>
+
+      <FinanceTip screen="history" />
 
       <div className="segmented" role="radiogroup" aria-label="Lieu">
         {(["account", "vault"] as const).map((p) => (

@@ -11,6 +11,7 @@ import { CoinArt } from "../../art/CoinArt";
 import { ChestArt } from "../../art/ChestArt";
 import { ObjectArt } from "../../art/ObjectArt";
 import { BoosterPack } from "../../components/booster/BoosterPack";
+import { FinanceTip } from "../../components/finance/FinanceTip";
 
 interface QuestRow { id: string; title: string; status: string; rewardCoins: number; rewardXp: number }
 interface BoosterRow { id: string; definition: { title: string; universe: { title: string } } }
@@ -130,6 +131,7 @@ export function Home() {
           </span>
         </Link>
       </section>
+      <FinanceTip screen="home" />
 
       <div className="home-columns">
         <div className="home-main-column">

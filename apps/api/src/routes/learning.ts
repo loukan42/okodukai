@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
+import { pedagogyBand } from "../lib/pedagogy.js";
 import { validateBody } from "../lib/validation.js";
 import { attachSession, requireChild, childSession } from "../middleware/requireAuth.js";
 import { grantXp } from "../lib/xp.js";
@@ -14,7 +15,7 @@ learningRouter.get("/child/learning/modules", requireChild, async (req, res) => 
   const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId } });
 
   const modules = await prisma.learningModule.findMany({
-    where: { active: true, OR: [{ ageBand: "ALL" }, { ageBand: child.ageBand }] },
+    where: { active: true, OR: [{ ageBand: "ALL" }, { ageBand: pedagogyBand(child) }] },
     orderBy: { order: "asc" },
   });
   const progress = await prisma.learningProgress.findMany({ where: { childId } });

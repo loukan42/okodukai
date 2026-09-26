@@ -3,6 +3,7 @@ import argon2 from "argon2";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
+import { pedagogyBand } from "../lib/pedagogy.js";
 import { signSession, SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from "../lib/auth.js";
 import { validateBody } from "../lib/validation.js";
 import {
@@ -134,7 +135,7 @@ authRouter.get("/me", async (req, res) => {
   if (!child) return res.status(401).json({ error: "Non authentifié" });
   return res.json({
     kind: "child",
-    child: { id: child.id, displayName: child.displayName, avatarId: child.avatarId, ageBand: child.ageBand },
+    child: { id: child.id, displayName: child.displayName, avatarId: child.avatarId, ageBand: pedagogyBand(child) },
     householdId: req.session.householdId,
   });
 });

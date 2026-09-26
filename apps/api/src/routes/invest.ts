@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
+import { pedagogyBand } from "../lib/pedagogy.js";
 import { validateBody } from "../lib/validation.js";
 import { attachSession, requireChild, requireParent, childSession, parentSession } from "../middleware/requireAuth.js";
 import { RHYTHMS, listRendezVous, portfolioRiskLevel } from "../lib/financeSim/index.js";
@@ -55,19 +56,19 @@ async function orchardState(childId: string, ageBand: AgeBand, mirror: Simulatio
 
 async function investState(childId: string) {
   const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId } });
-  const settings = await investSettingsFor(prisma, childId, child.ageBand);
+  const settings = await investSettingsFor(prisma, childId, pedagogyBand(child));
   const run = await activeRun(prisma, childId);
   const base = {
-    ageBand: child.ageBand,
+    ageBand: pedagogyBand(child),
     settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths },
-    allocationStep: allocationStep(child.ageBand),
+    allocationStep: allocationStep(pedagogyBand(child)),
   };
   if (!settings.enabled) return { ...base, gate: "disabled" as const, run: null, orchard: { gate: "hidden" as const, run: null } };
-  const orchard = await orchardState(childId, child.ageBand, run, settings.rhythm);
-  if (run) return { ...base, gate: "open" as const, run: await runView(prisma, run, child.ageBand), orchard };
+  const orchard = await orchardState(childId, pedagogyBand(child), run, settings.rhythm);
+  if (run) return { ...base, gate: "open" as const, run: await runView(prisma, run, pedagogyBand(child)), orchard };
   if (!(await hasSaved(childId))) return { ...base, gate: "locked" as const, run: null, orchard };
   const [firstRendezVousAt] = listRendezVous(RHYTHMS[settings.rhythm], new Date(), 1, { timeZone: TIME_ZONE });
-  return { ...base, gate: "onboarding" as const, run: null, allowedSupports: supportsFor(child.ageBand, false), firstRendezVousAt, orchard };
+  return { ...base, gate: "onboarding" as const, run: null, allowedSupports: supportsFor(pedagogyBand(child), false), firstRendezVousAt, orchard };
 }
 
 /** XP de la première répartition, si c'est cette partie qui l'a ouverte (aussi au rejeu de la requête). */
@@ -105,12 +106,12 @@ investRouter.post("/child/invest/start", requireChild, validateBody(startSchema)
   if (replay) return res.json({ ...(await investState(childId)), xpAwarded: await firstAllocationXp(childId, replay.id) });
 
   const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId } });
-  const settings = await investSettingsFor(prisma, childId, child.ageBand);
+  const settings = await investSettingsFor(prisma, childId, pedagogyBand(child));
   if (!settings.enabled) return res.status(409).json({ error: "Mes placements école ne sont pas ouverts pour l'instant." });
   if (!(await hasSaved(childId))) return res.status(409).json({ error: "L'observatoire s'ouvre quand tu as mis des pièces dans Mon coffre au moins une fois." });
   if (await activeRun(prisma, childId)) return res.status(409).json({ error: "Tu as déjà une partie." });
 
-  const allocation = validateAllocation(req.body.allocation, child.ageBand, supportsFor(child.ageBand, false));
+  const allocation = validateAllocation(req.body.allocation, pedagogyBand(child), supportsFor(pedagogyBand(child), false));
   if (!allocation) return res.status(400).json({ error: "Ta répartition n'a pas été enregistrée : il faut placer exactement 100 unités." });
 
   try {
@@ -134,10 +135,10 @@ investRouter.post("/child/invest/orchard/start", requireChild, validateBody(orch
   const key = `sim-orchard:${childId}:${req.body.idempotencyKey}`;
   if (await prisma.simulationRun.findUnique({ where: { idempotencyKey: key } })) return res.json(await investState(childId));
   const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId } });
-  const settings = await investSettingsFor(prisma, childId, child.ageBand);
-  const orchard = await orchardState(childId, child.ageBand, await activeRun(prisma, childId), settings.rhythm);
+  const settings = await investSettingsFor(prisma, childId, pedagogyBand(child));
+  const orchard = await orchardState(childId, pedagogyBand(child), await activeRun(prisma, childId), settings.rhythm);
   if (!settings.enabled || orchard.gate !== "onboarding") return res.status(409).json({ error: "Le verger n'est pas encore ouvert." });
-  const allocation = validateAllocation(req.body.allocation, child.ageBand, supportsFor(child.ageBand, true));
+  const allocation = validateAllocation(req.body.allocation, pedagogyBand(child), supportsFor(pedagogyBand(child), true));
   if (!allocation) return res.status(400).json({ error: "Ta répartition doit placer exactement 100 %." });
   try {
     await prisma.$transaction((tx) =>
@@ -187,7 +188,7 @@ investRouter.post("/child/invest/rebalance", requireChild, validateBody(rebalanc
   if (operations.some((o) => o.step > clock.revealedSteps)) return res.status(409).json({ error: "Un changement est déjà prévu pour le prochain relevé." });
 
   const firstSeen = (await prisma.simulationSnapshot.count({ where: { runId: run.id, seenAt: { not: null } } })) > 0;
-  const allocation = validateAllocation(req.body.allocation, child.ageBand, supportsFor(child.ageBand, firstSeen));
+  const allocation = validateAllocation(req.body.allocation, pedagogyBand(child), supportsFor(pedagogyBand(child), firstSeen));
   if (!allocation) return res.status(400).json({ error: "Ta nouvelle répartition doit placer exactement 100 %." });
 
   const nextStep = Math.min(run.horizonMonths, clock.revealedSteps + RHYTHMS[run.rhythm].monthsPerRendezVous);
@@ -223,9 +224,9 @@ async function childOfHousehold(childId: string, householdId: string) {
 investRouter.get("/household/children/:childId/invest", requireParent, async (req, res) => {
   const child = await childOfHousehold(req.params.childId, parentSession(req).householdId);
   if (!child) return res.status(404).json({ error: "Enfant introuvable" });
-  const settings = await investSettingsFor(prisma, child.id, child.ageBand);
+  const settings = await investSettingsFor(prisma, child.id, pedagogyBand(child));
   const run = await activeRun(prisma, child.id);
-  res.json({ settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths }, run: run ? await runView(prisma, run, child.ageBand) : null });
+  res.json({ settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths }, run: run ? await runView(prisma, run, pedagogyBand(child)) : null });
 });
 
 const settingsSchema = z.object({ enabled: z.boolean(), rhythm: z.enum(["RAPIDE", "STANDARD", "LONG"]), horizonMonths: z.union([z.literal(60), z.literal(120)]) });

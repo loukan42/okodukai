@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
+import { pedagogyBand } from "../lib/pedagogy.js";
 import { validateBody } from "../lib/validation.js";
 import { attachSession, requireChild, requireParent, childSession, parentSession } from "../middleware/requireAuth.js";
 import { recordWalletTransaction, DuplicateTransactionError, InsufficientFundsError } from "../lib/ledger.js";
@@ -62,11 +63,11 @@ function isDuplicate(err: unknown) {
 
 savingsRouter.get("/child/money", requireChild, async (req, res) => {
   const { childId } = childSession(req);
-  const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId }, select: { ageBand: true } });
+  const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId }, select: { ageBand: true, pedagogyLevel: true } });
   const state = await moneyState(childId);
   const accountLines = state.ledger.lines.filter((l) => l.place === "account");
   res.json({
-    ageBand: child.ageBand,
+    ageBand: pedagogyBand(child),
     balances: state.ledger.balances,
     week: weekSummary(state.ledger.lines),
     recent: accountLines.slice(-5).reverse(),

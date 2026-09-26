@@ -24,6 +24,8 @@ import { Atelier, EMPTY_ALLOCATION, type Allocation } from "../../../components/
 import { RiskMeter, SupportEmblem } from "../../../components/invest/SupportEmblem";
 import { ValueChart } from "../../../components/invest/ValueChart";
 import { XpEarned } from "../../../components/invest/XpEarned";
+import { FinanceQuestion } from "../../../components/finance/FinanceQuestion";
+import { FinanceTip } from "../../../components/finance/FinanceTip";
 import { ObjectArt } from "../../../art/ObjectArt";
 
 const RISKS: Record<SupportCode, number> = { SECURISE: 1, PRETER: 2, MONDE: 4, ENTREPRISES: 5 };
@@ -57,6 +59,7 @@ function Onboarding({ state, onDone }: { state: InvestState; onDone: () => Promi
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [xpAwarded, setXpAwarded] = useState(0);
+  const [checkDone, setCheckDone] = useState(false);
   const key = useRef(intentKey());
   const first = rendezVousLabel(state.firstRendezVousAt);
   const placed = SUPPORT_ORDER.reduce((s, c) => s + allocation[c], 0);
@@ -192,9 +195,13 @@ function Onboarding({ state, onDone }: { state: InvestState; onDone: () => Promi
           <h1>Ta répartition est enregistrée.</h1>
           <p>Premier relevé : {first}. D'ici là, rien ne bouge.</p>
           <XpEarned amount={xpAwarded} reason="Première répartition" />
-          <p className="library-note" role="note">
-            Si ton placement école baisse un jour, tes pièces ne bougent pas : ce sont deux choses séparées.
-          </p>
+          {/* Q04 (INVESTMENT_UX O6) ; si la notion est déjà vérifiée, la phrase seule suffit. */}
+          <FinanceQuestion context="onboarding" onEmpty={() => setCheckDone(true)} />
+          {checkDone && (
+            <p className="library-note" role="note">
+              Si ton placement école baisse un jour, tes pièces ne bougent pas : ce sont deux choses séparées.
+            </p>
+          )}
           <button className="btn btn-quest" onClick={() => void onDone()}>
             Voir l'observatoire
           </button>
@@ -241,6 +248,8 @@ function Statement({ run, young, onClose }: { run: InvestRun; young: boolean; on
           );
         })}
       </ul>
+      <FinanceTip screen="bilan" mode="MIROIR" refreshKey={s.index} />
+      <FinanceQuestion key={s.index} context="bilan" mode="MIROIR" />
       <p>Prochain relevé : {run.clock.nextRendezVousAt ? rendezVousLabel(run.clock.nextRendezVousAt) : "la partie est terminée"}. Rien ne bouge d'ici là.</p>
       <button className="btn btn-primary" onClick={() => void onClose()}>
         Fermer le bilan

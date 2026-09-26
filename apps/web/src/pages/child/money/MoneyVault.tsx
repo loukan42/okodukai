@@ -6,6 +6,8 @@ import { chestStateFor, intentKey, pieces, type MoneyOverview } from "../../../l
 import { ChestArt } from "../../../art/ChestArt";
 import { ProgressBar } from "../../../components/ProgressBar";
 import { MoneyLoadError, useMoneyOverview } from "./MoneyAccount";
+import { FinanceTip } from "../../../components/finance/FinanceTip";
+import { FinanceQuestion } from "../../../components/finance/FinanceQuestion";
 
 type Mode = "lock" | "unlock";
 
@@ -215,6 +217,9 @@ export function MoneyVault() {
           </p>
         )}
       </section>
+
+      <FinanceTip screen="vault" refreshKey={`${data.balances.vault}-${data.goals.length}`} />
+      <FinanceQuestion key={data.balances.vault > 0 ? "coffre" : "vide"} context="vault" />
 
       <section aria-labelledby="goals-title">
         <div className="section-heading">

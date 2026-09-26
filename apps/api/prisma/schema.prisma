@@ -64,12 +64,21 @@ enum AgeBand {
   AGE_10_12
 }
 
+/// Niveau pédagogique choisi par le parent (docs/FINANCIAL_EDUCATION.md §4.1) : prioritaire sur l'âge.
+enum PedagogyLevel {
+  AUTO
+  DECOUVERTE
+  APPROFONDI
+}
+
 model ChildProfile {
   id          String   @id @default(uuid())
   householdId String
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
   displayName String
   ageBand     AgeBand
+  /// AUTO : la tranche d'âge décide ; sinon Découverte (8-9) ou Approfondi (10-12).
+  pedagogyLevel PedagogyLevel @default(AUTO)
   avatarId    String
   pinHash     String
   currentXp   Int      @default(0)
@@ -93,6 +102,8 @@ model ChildProfile {
   vaultRequests   VaultWithdrawalRequest[]
   investSettings  InvestSettings?
   simulationRuns  SimulationRun[]
+  financeNotions  FinanceNotionProgress[]
+  financeTips     FinanceTipLog[]
 
   @@index([householdId])
 }
@@ -576,6 +587,45 @@ model LearningProgress {
   completedAt DateTime?
 
   @@unique([childId, moduleId])
+}
+
+// ---------------------------------------------------------------------------
+// Éducation financière : notions, encarts et vérifications (docs/FINANCIAL_EDUCATION.md)
+// ---------------------------------------------------------------------------
+
+enum FinanceNotionState {
+  RENCONTREE
+  EXPLIQUEE
+  VERIFIEE
+}
+
+/// Progression d'une notion : rencontrée (événement vécu) → expliquée (encart lu) → vérifiée (bonne réponse).
+model FinanceNotionProgress {
+  childId       String
+  child         ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  notionCode    String
+  state         FinanceNotionState @default(RENCONTREE)
+  encounteredAt DateTime @default(now())
+  explainedAt   DateTime?
+  verifiedAt    DateTime?
+  /// Souvenir personnel affiché dans le carnet (« Relevé de l'année 2 : Entreprises −6 »).
+  anchor        String?
+
+  @@id([childId, notionCode])
+}
+
+/// Journal des encarts : chacun ne s'affiche qu'une fois par enfant, puis reste relisible (§5.1).
+model FinanceTipLog {
+  childId  String
+  child    ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  tipCode  String
+  /// « compris » ou « plus_tard ».
+  outcome  String
+  title    String?
+  message  String
+  shownAt  DateTime @default(now())
+
+  @@id([childId, tipCode])
 }
 
 // ---------------------------------------------------------------------------

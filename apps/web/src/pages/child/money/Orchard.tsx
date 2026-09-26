@@ -7,6 +7,7 @@ import { Atelier, EMPTY_ALLOCATION, type Allocation } from "../../../components/
 import { RiskMeter, SupportEmblem } from "../../../components/invest/SupportEmblem";
 import { ValueChart } from "../../../components/invest/ValueChart";
 import { XpEarned } from "../../../components/invest/XpEarned";
+import { FinanceTip } from "../../../components/finance/FinanceTip";
 import { ObjectArt } from "../../../art/ObjectArt";
 
 const RISKS: Record<SupportCode, number> = { SECURISE: 1, PRETER: 2, MONDE: 4, ENTREPRISES: 5 };
@@ -166,6 +167,7 @@ function OrchardDashboard({ run, reload }: { run: InvestRun; reload: () => Promi
   return (
     <div className="money-page">
       <OrchardHeader subtitle={finished ? "Ton contrat est arrivé au bout de ses 10 ans simulés." : run.clock.rendezVousCount === 0 ? `Premier relevé : ${next}. D'ici là, rien ne bouge.` : `Ton contrat a ${run.ageYears} ${run.ageYears > 1 ? "ans" : "an"} · Prochain relevé : ${next}.`} />
+      {!(last && run.unseen > 0) && <FinanceTip screen="verger" />}
 
       {last && run.unseen > 0 && (
         <section className="statement">
@@ -179,6 +181,7 @@ function OrchardDashboard({ run, reload }: { run: InvestRun; reload: () => Promi
                 : `Les placements ont baissé : ${signedUnits(delta, false)} (${signedPercent(last.performance)}). Ça arrive. Personne ne sait quand ils remonteront.`}
           </p>
           {last.netFlows > 0 && <p>Tu as aussi versé {units(last.netFlows, false)} unités pendant cette période : ce n'est pas un gain, c'est ce que tu as ajouté.</p>}
+          <FinanceTip screen="bilan" mode="ASSURANCE_VIE" refreshKey={run.statements.length} />
           <button className="btn btn-primary" onClick={() => void seen()}>
             Fermer le relevé
           </button>

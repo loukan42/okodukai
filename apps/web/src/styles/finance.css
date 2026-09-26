@@ -1,0 +1,66 @@
+/* Feuillets de la bibliothèque et petites vérifications (docs/FINANCIAL_EDUCATION.md §5 et §9). */
+.finance-tip {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #b9d0e0;
+  border-left: 4px solid #4a7895;
+  border-radius: 14px;
+  color: #274a60;
+  background: var(--sky-soft);
+  animation: finance-in 360ms var(--ease-out) both;
+}
+@keyframes finance-in { from { opacity: 0; transform: translateY(6px); } }
+.finance-tip-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; color: #274a60; background: #fff; box-shadow: 0 1px 0 #b9d0e0; }
+.finance-tip-body { display: grid; gap: 6px; min-width: 0; }
+.finance-tip-body strong { font: 800 17px / 1.2 var(--font-display); color: #1d3a50; }
+.finance-tip-body p { margin: 0; line-height: 1.5; }
+.finance-tip-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.finance-tip-actions .btn { min-height: 44px; }
+
+.finance-question {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid #dcc596;
+  border-radius: 16px;
+  background: #fffaf0;
+  animation: finance-in 360ms var(--ease-out) both;
+}
+.finance-question-kicker { margin: 0; color: #8f5b24; font-size: 13px; font-weight: 800; }
+.finance-question h3 { margin: 0; font: 700 18px / 1.35 var(--font-display); color: var(--ink); }
+.finance-question-options { display: grid; gap: 8px; }
+.finance-option {
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid #d8c9a7;
+  border-radius: 12px;
+  color: var(--ink);
+  background: #fff;
+  font: 700 15px / 1.35 var(--font-interface);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 140ms ease, transform 140ms var(--ease-out);
+}
+.finance-option:active { transform: scale(0.98); }
+.finance-option:disabled { opacity: 0.6; cursor: default; }
+.finance-option--unsure { color: var(--ink-soft); background: transparent; border-style: dashed; }
+@media (hover: hover) { .finance-option:not(:disabled):hover { border-color: #b18d52; } }
+.finance-question-result { display: grid; gap: 6px; justify-items: start; }
+.finance-question-result p { margin: 0; line-height: 1.5; color: var(--ink); }
+.finance-question-word { color: #2d7254 !important; font-weight: 800; }
+
+/* Carnet de la bibliothèque : les mots par chapitre, et les feuillets déjà lus. */
+.carnet { display: grid; gap: 12px; }
+.carnet-chapter { padding: 14px 16px; border: 1px solid #e0d2b0; border-radius: 14px; background: #fffaf0; }
+.carnet-chapter h3 { margin: 0 0 8px; font: 700 16px var(--font-display); }
+.carnet-words { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.carnet-words li { padding: 5px 10px; border-radius: 999px; font-size: 13px; font-weight: 700; color: var(--ink-faint); background: #f1ead7; }
+.carnet-words li.is-explained { color: #274a60; background: var(--sky-soft); }
+.carnet-words li.is-verified { color: #1f5c40; background: var(--forest-soft); }
+.carnet-leaves { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.carnet-leaves li { padding: 10px 14px; border-left: 3px solid #4a7895; border-radius: 10px; background: var(--sky-soft); color: #274a60; line-height: 1.45; }
+.carnet-leaves strong { display: block; color: #1d3a50; }
+
+@media (prefers-reduced-motion: reduce) { .finance-tip, .finance-question { animation: none; } }

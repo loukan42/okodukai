@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
+import { pedagogyBand } from "../lib/pedagogy.js";
 import { attachSession, requireChild, childSession } from "../middleware/requireAuth.js";
 import { getBalances } from "../lib/ledger.js";
 import { levelFromTotalXp } from "../lib/levels.js";
@@ -28,7 +29,7 @@ childRouter.get("/child/me", requireChild, async (req, res) => {
       id: child.id,
       displayName: child.displayName,
       avatarId: child.avatarId,
-      ageBand: child.ageBand,
+      ageBand: pedagogyBand(child),
       activeGoalId: child.activeGoalId,
     },
     level,

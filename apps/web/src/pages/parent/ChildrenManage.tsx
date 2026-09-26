@@ -6,12 +6,14 @@ import { CoinPill } from "../../components/CoinPill";
 import { GameIcon } from "../../components/GameIcon";
 import { VaultRuleEditor } from "../../components/VaultRuleEditor";
 import { InvestSettingsEditor } from "../../components/InvestSettingsEditor";
+import { PedagogyEditor, type PedagogyLevel } from "../../components/PedagogyEditor";
 
 interface ChildRow {
   id: string;
   displayName: string;
   avatarId: string;
   ageBand: string;
+  pedagogyLevel: PedagogyLevel;
   currentLevel: number;
   balances: { available: number; vault: number };
 }
@@ -87,6 +89,7 @@ export function ChildrenManage() {
               </button>
             </div>
             <VaultRuleEditor childId={child.id} childName={child.displayName} />
+            <PedagogyEditor childId={child.id} initial={child.pedagogyLevel ?? "AUTO"} ageBand={child.ageBand} />
             <InvestSettingsEditor childId={child.id} />
           </div>
         ))}

@@ -3,6 +3,7 @@ import { api } from "../../lib/api";
 import { EmptyState } from "../../components/EmptyState";
 import { GameIcon } from "../../components/GameIcon";
 import { Lessons } from "../../components/invest/Lessons";
+import { Carnet } from "../../components/finance/Carnet";
 import { useAuth } from "../../lib/AuthContext";
 
 interface ModuleContent {
@@ -167,6 +168,7 @@ export function Learn() {
           </span>
         </button>
       ))}
+      <Carnet />
     </div>
   );
 }
