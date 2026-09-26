@@ -9,7 +9,8 @@ interface ModuleContent {
   consequence: string;
   explanation: string;
   vocabulary: string;
-  quiz: { question: string; answer: string };
+  /** Les propositions seulement : la bonne réponse reste sur le serveur. */
+  quiz: { question: string; options: string[] };
 }
 
 interface ModuleRow {
@@ -28,6 +29,8 @@ export function Learn() {
   const [active, setActive] = useState<ModuleRow | null>(null);
   const [step, setStep] = useState<Step>("situation");
   const [xpAwarded, setXpAwarded] = useState(0);
+  const [feedback, setFeedback] = useState<{ correct: boolean; explanation: string } | null>(null);
+  const [answering, setAnswering] = useState(false);
 
   useEffect(() => {
     api.get<{ modules: ModuleRow[] }>("/child/learning/modules").then((res) => setModules(res.modules));
@@ -36,18 +39,21 @@ export function Learn() {
   function open(mod: ModuleRow) {
     setActive(mod);
     setStep("situation");
+    setFeedback(null);
   }
 
-  async function answerQuiz(choice: string) {
-    if (!active) return;
-    const correct = choice === active.content.quiz.answer;
-    const res = await api.post<{ xpAwarded: number }>(`/child/learning/modules/${active.id}/complete`, { correct });
-    if (correct) {
-      setXpAwarded(res.xpAwarded);
-      setStep("done");
-    } else {
-      setStep("situation");
-      setActive(null);
+  async function answerQuiz(choice: number) {
+    if (!active || answering) return;
+    setAnswering(true);
+    try {
+      const res = await api.post<{ correct: boolean; explanation: string; xpAwarded: number }>(`/child/learning/modules/${active.id}/complete`, { choice });
+      setFeedback({ correct: res.correct, explanation: res.explanation });
+      if (res.correct) {
+        setXpAwarded(res.xpAwarded);
+        setStep("done");
+      }
+    } finally {
+      setAnswering(false);
     }
   }
 
@@ -93,20 +99,27 @@ export function Learn() {
             <>
               <p style={{ fontWeight: 700, marginBottom: 16 }}>{active.content.quiz.question}</p>
               <div className="stack">
-                <button className="btn btn-ghost btn-block" onClick={() => answerQuiz(active.content.quiz.answer)}>
-                  {active.content.quiz.answer}
-                </button>
-                <button className="btn btn-ghost btn-block" onClick={() => answerQuiz("__wrong__")}>
-                  Je ne sais pas
-                </button>
+                {active.content.quiz.options.map((option, i) => (
+                  <button key={option} className="btn btn-ghost btn-block" disabled={answering} onClick={() => void answerQuiz(i)}>
+                    {option}
+                  </button>
+                ))}
               </div>
+              {feedback && !feedback.correct && (
+                <div className="learn-feedback" role="status">
+                  <strong>Pas tout à fait.</strong>
+                  <p>{feedback.explanation}</p>
+                  <p>Tu peux choisir une autre réponse.</p>
+                </div>
+              )}
             </>
           )}
 
           {step === "done" && (
             <div className="text-center">
               <span className="learn-complete-icon"><GameIcon name="check" size={32}/></span>
-              <p style={{ fontWeight: 700 }}>Bien joué ! +{xpAwarded} XP</p>
+              <p style={{ fontWeight: 700 }}>{xpAwarded > 0 ? `Bien joué ! +${xpAwarded} XP` : "Bien joué ! Tu avais déjà terminé ce module."}</p>
+              {feedback?.explanation && <p className="text-faint">{feedback.explanation}</p>}
               <button
                 className="btn btn-primary btn-block"
                 style={{ marginTop: 16 }}

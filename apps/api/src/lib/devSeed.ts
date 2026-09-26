@@ -227,7 +227,12 @@ export async function seedDatabase(prisma: PrismaClient) {
           consequence: "Si tu gardes une partie, tu peux encore choisir plus tard.",
           explanation: "Un budget, c'est décider à l'avance comment répartir ce que l'on a.",
           vocabulary: "Dans la vraie vie, cela s'appelle un budget.",
-          quiz: { question: "Si tu dépenses tout, que te reste-t-il ?", answer: "rien" },
+          quiz: {
+            question: "Si tu dépenses tout, que te reste-t-il ?",
+            options: ["Encore la moitié", "Rien", "Le double"],
+            answerIndex: 1,
+            explanation: "Tout ce qui est dépensé est sorti : il ne reste rien pour plus tard.",
+          },
         },
       },
       {
@@ -243,7 +248,12 @@ export async function seedDatabase(prisma: PrismaClient) {
           consequence: "En mettant de côté, tu peux atteindre ton objectif.",
           explanation: "Ne pas utiliser tout de suite permet de disposer de plus plus tard.",
           vocabulary: "Cela s'appelle épargner.",
-          quiz: { question: "Épargner, c'est...", answer: "mettre de côté" },
+          quiz: {
+            question: "Épargner, c'est…",
+            options: ["Tout dépenser tout de suite", "Mettre de côté pour plus tard", "Emprunter à un ami"],
+            answerIndex: 1,
+            explanation: "Épargner, c'est garder une partie de ce qu'on a pour l'utiliser plus tard.",
+          },
         },
       },
       {
@@ -253,13 +263,19 @@ export async function seedDatabase(prisma: PrismaClient) {
         subtitle: "Inflation",
         ageBand: "AGE_10_12",
         rewardXp: 25,
+        // En unités école, sur la liste du marché : jamais avec les prix de la boutique familiale.
         content: {
-          situation: "Une glace coûte 10 pièces aujourd'hui.",
-          choice: { a: "Le prix reste toujours pareil", b: "Le prix peut augmenter avec le temps" },
-          consequence: "Plus tard, la même glace peut coûter 12 pièces.",
-          explanation: "Quand les prix augmentent globalement, on parle d'inflation.",
+          situation: "Au marché de la vallée, la liste de courses coûte 100 unités école.",
+          choice: { a: "Elle coûtera toujours 100", b: "Son prix peut changer avec le temps" },
+          consequence: "Un an plus tard, la même liste coûte 103 unités école.",
+          explanation: "Quand la plupart des prix montent avec le temps, on parle d'inflation. Les prix de ta boutique familiale, eux, sont fixés par tes parents.",
           vocabulary: "Cela s'appelle l'inflation.",
-          quiz: { question: "L'inflation, c'est quand les prix...", answer: "augmentent" },
+          quiz: {
+            question: "L'inflation, c'est quand la plupart des prix…",
+            options: ["Baissent", "Restent toujours pareils", "Augmentent"],
+            answerIndex: 2,
+            explanation: "L'inflation, c'est quand la plupart des prix montent avec le temps.",
+          },
         },
       },
     ],

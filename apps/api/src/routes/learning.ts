@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma.js";
 import { validateBody } from "../lib/validation.js";
 import { attachSession, requireChild, childSession } from "../middleware/requireAuth.js";
 import { grantXp } from "../lib/xp.js";
+import { normalizeContent, publicContent } from "../lib/learning.js";
 
 export const learningRouter = Router();
 learningRouter.use(attachSession);
@@ -22,12 +23,14 @@ learningRouter.get("/child/learning/modules", requireChild, async (req, res) => 
   res.json({
     modules: modules.map((m) => ({
       ...m,
+      content: publicContent(normalizeContent(m.code, m.content)),
       status: progressByModule.get(m.id)?.status ?? "NON_COMMENCE",
     })),
   });
 });
 
-const completeSchema = z.object({ correct: z.boolean() });
+// L'enfant envoie l'index de la proposition choisie ; le serveur décide si c'est juste.
+const completeSchema = z.object({ choice: z.number().int().min(0).max(9) });
 
 learningRouter.post(
   "/child/learning/modules/:id/complete",
@@ -36,22 +39,25 @@ learningRouter.post(
   async (req, res) => {
     const childId = childSession(req).childId;
     const learningModule = await prisma.learningModule.findUnique({ where: { id: req.params.id } });
-    if (!learningModule) return res.status(404).json({ error: "Module introuvable" });
+    if (!learningModule || !learningModule.active) return res.status(404).json({ error: "Module introuvable" });
+    const { quiz } = normalizeContent(learningModule.code, learningModule.content);
+    const correct = req.body.choice === quiz.answerIndex;
 
-    if (!req.body.correct) {
+    if (!correct) {
       await prisma.learningProgress.upsert({
         where: { childId_moduleId: { childId, moduleId: learningModule.id } },
-        update: { status: "EN_COURS" },
+        update: {},
         create: { childId, moduleId: learningModule.id, status: "EN_COURS" },
       });
-      return res.json({ status: "EN_COURS", xpAwarded: 0 });
+      return res.json({ correct: false, explanation: quiz.explanation, xpAwarded: 0 });
     }
 
     const idempotencyKey = `learning:${childId}:${learningModule.id}`;
-    const result = await prisma.$transaction(async (tx) => {
+    const already = await prisma.learningProgress.findUnique({ where: { childId_moduleId: { childId, moduleId: learningModule.id } } });
+    const granted = await prisma.$transaction(async (tx) => {
       await tx.learningProgress.upsert({
         where: { childId_moduleId: { childId, moduleId: learningModule.id } },
-        update: { status: "TERMINE", completedAt: new Date() },
+        update: { status: "TERMINE", completedAt: already?.completedAt ?? new Date() },
         create: { childId, moduleId: learningModule.id, status: "TERMINE", completedAt: new Date() },
       });
       return grantXp(tx, {
@@ -63,6 +69,7 @@ learningRouter.post(
       });
     });
 
-    res.json({ status: "TERMINE", xpAwarded: result?.leveledUp !== undefined ? learningModule.rewardXp : 0 });
+    // L'XP n'est accordée qu'une fois par module (clé d'idempotence) : `granted` est nul au rejeu.
+    res.json({ correct: true, explanation: quiz.explanation, xpAwarded: granted ? learningModule.rewardXp : 0 });
   }
 );

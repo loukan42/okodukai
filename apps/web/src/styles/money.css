@@ -872,3 +872,16 @@
 .vault-rule .btn {
   justify-self: start;
 }
+
+.learn-feedback {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--sky-soft);
+  color: #274a60;
+}
+
+.learn-feedback p {
+  margin: 6px 0 0;
+  line-height: 1.5;
+}
