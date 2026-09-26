@@ -18,7 +18,7 @@ function canvasTexture(size, draw, { srgb = true } = {}) {
 }
 
 /** Parchemin : fibres, taches d'âge, bords brunis. */
-function parchmentTexture(seed = 3) {
+export function parchmentTexture(seed = 3) {
   const n = makeNoise(seed);
   return canvasTexture(1024, (ctx, s) => {
     const img = ctx.createImageData(s, s);

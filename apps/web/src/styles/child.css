@@ -1,0 +1,318 @@
+/*
+ * Écrans enfant habillés du monde : bandeau de vallée, objets 3D du studio.
+ * L'argent reste le premier chiffre lisible de l'accueil (règle « Money First »).
+ */
+
+.home {
+  display: grid;
+  gap: 22px;
+}
+
+.home-banner {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  min-height: 190px;
+  display: flex;
+  align-items: flex-end;
+  padding: 22px;
+  border-radius: 26px;
+  border: 1px solid rgba(138, 84, 16, 0.25);
+  box-shadow: var(--shadow-md);
+  background: url("/assets/backgrounds/valley-golden-wide-1280.webp") center 62% / cover no-repeat, #c9b184;
+}
+
+/* Voile doux en bas pour que le prénom reste lisible sur le décor. */
+.home-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, rgba(255, 246, 226, 0.86) 0%, rgba(255, 246, 226, 0.5) 38%, rgba(255, 246, 226, 0) 68%);
+}
+
+.home-banner-identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.home-banner-identity .avatar {
+  width: 84px;
+  height: 84px;
+  border: 3px solid #fff8e7;
+  box-shadow: 0 8px 18px rgba(19, 35, 58, 0.3);
+}
+
+.home-banner h1 {
+  margin: 0 0 8px;
+  font-size: clamp(28px, 4vw, 40px);
+  font-variation-settings: "SOFT" 100;
+  color: var(--night);
+}
+
+.home-banner-level {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.home-banner-level .level-seal {
+  width: 52px;
+  height: 52px;
+  font-size: 13px;
+}
+
+.home-banner-xp {
+  display: grid;
+  gap: 3px;
+  width: min(220px, 40vw);
+}
+
+.home-banner-xp small {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.home-money {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.home-money-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 14px;
+  min-height: 150px;
+  padding: 18px 20px 18px 14px;
+  border-radius: 24px;
+  text-decoration: none;
+  transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast);
+}
+
+.home-money-card:hover {
+  transform: translateY(-2px);
+}
+
+.home-money-card--account {
+  color: #fff8e7;
+  background:
+    radial-gradient(circle at 18% 30%, rgba(232, 173, 63, 0.3), transparent 45%),
+    linear-gradient(150deg, #28435c, #172a40 70%);
+  border: 2px solid #102438;
+  box-shadow: 0 4px 0 #0f2538, 0 16px 28px rgba(23, 42, 64, 0.2);
+}
+
+.home-money-card--vault {
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 20% 55%, rgba(255, 214, 140, 0.55), transparent 45%),
+    linear-gradient(160deg, #fbf2dc, #f1e3c2);
+  border: 1px solid #d8c29a;
+  box-shadow: var(--shadow-md);
+}
+
+.home-money-art {
+  filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.3));
+}
+
+.home-money-art--chest {
+  width: 112px;
+  height: 112px;
+}
+
+.home-money-text {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.home-money-text > span:first-child {
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.home-money-card--account .home-money-text > span:first-child {
+  color: #f5d289;
+}
+
+.home-money-card--vault .home-money-text > span:first-child {
+  color: #9b6729;
+}
+
+.home-money-text strong {
+  font-size: clamp(36px, 6vw, 52px);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.home-money-text strong small {
+  font-size: 17px;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+
+.home-money-card--account .home-money-text strong small {
+  color: #f6dfad;
+}
+
+.home-money-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.home-money-goal {
+  display: grid;
+  gap: 6px;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+}
+
+.home-section-heading {
+  display: grid !important;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+}
+
+.home-section-heading .object-art {
+  width: 64px;
+  height: 64px;
+  margin: -10px 0 -10px -6px;
+}
+
+.home-empty {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 250, 240, 0.7);
+  border: 1px dashed #c8b892;
+}
+
+.home-empty strong {
+  font-family: var(--font-display);
+  font-size: 19px;
+  color: var(--night);
+}
+
+.home-empty p {
+  margin: 4px 0 0;
+  color: var(--ink-soft);
+}
+
+.home-callout {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px 12px 8px;
+  border-radius: 20px;
+  background: var(--surface-raised);
+  border: 1px solid var(--parchment-line);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.home-callout strong {
+  display: block;
+  font-size: 17px;
+}
+
+.home-callout small {
+  color: var(--ink-soft);
+  line-height: 1.4;
+}
+
+/* Journal de quêtes : le tableau d'aventurier en tête de page. */
+.page-scene-title--art {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 18px;
+}
+
+.page-scene-title--art .object-art {
+  width: 132px;
+  height: 132px;
+  filter: drop-shadow(0 14px 14px rgba(60, 36, 12, 0.25));
+}
+
+@media (max-width: 640px) {
+  .home-banner {
+    min-height: 170px;
+    padding: 16px;
+    background-image: url("/assets/backgrounds/valley-golden-tall-720.webp");
+    background-position: center 30%;
+  }
+
+  .home-banner-identity .avatar {
+    width: 68px;
+    height: 68px;
+  }
+
+  .home-money {
+    grid-template-columns: 1fr;
+  }
+
+  .home-money-card {
+    min-height: 0;
+  }
+
+  .page-scene-title--art .object-art {
+    width: 96px;
+    height: 96px;
+  }
+}
+
+/* Collection : la salle des collections au crépuscule (ambiance « lanternes »). */
+.collection-header {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  align-items: flex-end;
+  min-height: 190px;
+  padding: 24px;
+  border-radius: 26px;
+  border: 1px solid rgba(20, 24, 50, 0.6);
+  background: url("/assets/backgrounds/valley-dusk-wide-1280.webp") center 55% / cover no-repeat, #2a2447;
+  box-shadow: var(--shadow-md);
+}
+
+.collection-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, rgba(12, 14, 34, 0.78) 0%, rgba(12, 14, 34, 0.35) 60%, rgba(12, 14, 34, 0.15) 100%);
+}
+
+.collection-header h1 {
+  color: #fff4da;
+  font-variation-settings: "SOFT" 100;
+}
+
+.collection-header .scene-kicker {
+  color: #f5c77a;
+}
+
+.collection-header p:last-child {
+  color: #dcd8e6;
+}
+
+@media (max-width: 640px) {
+  .collection-header {
+    background-image: url("/assets/backgrounds/valley-dusk-tall-720.webp");
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

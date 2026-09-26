@@ -8,6 +8,7 @@ import "./styles/app.css";
 import "./styles/rpg.css";
 import "./styles/world.css";
 import "./styles/money.css";
+import "./styles/child.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

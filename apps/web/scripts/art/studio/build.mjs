@@ -16,6 +16,8 @@ export const STUDIO_ASSETS = [
   ...CHEST_STATES.map((state) => ({ id: `savings-chest-${state}`, scene: "chest", size: [720, 720], params: { state }, out: `savings/savings-chest-${state}`, widths: [240, 480, 720] })),
   // Objets de la boucle produit (gagner, dépenser, attendre, investir).
   ...["quest-scroll", "coin-pouch", "hourglass", "coin-sprout"].map((object) => ({ id: object, scene: "props", size: [512, 512], params: { object }, out: `objects/${object}`, widths: [128, 256, 512] })),
+  // Tableau d'aventurier (Journal de quêtes).
+  { id: "quest-board", scene: "board", size: [540, 540], params: {}, out: "quests/quest-board", widths: [180, 360, 540] },
   // Fonds plein cadre de la vallée : paysage (desktop) et portrait (mobile), deux ambiances.
   ...["golden", "dusk"].flatMap((mood) => [
     { id: `valley-${mood}-wide`, scene: "valley", size: [1920, 1080], supersample: 1.5, opaque: true, quality: 78, params: { mood }, out: `backgrounds/valley-${mood}-wide`, widths: [1280, 1920] },

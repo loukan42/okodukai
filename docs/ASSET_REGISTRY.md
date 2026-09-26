@@ -14,6 +14,7 @@ code du dépôt (aucune banque d'images, aucun modèle génératif externe, aucu
 | Bourse | `objects/coin-pouch-{128,256,512}.webp` | Studio 3D, `scenes/props.js` (`coin-pouch`) : cuir froncé, lien doré, pièces | `… -- coin-pouch` | 2026-09-26 |
 | Sablier | `objects/hourglass-{128,256,512}.webp` | Studio 3D, `scenes/props.js` (`hourglass`) : verre transmissif, sable doré, colonnes d'or | `… -- hourglass` | 2026-09-26 |
 | Pousse à pièces | `objects/coin-sprout-{128,256,512}.webp` | Studio 3D, `scenes/props.js` (`coin-sprout`) : pot de terre cuite, pièces en guise de fruits | `… -- coin-sprout` | 2026-09-26 |
+| Tableau d'aventurier | `quests/quest-board-{180,360,540}.webp` | Studio 3D, `scenes/board.js` : panneau de planches, pignon au médaillon, trois avis épinglés, lanterne | `… -- quest-board` | 2026-09-26 |
 | Vallée, heure dorée | `backgrounds/valley-golden-wide-{1280,1920}.webp`, `backgrounds/valley-golden-tall-{720,1080}.webp` | Studio 3D, `scenes/valley.js` (`mood: "golden"`) : terrain procédural, bosquets, ciel shader, brume | `… -- valley-golden` | 2026-09-26 |
 | Vallée, crépuscule | `backgrounds/valley-dusk-wide-{1280,1920}.webp`, `backgrounds/valley-dusk-tall-{720,1080}.webp` | Studio 3D, `scenes/valley.js` (`mood: "dusk"`) : lanternes le long de la rivière | `… -- valley-dusk` | 2026-09-26 |
 | Avatars (roster de 12) | `avatars/aventurier-01.svg` … `aventurier-12.svg` | Pipeline vectoriel, `scripts/art/characters/avatars.mjs` | `node scripts/art/export-svg.mjs avatars` (dans `apps/web`) | 2026-09-26 |
@@ -24,4 +25,6 @@ code du dépôt (aucune banque d'images, aucun modèle génératif externe, aucu
 - `apps/web/public/cards/**` et `apps/web/public/avatars/*.png` : images de *Héros de la classe* copiées localement,
   gitignorées (voir `CLAUDE.md`). Les anciens identifiants d'avatars restent lisibles : `Avatar.tsx` retombe sur un
   portrait du roster si le PNG manque.
-- `apps/web/src/assets/cards/card-{single,booster}.png` (≈ 2,5 Mo chacun) : à convertir en WebP.
+- `apps/web/src/assets/cards/card-{single,booster}.webp` : visuels du système de cartes repris de *Héros de la
+  classe* (voir `CLAUDE.md`), convertis en WebP 640 px (2,5 Mo → 260-280 Ko chacun). Un booster propre à
+  Okodukai (sans texte anglais) reste à proposer au propriétaire du produit.

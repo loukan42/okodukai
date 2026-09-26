@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { RARITY_LABELS, type CardRarity } from "@okodukai/shared";
-import cardSingleImage from "../assets/cards/card-single.png";
-import cardBoosterImage from "../assets/cards/card-booster.png";
+import cardSingleImage from "../assets/cards/card-single.webp";
+import cardBoosterImage from "../assets/cards/card-booster.webp";
 import { GameIcon } from "./GameIcon";
 import { RarityBadge } from "./RarityBadge";
 import { useDialogFocus } from "../lib/useDialogFocus";

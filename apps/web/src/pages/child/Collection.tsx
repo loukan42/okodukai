@@ -5,7 +5,7 @@ import { EmptyState } from "../../components/EmptyState";
 import { ProgressBar } from "../../components/ProgressBar";
 import { GameIcon } from "../../components/GameIcon";
 import { BoosterOpenOverlay } from "../../components/BoosterOpenOverlay";
-import boosterImage from "../../assets/cards/card-booster.png";
+import boosterImage from "../../assets/cards/card-booster.webp";
 import type { CardRarity } from "@okodukai/shared";
 import { useAuth } from "../../lib/AuthContext";
 
