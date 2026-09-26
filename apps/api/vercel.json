@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npx prisma generate && npx prisma migrate deploy",
+  "buildCommand": "npx prisma generate && if [ \"$VERCEL_ENV\" = \"production\" ]; then export DATABASE_URL=\"${DATABASE_URL_UNPOOLED:-$DATABASE_URL}\"; npx prisma migrate deploy && npx tsx prisma/seedContent.ts; fi",
   "installCommand": "npm install",
   "rewrites": [
     {

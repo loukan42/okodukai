@@ -174,11 +174,17 @@ export async function importKidsgamebookCollection(prisma: PrismaClient): Promis
     if (themeCards.length === 0) continue;
 
     const folder = matchThemeFolder(theme.title, imageFolders);
-    const filesInFolder = folder ? readdirSync(path.join(CARDS_IMAGE_DIR, folder)) : [];
+    // Les WebP optimisés (versionnés, servis en production) passent avant les PNG sources (locaux).
+    const allFiles = folder ? readdirSync(path.join(CARDS_IMAGE_DIR, folder)) : [];
+    const webp = allFiles.filter((f) => f.toLowerCase().endsWith(".webp"));
+    const filesInFolder = webp.length > 0 ? webp : allFiles;
 
     const code = slugify(theme.title);
-    const universe = await prisma.universe.create({
-      data: { code, title: theme.title, description: null, sortOrder: theme.sortOrder },
+    // Upserts : l'import se rejoue à chaque déploiement sans doublon ni perte (cartes déjà gagnées).
+    const universe = await prisma.universe.upsert({
+      where: { code },
+      create: { code, title: theme.title, description: null, sortOrder: theme.sortOrder },
+      update: { title: theme.title, sortOrder: theme.sortOrder },
     });
 
     let cardNumber = 1;
@@ -197,27 +203,26 @@ export async function importKidsgamebookCollection(prisma: PrismaClient): Promis
       // doit rester littérale dans l'URL (RFC3986 l'autorise non-encodée dans un segment).
       const artworkUrl = file && folder ? `/cards/${encodePathSegment(folder)}/${encodePathSegment(file)}` : null;
 
-      await prisma.card.create({
-        data: {
-          universeId: universe.id,
-          cardNumber,
-          name: card.title.split(",")[0].trim(),
-          rarity,
-          artworkUrl,
-        },
+      const name = card.title.split(",")[0].trim();
+      await prisma.card.upsert({
+        where: { universeId_cardNumber: { universeId: universe.id, cardNumber } },
+        create: { universeId: universe.id, cardNumber, name, rarity, artworkUrl },
+        update: { name, rarity, artworkUrl },
       });
       cardNumber += 1;
     }
 
-    const boosterDefinition = await prisma.boosterDefinition.create({
-      data: {
-        universeId: universe.id,
-        code: `booster-${code}`,
-        title: `Booster ${theme.title}`,
-        cardCount: Math.min(5, themeCards.length),
-        rngVersion: "v1",
-        slotConfig: DEFAULT_SLOT_CONFIG as object,
-      },
+    const boosterData = {
+      universeId: universe.id,
+      title: `Booster ${theme.title}`,
+      cardCount: Math.min(5, themeCards.length),
+      rngVersion: "v1",
+      slotConfig: DEFAULT_SLOT_CONFIG as object,
+    };
+    const boosterDefinition = await prisma.boosterDefinition.upsert({
+      where: { code: `booster-${code}` },
+      create: { code: `booster-${code}`, ...boosterData },
+      update: boosterData,
     });
 
     result.push({ id: universe.id, code, title: theme.title, boosterDefinitionId: boosterDefinition.id });

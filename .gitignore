@@ -16,7 +16,7 @@ apps/web/tsconfig.tsbuildinfo
 # fonctionnent en dev local mais ne doivent pas gonfler l'historique Git. Avant la
 # mise en production il faudra un vrai stockage (S3/Supabase storage propre à
 # Okodukai, ou Git LFS) — voir CLAUDE.md.
-apps/web/public/cards/
+apps/web/public/cards/**/*.png
 apps/web/public/avatars/
 
 # Python (scripts de skills)

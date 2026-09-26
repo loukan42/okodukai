@@ -31,7 +31,8 @@ P1, P2 et P3 sont faits (détail dans chaque section). Ce qui reste demande le p
   (inutilisées). Vérifier aussi qu'un déploiement de prévisualisation de l'API ne vise pas la base de production.
 - **Variables Vercel** : `PROXY_SECRET` (projets web et API), `CRON_SECRET`, `VAPID_PUBLIC_KEY`,
   `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (projet API). Voir §P1 et §P2 ci-dessous.
-- **Stockage des images de cartes** (§1.4 et §2).
+- ~~Stockage des images de cartes~~ : tranché le 26/09, WebP optimisés versionnés et servis par le site (voir
+  `CLAUDE.md`), contenu importé à chaque déploiement de production.
 
 ## 1. Production (Vercel) : à vérifier par le propriétaire
 
@@ -54,7 +55,6 @@ P1, P2 et P3 sont faits (détail dans chaque section). Ce qui reste demande le p
 
 | Sujet | Options | Où |
 | --- | --- | --- |
-| Stockage des images de cartes | S3 / Supabase / Git LFS | §1.4 |
 
 Tranché le 26/09 : **visuel du booster** (on garde l'illustration dorée, habillée Okodukai : logo + ruban
 d'univers) ; **boosters par univers** : le ruban porte le nom de l'univers (variante de couleur possible,

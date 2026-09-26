@@ -100,12 +100,14 @@ kidsgamebook, pas du repo Git (les données n'y sont pas commitées) :
 - `apps/api/src/lib/kidsgamebookImport.ts` — importe ces CSV et les associe aux images locales
   par titre normalisé (accents/casse tolérés ; un titre "X, épique" fixe la rareté de la carte
   au lieu du cycle déterministe par défaut).
-- **Les images** (~330 Mo, `apps/web/public/cards/<thème>/<carte>.png` et
-  `apps/web/public/avatars/*.png`) sont copiées localement depuis les dossiers de l'utilisateur
-  et **gitignorées** — elles doivent être re-copiées sur toute nouvelle machine avant de lancer
-  `npm run db:seed`. Avant la mise en production il faudra un vrai stockage (S3, Supabase
-  storage propre à Okodukai, ou Git LFS) : le hotlink direct vers le bucket Supabase de
-  kidsgamebook a été écarté au profit de fichiers locaux propres à Okodukai.
+- **Les images** : les PNG sources (~270 Mo, `apps/web/public/cards/<thème>/<carte>.png`) restent
+  locaux et gitignorés ; leurs versions **WebP optimisées** (720 px, ~15 Mo au total, même chemin en
+  `.webp`) sont **versionnées** et servies par le site (décision du 26/09). Après un ajout de PNG :
+  `node apps/web/scripts/optimize-cards.mjs`. Les anciens avatars PNG (`apps/web/public/avatars/`)
+  restent locaux : `Avatar.tsx` retombe sur le roster SVG.
+- **Contenu en production** : `apps/api/src/lib/contentSeed.ts` (univers, cartes, boosters, badges,
+  modules), rejouable (upserts), lancé à chaque déploiement de production après les migrations
+  (`apps/api/vercel.json`) ; en local : `npm run seed:content --workspace apps/api`.
 - Les avatars enfant (`apps/web/src/components/Avatar.tsx`, `AVAILABLE_AVATARS`) viennent du
   même dossier utilisateur (fille/garçon/ninja/pirate/chevalier/etc., pas des emoji).
 
