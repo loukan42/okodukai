@@ -44,12 +44,14 @@ npm run dev:web             # site : http://localhost:5173
 
 | Sujet | Options | Où |
 | --- | --- | --- |
-| Visuel du booster | Garder l'image reprise de Héros de la classe (texte anglais « TRADING CARD BOOSTER PACK », crâne en bas) **ou** un booster Okodukai rendu en 3D (à produire, puis montrer les deux côte à côte) | `apps/web/src/assets/cards/card-booster.webp`, studio `scripts/art/studio/` |
-| Boosters par univers | Un visuel de booster par univers de cartes (demandé dans la mission art) | dépend du point précédent |
 | Stockage des images de cartes | S3 / Supabase / Git LFS | §1.4 |
 
+Tranché le 26/09 : **visuel du booster** (on garde l'illustration dorée, habillée Okodukai : logo + ruban
+d'univers) ; **boosters par univers** : le ruban porte le nom de l'univers (variante de couleur possible,
+voir `ASSET_PLAN.md`).
+
 Règle projet : pour tout choix entre deux éléments, **montrer les propositions** (images) et laisser
-le propriétaire trancher.
+le propriétaire trancher. Le 26/09, le propriétaire a demandé d'avancer en autonomie et de trancher seul.
 
 ---
 
@@ -133,19 +135,21 @@ Spécifications : `docs/INVESTMENT_UX.md`, `docs/FINANCIAL_EDUCATION.md`, `docs/
 12. **Notifications** « Ton bilan est prêt. » (au plus une par jour en Rapide, jamais la nuit, jamais la
     valeur dans le texte) ; aujourd'hui seulement la pastille dans l'app.
 
-### P3 : direction artistique
+### P3 : direction artistique (fait le 26/09)
 
-1. **Booster** : voir §2 (produire la version 3D, montrer les deux, faire trancher).
-2. **Boutique** : asset 3D de l'échoppe (auvent, comptoir, marchandises) et en-tête de page.
-3. **Tableau de bord parent** : habillage sobre (bandeau vallée discret, pas de chrome de jeu).
-4. **États vides illustrés** : faire accepter une image 3D au composant `EmptyState`
-   (`apps/web/src/components/EmptyState.tsx`) et l'utiliser partout.
-5. **`docs/ASSET_PLAN.md`** : plan des assets restants (échoppe, observatoire 3D, verger, booster,
-   décors par lieu) et leur statut.
-6. **Motion** : récompense de quête validée (pièces + XP), ouverture des lanternes de l'observatoire,
-   toujours coupé par `prefers-reduced-motion`.
-7. **Revue DA** de tous les écrans (skill `design-review`, sans son ping de télémétrie) à 375, 768, 1024
-   et 1440 px.
+- **Ouverture de booster** refaite au niveau de la référence « summon » demandée par le propriétaire :
+  ciel animé (canvas), cercle d'invocation, cristal à briser (3 touches ou appui long), annonce Épique /
+  Légendaire avec bandeau, retournement carte par carte (rayons, onde, reflet holo, pluie d'étoiles),
+  « Nouvelle ! » décidé par le serveur, récapitulatif, enchaînement des boosters, sons synthétisés
+  coupables, vibrations. `components/booster/*`, `styles/booster.css`. Aperçu par rareté dans la barre
+  Démo (rien n'est crédité).
+- **Sachet de booster** : décision du propriétaire, on garde l'illustration dorée, habillée du logo et
+  d'un ruban au nom de l'univers (`BoosterPack.tsx`). Pile de boosters dans la collection.
+- **Boutique** : échoppe 3D (`scenes/shop.js`) en en-tête ; deux colonnes sur téléphone.
+- **Parent** : bandeau vallée discret sur le tableau de bord. **États vides** illustrés (enfant).
+- **Motion** : fête des quêtes validées (pièces qui volent, XP, booster), lanternes de l'observatoire.
+- **Revue** à 375, 768 et 1280 px (captures Playwright) : collection en deux colonnes sur téléphone,
+  cases à cocher des univers, libellés trop longs. `docs/ASSET_PLAN.md` liste les assets restants.
 
 ---
 
