@@ -9,7 +9,7 @@ import { attachSession, requireChild, requireParent, childSession, parentSession
 import { recordWalletTransaction, DuplicateTransactionError, InsufficientFundsError } from "../lib/ledger.js";
 import { checkAndAwardBadges } from "../lib/badges.js";
 import { applyAllowance } from "../lib/allowance.js";
-import { readLedger, weekSummary, allocateGoals, vaultAvailability, activeGoals, type Place } from "../lib/money.js";
+import { readLedger, weekSummary, allocateGoals, vaultAvailability, activeGoals, monthKeyParis, monthSummary, previousMonthKey, type Place } from "../lib/money.js";
 
 export const savingsRouter = Router();
 savingsRouter.use(attachSession);
@@ -484,4 +484,33 @@ savingsRouter.post("/household/children/:childId/gift", requireParent, validateB
     if (!(err instanceof DuplicateTransactionError)) throw err;
   }
   res.status(201).json({ ok: true });
+});
+
+// -- Mon mois en pièces ---------------------------------------------------------
+
+const pieces = (n: number) => `${n} ${n > 1 ? "pièces" : "pièce"}`;
+
+/**
+ * Le volet « Mon mois en pièces » (INVESTMENT_UX E9) : au premier bilan qui suit un changement de mois
+ * réel, un résumé sans jugement du mois écoulé. Montré une seule fois par mois (journal des feuillets).
+ */
+savingsRouter.get("/child/money/month-summary", requireChild, async (req, res) => {
+  const { childId } = childSession(req);
+  const key = previousMonthKey(monthKeyParis(new Date()));
+  const code = `MOIS:${key}`;
+  if (await prisma.financeTipLog.findUnique({ where: { childId_tipCode: { childId, tipCode: code } } })) return res.json({ summary: null });
+  const state = await moneyState(childId);
+  const s = monthSummary(state.ledger.lines, key);
+  if (s.entrees + s.sorties + s.misDeCote === 0) return res.json({ summary: null });
+  const month = new Intl.DateTimeFormat("fr-FR", { month: "long", timeZone: "Europe/Paris" }).format(new Date(`${key}-15T12:00:00Z`));
+  const verb = (n: number, one: string, many: string) => (n > 1 ? many : one);
+  const text = `En ${month} : ${pieces(s.entrees)} ${verb(s.entrees, "est entrée", "sont entrées")}, ${pieces(s.sorties)} ${verb(s.sorties, "est sortie", "sont sorties")}, ${pieces(s.misDeCote)} ${verb(s.misDeCote, "est allée", "sont allées")} dans Mon coffre.`;
+  const goal = state.goals.find((g) => !g.reached) ?? state.goals[0];
+  const goalText = goal ? `${goal.title} : ${goal.present} sur ${goal.targetCoins}.` : null;
+  await prisma.financeTipLog
+    .create({ data: { childId, tipCode: code, outcome: "vu", title: "Mon mois en pièces", message: text } })
+    .catch((err: unknown) => {
+      if (!(err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002")) throw err;
+    });
+  res.json({ summary: { month, text, goal: goalText } });
 });

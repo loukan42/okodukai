@@ -235,3 +235,26 @@ export function vaultAvailability(
 export function activeGoals(client: Client, childId: string) {
   return client.savingsGoal.findMany({ where: { childId, archivedAt: null }, orderBy: [{ position: "asc" }, { createdAt: "asc" }] });
 }
+
+// -- Mon mois en pièces (FINANCIAL_EDUCATION §8.2) : au calendrier réel, heure de Paris ------------
+
+const MONTH_KEY = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit" });
+/** « 2026-09 » : le mois (heure de Paris) d'un instant. */
+export const monthKeyParis = (d: Date) => MONTH_KEY.format(d).slice(0, 7);
+export function previousMonthKey(key: string) {
+  const [y, m] = key.split("-").map(Number);
+  return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, "0")}`;
+}
+
+/** Entrées, sorties et pièces mises dans Mon coffre pendant un mois (les transferts ne sont ni l'un ni l'autre). */
+export function monthSummary(lines: MoneyLine[], key: string) {
+  const out = { entrees: 0, sorties: 0, misDeCote: 0 };
+  for (const l of lines) {
+    if (l.place !== "account" || monthKeyParis(new Date(l.createdAt)) !== key) continue;
+    if (l.kind === "transfert") {
+      if (l.amount < 0) out.misDeCote += -l.amount;
+    } else if (l.amount >= 0) out.entrees += l.amount;
+    else out.sorties += -l.amount;
+  }
+  return out;
+}

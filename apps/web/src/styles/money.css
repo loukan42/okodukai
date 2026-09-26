@@ -1702,3 +1702,19 @@
 .allowance-row input:focus,
 .allowance-row select:focus,
 .vault-rule-toggle input[type="number"]:focus { outline: 2px solid var(--sky); outline-offset: 1px; }
+
+/* Tout ce que je possède (E2) : deux groupes, deux totaux, jamais additionnés. */
+.possessions-group { padding: 16px; border: 1px solid var(--parchment-line); border-radius: 16px; background: var(--surface-raised); }
+.possessions-group--school { border-color: #b9d0e0; background: #f4f9fc; }
+.possessions-group h2 { margin: 0 0 8px; font-size: 17px; }
+.possessions-group dl { display: grid; gap: 6px; margin: 0; }
+.possessions-group dl > div { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px dashed var(--parchment-line); }
+.possessions-group dt { color: var(--ink-soft); font-weight: 700; }
+.possessions-group dd { margin: 0; font-weight: 800; font-variant-numeric: tabular-nums; }
+.possessions-group .possessions-total { border-bottom: 0; padding-top: 10px; }
+.possessions-group .possessions-total dt, .possessions-group .possessions-total dd { color: var(--ink); font-size: 17px; }
+.money-total-link { display: inline-flex; align-items: center; gap: 4px; margin-left: 10px; font-weight: 800; color: var(--sky); }
+/* Mon mois en pièces, dans le bilan. */
+.month-summary { display: grid; gap: 4px; padding: 12px 14px; border: 1px solid #e0cfa4; border-radius: 14px; background: #fff6df; }
+.month-summary strong { font: 800 15px var(--font-display); color: #8f5b24; }
+.month-summary p { margin: 0; line-height: 1.45; }

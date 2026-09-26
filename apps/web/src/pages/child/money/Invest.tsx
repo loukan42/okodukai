@@ -28,6 +28,7 @@ import { FinanceQuestion } from "../../../components/finance/FinanceQuestion";
 import { FinanceTip } from "../../../components/finance/FinanceTip";
 import { GameIcon } from "../../../components/GameIcon";
 import { GameEnd } from "../../../components/invest/GameEnd";
+import { MonthSummary } from "../../../components/money/MonthSummary";
 import { Contributions } from "../../../components/invest/Contributions";
 import { ObjectArt } from "../../../art/ObjectArt";
 
@@ -251,6 +252,7 @@ function Statement({ run, young, onClose }: { run: InvestRun; young: boolean; on
           );
         })}
       </ul>
+      <MonthSummary />
       <FinanceTip screen="bilan" mode="MIROIR" refreshKey={s.index} />
       <FinanceQuestion key={s.index} context="bilan" mode="MIROIR" />
       <p>Prochain relevé : {run.clock.nextRendezVousAt ? rendezVousLabel(run.clock.nextRendezVousAt) : "la partie est terminée"}. Rien ne bouge d'ici là.</p>

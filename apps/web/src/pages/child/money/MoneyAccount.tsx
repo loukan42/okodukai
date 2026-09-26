@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { GameIcon } from "../../../components/GameIcon";
 import { api } from "../../../lib/api";
 import { chestStateFor, pieces, signed, type MoneyLine, type MoneyOverview } from "../../../lib/money";
 import { CoinArt } from "../../../art/CoinArt";
@@ -102,6 +103,9 @@ export function MoneyAccount() {
       {!young && (
         <p className="money-total">
           Tout mon argent : <strong>{pieces(available + vault)}</strong> (Mon compte {available} + Mon coffre {vault})
+          <Link to="/enfant/argent/tout" className="money-total-link">
+            Tout ce que je possède <GameIcon name="arrow" size={14} />
+          </Link>
         </p>
       )}
 

@@ -25,6 +25,7 @@ import { MoneyHistory } from "./pages/child/money/MoneyHistory";
 import { Invest } from "./pages/child/money/Invest";
 import { SupportSheet } from "./pages/child/money/SupportSheet";
 import { ChildInvestView } from "./pages/parent/ChildInvestView";
+import { PossessionsPage } from "./pages/child/money/Possessions";
 import { GameArchive, GamesArchive } from "./pages/child/money/GamesArchive";
 import { Orchard } from "./pages/child/money/Orchard";
 import { Learn } from "./pages/child/Learn";
@@ -105,6 +106,7 @@ export default function App() {
           <Route path="investir/verger" element={<Orchard />} />
           <Route path="investir/support/:code" element={<SupportSheet />} />
           <Route path="investir/parties" element={<GamesArchive />} />
+          <Route path="tout" element={<PossessionsPage />} />
           <Route path="investir/parties/:id" element={<GameArchive />} />
         </Route>
         <Route path="coffre" element={<Navigate to="/enfant/argent/coffre" replace />} />

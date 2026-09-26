@@ -23,6 +23,7 @@ import {
   validateAllocation,
 } from "../lib/invest.js";
 import { grantXp } from "../lib/xp.js";
+import { getBalances } from "../lib/ledger.js";
 import type { AgeBand, SimMode, SimulationRun } from "@prisma/client";
 
 export const investRouter = Router();
@@ -466,5 +467,38 @@ investRouter.get("/household/children/:childId/invest/overview", requireParent, 
     run: view,
     orchard: orchard ? await runView(prisma, orchard, band) : null,
     nextTalk: nextTalk(child.displayName, view),
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tout ce que je possède (INVESTMENT_UX E2, Approfondi) : deux totaux, jamais additionnés
+// ---------------------------------------------------------------------------
+
+investRouter.get("/child/invest/possessions", requireChild, async (req, res) => {
+  const { childId } = childSession(req);
+  const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId } });
+  const band = pedagogyBand(child);
+  if (band !== "AGE_10_12") return res.status(404).json({ error: "Cet écran s'ouvre en niveau Approfondi." });
+  const wallet = await prisma.wallet.findUnique({ where: { childId } });
+  const coins = wallet ? await getBalances(prisma, wallet.id) : { available: 0, vault: 0 };
+  const settings = await investSettingsFor(prisma, childId, band);
+  const [mirror, orchard] = await Promise.all([activeRun(prisma, childId), activeRun(prisma, childId, "ASSURANCE_VIE")]);
+  const mirrorView = mirror ? await runView(prisma, mirror, band) : null;
+  const orchardView = orchard ? await runView(prisma, orchard, band) : null;
+  // Capital école pas encore placé : ce que le plafond permet encore de verser, partie par partie.
+  const notYetPlaced =
+    (mirrorView && settings.contributionsEnabled ? Math.max(0, (mirrorView.contributionCap ?? settings.contributionCap) - mirrorView.contributed) : 0) +
+    (orchardView && orchardView.contributionCap !== null ? Math.max(0, orchardView.contributionCap - orchardView.contributed) : 0);
+  // Première ouverture de l'outil : +5 XP d'exploration (FINANCIAL_EDUCATION §7.1).
+  const xp = await prisma.$transaction((tx) => grantXp(tx, { childId, amount: 5, sourceType: "FINANCE_LEARNING", sourceId: "patrimoine", idempotencyKey: `fin:explore:${childId}:tool:patrimoine` }));
+  res.json({
+    coins: { account: coins.available, vault: coins.vault, total: coins.available + coins.vault },
+    units: {
+      investments: mirrorView?.value ?? null,
+      orchard: orchardView?.value ?? null,
+      notYetPlaced: notYetPlaced > 0.005 ? notYetPlaced : null,
+      total: (mirrorView?.value ?? 0) + (orchardView?.value ?? 0) + notYetPlaced,
+    },
+    xpAwarded: xp ? 5 : 0,
   });
 });

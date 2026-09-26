@@ -104,7 +104,9 @@ financeRouter.get("/child/finance/journal", requireChild, async (req, res) => {
   const state = new Map(progress.map((p) => [p.notionCode, p.state]));
   const notions = notionsFor(band).map(([code, n]) => ({ code, word: n.word, chapter: n.chapter, state: state.get(code) ?? "INCONNUE" }));
   const chapters = [...new Set(notions.map((n) => n.chapter))].map((c) => ({ chapter: c, title: CHAPTERS[c], notions: notions.filter((n) => n.chapter === c) }));
-  res.json({ tips: tips.map((t) => ({ code: t.tipCode, title: t.title, message: t.message, shownAt: t.shownAt })), chapters });
+  // Les volets « Mon mois en pièces » partagent le journal (vus une fois) mais ne sont pas des feuillets.
+  const leaves = tips.filter((t) => !t.tipCode.startsWith("MOIS:"));
+  res.json({ tips: leaves.map((t) => ({ code: t.tipCode, title: t.title, message: t.message, shownAt: t.shownAt })), chapters });
 });
 
 const questionQuery = z.object({ context: z.enum(["onboarding", "vault", "bilan", "library"]), mode: z.enum(["MIROIR", "ASSURANCE_VIE"]).optional() });
