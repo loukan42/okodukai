@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { Router } from "express";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
@@ -7,6 +8,7 @@ import { validateBody } from "../lib/validation.js";
 import { attachSession, requireChild, requireParent, childSession, parentSession } from "../middleware/requireAuth.js";
 import { recordWalletTransaction, DuplicateTransactionError, InsufficientFundsError } from "../lib/ledger.js";
 import { checkAndAwardBadges } from "../lib/badges.js";
+import { applyAllowance } from "../lib/allowance.js";
 import { readLedger, weekSummary, allocateGoals, vaultAvailability, activeGoals, type Place } from "../lib/money.js";
 
 export const savingsRouter = Router();
@@ -22,6 +24,7 @@ async function walletOf(childId: string) {
 
 /** Photographie complète de Mon argent : soldes, semaine, objectifs, règle du coffre. */
 async function moneyState(childId: string) {
+  await applyAllowance(childId);
   const wallet = await walletOf(childId);
   const [ledger, goals, rule, pending] = await Promise.all([
     readLedger(prisma, wallet.id),
@@ -310,7 +313,7 @@ savingsRouter.post("/child/savings/goals/:goalId/archive", requireChild, async (
 });
 
 // ---------------------------------------------------------------------------
-// Parent : bonus d'épargne, règle du coffre, demandes de retrait
+// Parent : bonus d'épargne, règle du coffre, demandes de retrait, argent de poche, cadeaux
 // ---------------------------------------------------------------------------
 
 async function childOfHousehold(childId: string, householdId: string) {
@@ -424,4 +427,61 @@ savingsRouter.post("/household/vault-requests/:requestId/decision", requireParen
     if (!isDuplicate(err)) throw err;
   }
   res.json({ request: { id: request.id, status: approved ? "APPROVED" : "REFUSED" } });
+});
+
+// -- Argent de poche automatique et cadeaux ----------------------------------
+
+const allowanceSchema = z.object({ amount: z.number().int().min(1).max(1000), weekday: z.number().int().min(1).max(7), active: z.boolean() });
+
+savingsRouter.get("/household/children/:childId/allowance", requireParent, async (req, res) => {
+  const child = await childOfHousehold(req.params.childId, parentSession(req).householdId);
+  if (!child) return res.status(404).json({ error: "Enfant introuvable" });
+  const schedule = await prisma.allowanceSchedule.findUnique({ where: { childId: child.id } });
+  res.json({ allowance: schedule && { amount: schedule.amount, weekday: schedule.weekday, active: schedule.active } });
+});
+
+/**
+ * Argent de poche chaque semaine. Rien n'est rattrapé avant le réglage : le premier versement tombe
+ * au prochain jour choisi. Réactiver repart de maintenant (pas de versements « oubliés » d'un coup).
+ */
+savingsRouter.put("/household/children/:childId/allowance", requireParent, validateBody(allowanceSchema), async (req, res) => {
+  const { householdId, userId } = parentSession(req);
+  const child = await childOfHousehold(req.params.childId, householdId);
+  if (!child) return res.status(404).json({ error: "Enfant introuvable" });
+  // Ce qui était dû avant le changement est versé à l'ancien montant.
+  await applyAllowance(child.id);
+  const previous = await prisma.allowanceSchedule.findUnique({ where: { childId: child.id } });
+  const restart = !previous || (!previous.active && req.body.active) || previous.weekday !== req.body.weekday;
+  const data = { amount: req.body.amount, weekday: req.body.weekday, active: req.body.active, updatedById: userId, ...(restart ? { startsAt: new Date() } : {}) };
+  await prisma.allowanceSchedule.upsert({ where: { childId: child.id }, create: { childId: child.id, ...data }, update: data });
+  await prisma.auditLog.create({ data: { householdId, actorUserId: userId, action: "allowance_updated", targetType: "ChildProfile", targetId: child.id, metadata: req.body } });
+  res.json({ allowance: req.body });
+});
+
+const giftSchema = z.object({ amount: z.number().int().min(1).max(100_000), reason: z.string().trim().min(1).max(120), idempotencyKey: z.string().uuid().optional() });
+
+/** Un cadeau (anniversaire, fête…) : une entrée à part, avec de qui et pourquoi. */
+savingsRouter.post("/household/children/:childId/gift", requireParent, validateBody(giftSchema), async (req, res) => {
+  const { householdId, userId } = parentSession(req);
+  const child = await childOfHousehold(req.params.childId, householdId);
+  if (!child) return res.status(404).json({ error: "Enfant introuvable" });
+  const wallet = await walletOf(child.id);
+  try {
+    await prisma.$transaction(async (tx) => {
+      await recordWalletTransaction(tx, {
+        walletId: wallet.id,
+        amount: req.body.amount,
+        type: "GIFT",
+        actorId: userId,
+        idempotencyKey: `gift:${child.id}:${req.body.idempotencyKey ?? randomUUID()}`,
+        sourceType: "gift",
+        reason: req.body.reason,
+      });
+      await tx.notification.create({ data: { householdId, audience: "CHILD", childId: child.id, type: "gift", payload: { amount: req.body.amount, reason: req.body.reason } } });
+      await tx.auditLog.create({ data: { householdId, actorUserId: userId, action: "gift", targetType: "ChildProfile", targetId: child.id, metadata: { amount: req.body.amount, reason: req.body.reason } } });
+    });
+  } catch (err) {
+    if (!(err instanceof DuplicateTransactionError)) throw err;
+  }
+  res.status(201).json({ ok: true });
 });

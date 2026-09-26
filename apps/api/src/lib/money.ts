@@ -76,6 +76,10 @@ function effects(t: WalletTransaction, s: Sources): { place: Place; amount: numb
         { place: "vault", amount: -t.amount, kind: "transfert", label: "Vers Mon compte" },
         { place: "account", amount: t.amount, kind: "transfert", label: "Depuis Mon coffre" },
       ];
+    case "ALLOWANCE":
+      return [{ place: "account", amount: t.amount, kind: "entree", label: parent ? `Argent de poche de ${parent}` : "Argent de poche" }];
+    case "GIFT":
+      return [{ place: "account", amount: t.amount, kind: "entree", label: t.reason ? `Cadeau : ${t.reason}` : "Cadeau" }];
     case "SAVINGS_BONUS":
       return [{ place: "vault", amount: t.amount, kind: "bonus_epargne", label: parent ? `Bonus d'épargne de ${parent}` : "Bonus d'épargne" }];
   }

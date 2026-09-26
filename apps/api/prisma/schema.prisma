@@ -104,6 +104,7 @@ model ChildProfile {
   simulationRuns  SimulationRun[]
   financeNotions  FinanceNotionProgress[]
   investPauses    InvestPause[]
+  allowance       AllowanceSchedule?
   financeTips     FinanceTipLog[]
 
   @@index([householdId])
@@ -131,6 +132,25 @@ enum WalletTransactionType {
   SAVINGS_LOCK
   SAVINGS_UNLOCK
   SAVINGS_BONUS
+  /// Argent de poche (versement régulier du parent, éventuellement automatique chaque semaine).
+  ALLOWANCE
+  /// Cadeau reçu (anniversaire, fête…) : la raison dit de qui et pourquoi.
+  GIFT
+}
+
+/// Argent de poche automatique : un versement chaque semaine, rattrapé à la lecture du compte
+/// (clé d'idempotence par date), jamais en double. Arrêtable par le parent.
+model AllowanceSchedule {
+  childId     String   @id
+  child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  amount      Int
+  /// Jour de la semaine (1 = lundi … 7 = dimanche), à 8 h (heure de Paris).
+  weekday     Int
+  active      Boolean  @default(true)
+  /// Premier versement possible : à partir de ce moment (pas de rattrapage avant).
+  startsAt    DateTime @default(now())
+  updatedById String?
+  updatedAt   DateTime @updatedAt
 }
 
 model WalletTransaction {

@@ -7,6 +7,7 @@ import { GameIcon } from "../../components/GameIcon";
 import { VaultRuleEditor } from "../../components/VaultRuleEditor";
 import { InvestSettingsEditor } from "../../components/InvestSettingsEditor";
 import { PedagogyEditor, type PedagogyLevel } from "../../components/PedagogyEditor";
+import { AllowanceEditor } from "../../components/AllowanceEditor";
 
 interface ChildRow {
   id: string;
@@ -88,6 +89,7 @@ export function ChildrenManage() {
                 − Pièces
               </button>
             </div>
+            <AllowanceEditor childId={child.id} childName={child.displayName} />
             <VaultRuleEditor childId={child.id} childName={child.displayName} />
             <PedagogyEditor childId={child.id} initial={child.pedagogyLevel ?? "AUTO"} ageBand={child.ageBand} />
             <InvestSettingsEditor childId={child.id} />

@@ -85,3 +85,4 @@
   .celebration *,
   .celebration-rays { animation: none !important; }
 }
+.celebration-gift { margin: 0; color: #8f5b24; font-weight: 800; }

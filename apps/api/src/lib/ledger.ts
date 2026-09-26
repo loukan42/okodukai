@@ -4,7 +4,7 @@ import { prisma } from "./prisma.js";
 type Tx = Prisma.TransactionClient;
 
 /** Types dont le montant s'applique au solde disponible (bourse). */
-const AVAILABLE_CREDIT: WalletTransactionType[] = ["QUEST_REWARD", "PARENT_BONUS", "REWARD_REFUND", "SAVINGS_UNLOCK"];
+const AVAILABLE_CREDIT: WalletTransactionType[] = ["QUEST_REWARD", "PARENT_BONUS", "REWARD_REFUND", "SAVINGS_UNLOCK", "ALLOWANCE", "GIFT"];
 const AVAILABLE_DEBIT: WalletTransactionType[] = ["REWARD_PURCHASE", "SAVINGS_LOCK"];
 
 /** Types dont le montant s'applique au coffre (épargne). */
@@ -38,6 +38,8 @@ export interface RecordTransactionInput {
    * `PARENT_ADJUSTMENT` peut retirer des pièces : préciser explicitement le sens.
    */
   direction?: "credit" | "debit";
+  /** Date de la ligne (argent de poche rattrapé : la date où il était dû). Par défaut : maintenant. */
+  createdAt?: Date;
 }
 
 /**
@@ -88,6 +90,7 @@ export async function recordWalletTransaction(tx: Tx, input: RecordTransactionIn
       sourceType: input.sourceType,
       sourceId: input.sourceId,
       reason: input.reason,
+      ...(input.createdAt ? { createdAt: input.createdAt } : {}),
     },
   });
 }

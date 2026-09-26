@@ -11,7 +11,7 @@ interface Notification {
   id: string;
   type: string;
   readAt: string | null;
-  payload: { questTitle?: string; rewardCoins?: number; rewardXp?: number; boosters?: number };
+  payload: { questTitle?: string; rewardCoins?: number; rewardXp?: number; boosters?: number; amount?: number; reason?: string };
 }
 
 const plural = (n: number, one: string, many: string) => (n > 1 ? many : one);
@@ -35,7 +35,7 @@ export function QuestRewardCelebration() {
       .get<{ notifications: Notification[] }>("/notifications")
       .then(({ notifications }) => {
         // Seules les notifications qui portent leurs montants (écrites au crédit) sont fêtées.
-        if (!cancelled) setItems(notifications.filter((n) => n.type === "quest_validee" && !n.readAt && typeof n.payload.rewardCoins === "number"));
+        if (!cancelled) setItems(notifications.filter((n) => !n.readAt && ((n.type === "quest_validee" && typeof n.payload.rewardCoins === "number") || n.type === "gift")));
       })
       .catch(() => {
         /* la fête attendra la prochaine visite */
@@ -45,7 +45,9 @@ export function QuestRewardCelebration() {
     };
   }, []);
 
-  const coins = items.reduce((sum, n) => sum + (n.payload.rewardCoins ?? 0), 0);
+  const quests = items.filter((n) => n.type === "quest_validee");
+  const gifts = items.filter((n) => n.type === "gift");
+  const coins = items.reduce((sum, n) => sum + (n.payload.rewardCoins ?? n.payload.amount ?? 0), 0);
   const xp = items.reduce((sum, n) => sum + (n.payload.rewardXp ?? 0), 0);
   const boosters = items.reduce((sum, n) => sum + (n.payload.boosters ?? 0), 0);
 
@@ -83,7 +85,15 @@ export function QuestRewardCelebration() {
   }
 
   if (!open) return null;
-  const titles = items.map((n) => n.payload.questTitle).filter(Boolean) as string[];
+  const titles = quests.map((n) => n.payload.questTitle).filter(Boolean) as string[];
+  const heading =
+    quests.length === 0
+      ? gifts.length === 1
+        ? "Un cadeau pour toi !"
+        : `${gifts.length} cadeaux pour toi !`
+      : quests.length === 1
+        ? "Quête validée !"
+        : `${quests.length} quêtes validées !`;
 
   return createPortal(
     <div className="celebration-backdrop">
@@ -91,12 +101,17 @@ export function QuestRewardCelebration() {
         <span className="celebration-rays" aria-hidden="true" />
         <ObjectBadge />
         <h2 id="celebration-title" className="celebration-title">
-          {items.length === 1 ? "Quête validée !" : `${items.length} quêtes validées !`}
+          {heading}
         </h2>
         <p className="celebration-quests">
           {titles.slice(0, 3).join(" · ")}
           {titles.length > 3 ? ` et ${titles.length - 3} ${plural(titles.length - 3, "autre", "autres")}` : ""}
         </p>
+        {gifts.map((g) => (
+          <p key={g.id} className="celebration-gift">
+            Cadeau : {g.payload.reason}
+          </p>
+        ))}
         <ul className="celebration-rewards">
           {coins > 0 && (
             <li style={{ "--i": 0 } as React.CSSProperties}>

@@ -7,6 +7,7 @@ import { attachSession, requireParent, parentSession } from "../middleware/requi
 import { getBalances, recordWalletTransaction, InsufficientFundsError } from "../lib/ledger.js";
 import { levelFromTotalXp } from "../lib/levels.js";
 import { newIdempotencyKey } from "../lib/boosters.js";
+import { applyAllowance } from "../lib/allowance.js";
 
 export const householdRouter = Router();
 householdRouter.use(attachSession, requireParent);
@@ -83,6 +84,7 @@ householdRouter.get("/children", async (req, res) => {
 
   const withBalances = await Promise.all(
     children.map(async (child) => {
+      await applyAllowance(child.id);
       const wallet = await prisma.wallet.findUnique({ where: { childId: child.id } });
       const balances = wallet ? await getBalances(prisma, wallet.id) : { available: 0, vault: 0 };
       return {

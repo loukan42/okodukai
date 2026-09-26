@@ -1680,3 +1680,25 @@
 .money-goal-order button { min-height: 40px; padding: 0 12px; border: 1px solid var(--parchment-line); border-radius: 10px; color: var(--ink-soft); background: var(--surface-raised); font: 700 13px var(--font-interface); cursor: pointer; }
 .money-goal-order button:disabled { opacity: 0.4; cursor: default; }
 .money-goal-rewards { display: grid; gap: 8px; margin-top: 6px; }
+
+/* Argent de poche et cadeaux (parent). */
+.allowance-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.allowance-row label { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+.allowance-row input[type="number"] { width: 90px; }
+.allowance-row input:not([type]) { flex: 1; min-width: 180px; }
+.allowance-gift { display: grid; gap: 8px; margin-top: 10px; padding-top: 12px; border-top: 1px dashed var(--parchment-line); }
+.allowance-gift > label { font-weight: 800; }
+.allowance-row input,
+.allowance-row select,
+.vault-rule-toggle input[type="number"] {
+  min-height: 44px;
+  border: 1.5px solid var(--parchment-line);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font: 600 16px var(--font-interface);
+  background: var(--surface);
+  color: var(--ink);
+}
+.allowance-row input:focus,
+.allowance-row select:focus,
+.vault-rule-toggle input[type="number"]:focus { outline: 2px solid var(--sky); outline-offset: 1px; }
