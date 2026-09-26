@@ -1639,3 +1639,37 @@
     transform: translateY(0) scale(1);
   }
 }
+
+/* Lanternes de la vallée : éteintes au repos, elles s'allument une à une quand un bilan attend. */
+.observatory-lanterns { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.observatory-lanterns i {
+  position: absolute;
+  width: 7px;
+  height: 10px;
+  border-radius: 3px 3px 4px 4px;
+  background: #6e5a3a;
+  opacity: 0.55;
+  transition: background 400ms ease, box-shadow 400ms ease, opacity 400ms ease;
+}
+.observatory-lanterns i:nth-child(1) { right: 38%; bottom: 22%; }
+.observatory-lanterns i:nth-child(2) { right: 29%; bottom: 34%; }
+.observatory-lanterns i:nth-child(3) { right: 20%; bottom: 18%; }
+.observatory-lanterns i:nth-child(4) { right: 12%; bottom: 40%; }
+.observatory-lanterns i:nth-child(5) { right: 5%; bottom: 26%; }
+.observatory-lanterns.is-lit i { animation: lantern-on 700ms var(--ease-out) both, lantern-flicker 2.8s 900ms ease-in-out infinite; }
+.observatory-lanterns.is-lit i:nth-child(2) { animation-delay: 180ms, 1080ms; }
+.observatory-lanterns.is-lit i:nth-child(3) { animation-delay: 360ms, 1260ms; }
+.observatory-lanterns.is-lit i:nth-child(4) { animation-delay: 540ms, 1440ms; }
+.observatory-lanterns.is-lit i:nth-child(5) { animation-delay: 720ms, 1620ms; }
+@keyframes lantern-on {
+  from { opacity: 0.55; background: #6e5a3a; box-shadow: none; }
+  to { opacity: 1; background: #ffd98a; box-shadow: 0 0 10px 3px rgba(255, 196, 92, 0.75), 0 0 28px 8px rgba(255, 170, 60, 0.3); }
+}
+@keyframes lantern-flicker {
+  0%, 100% { opacity: 1; background: #ffd98a; box-shadow: 0 0 10px 3px rgba(255, 196, 92, 0.75), 0 0 28px 8px rgba(255, 170, 60, 0.3); }
+  50% { opacity: 0.85; background: #ffcf73; box-shadow: 0 0 7px 2px rgba(255, 196, 92, 0.6), 0 0 20px 6px rgba(255, 170, 60, 0.22); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .observatory-lanterns.is-lit i { animation: none; opacity: 1; background: #ffd98a; box-shadow: 0 0 10px 3px rgba(255, 196, 92, 0.75); }
+}
+@media (max-width: 600px) { .observatory-lanterns { inset: 0 0 52% 30%; } }

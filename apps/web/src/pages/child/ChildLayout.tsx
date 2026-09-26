@@ -6,6 +6,7 @@ import { Avatar } from "../../components/Avatar";
 import { GameIcon, type GameIconName } from "../../components/GameIcon";
 import { useDialogFocus } from "../../lib/useDialogFocus";
 import { Logo } from "../../art/Logo";
+import { QuestRewardCelebration } from "../../components/QuestRewardCelebration";
 
 const navigation: { to: string; label: string; icon: GameIconName; end?: boolean }[] = [
   { to: "/enfant", label: "Accueil", icon: "home", end: true },
@@ -51,6 +52,7 @@ export function ChildLayout() {
       <div className="screen-content">
         <Outlet />
       </div>
+      <QuestRewardCelebration />
 
       <nav className="child-nav" aria-label="Navigation enfant">
         {navigation.map((item) => <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => (isActive ? "active" : "")}>

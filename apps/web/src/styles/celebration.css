@@ -1,0 +1,87 @@
+/* Fête des quêtes validées : parchemin, rayons dorés, récompenses qui arrivent une à une. */
+.celebration-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dialog);
+  display: grid;
+  place-items: center;
+  padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+  background: radial-gradient(circle at 50% 40%, rgba(27, 49, 71, 0.55), rgba(10, 20, 36, 0.78));
+  animation: celebration-fade 280ms ease-out both;
+}
+@keyframes celebration-fade { from { opacity: 0; } }
+
+.celebration {
+  position: relative;
+  width: min(100%, 420px);
+  overflow: hidden;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 26px 22px 22px;
+  border: 2px solid #c9a15a;
+  border-radius: 24px;
+  color: var(--ink);
+  text-align: center;
+  background: radial-gradient(circle at 50% 0%, #fff8e6, #f6ecd2 70%);
+  box-shadow: 0 0 0 6px rgba(255, 248, 230, 0.2), 0 30px 60px rgba(0, 0, 0, 0.35);
+  animation: celebration-in 520ms cubic-bezier(0.34, 1.4, 0.5, 1) both;
+}
+@keyframes celebration-in { from { opacity: 0; transform: translateY(24px) scale(0.92); } }
+.celebration > * { position: relative; }
+.celebration-rays {
+  position: absolute;
+  left: 50%;
+  top: 70px;
+  width: 640px;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  background: repeating-conic-gradient(rgba(233, 184, 84, 0.2) 0deg 8deg, transparent 8deg 20deg);
+  -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 50%);
+  mask-image: radial-gradient(circle, #000 0%, transparent 50%);
+  animation: celebration-spin 30s linear infinite;
+}
+@keyframes celebration-spin { to { transform: rotate(360deg); } }
+.celebration-badge img { width: 96px; height: 96px; filter: drop-shadow(0 10px 12px rgba(80, 50, 10, 0.3)); animation: celebration-badge 700ms 120ms cubic-bezier(0.34, 1.6, 0.5, 1) both; }
+@keyframes celebration-badge { from { opacity: 0; transform: scale(0.4) rotate(-14deg); } }
+.celebration-title {
+  margin: 0;
+  font: 900 clamp(28px, 8vw, 36px) / 1.05 var(--font-display);
+  font-variation-settings: "SOFT" 100, "opsz" 144;
+  color: #b8741d;
+  background: linear-gradient(180deg, #e9a93a, #9b5e14);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.celebration-quests { margin: 0; max-width: 34ch; color: var(--ink-soft); font-size: 15px; font-weight: 700; line-height: 1.4; }
+.celebration-rewards { width: 100%; margin: 6px 0 4px; padding: 0; list-style: none; display: grid; gap: 8px; }
+.celebration-rewards li {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  border: 1px solid #dcc596;
+  border-radius: 16px;
+  background: rgba(255, 252, 243, 0.85);
+  font-size: 16px;
+  font-weight: 700;
+  animation: celebration-reward 460ms calc(380ms + var(--i) * 170ms) cubic-bezier(0.34, 1.4, 0.5, 1) both;
+}
+.celebration-rewards strong { font: 900 22px var(--font-display); color: var(--ink); }
+@keyframes celebration-reward { from { opacity: 0; transform: translateX(-18px) scale(0.94); } }
+.celebration-coin,
+.celebration-xp { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; }
+.celebration-coin { color: #8a5a12; background: radial-gradient(circle at 35% 30%, #ffe9a8, #e2a93c); box-shadow: inset 0 -2px 0 rgba(120, 70, 10, 0.35); }
+.celebration-xp { color: #2f5f7c; background: radial-gradient(circle at 35% 30%, #e3f1fb, #a8cde6); }
+.celebration-pack { width: 40px; flex-shrink: 0; margin: -6px 0; }
+.celebration-actions { width: 100%; display: grid; gap: 8px; margin-top: 4px; }
+.celebration-actions .btn { min-height: 50px; font-size: 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .celebration-backdrop,
+  .celebration,
+  .celebration *,
+  .celebration-rays { animation: none !important; }
+}

@@ -28,9 +28,15 @@ import { ObjectArt } from "../../../art/ObjectArt";
 
 const RISKS: Record<SupportCode, number> = { SECURISE: 1, PRETER: 2, MONDE: 4, ENTREPRISES: 5 };
 
-function ObservatoryHeader({ title, subtitle }: { title: string; subtitle: string }) {
+/** En-tête de l'observatoire. `lit` : un bilan attend, les lanternes de la vallée s'allument une à une. */
+function ObservatoryHeader({ title, subtitle, lit = false }: { title: string; subtitle: string; lit?: boolean }) {
   return (
     <header className="observatory-head">
+      <span className={`observatory-lanterns${lit ? " is-lit" : ""}`} aria-hidden="true">
+        {Array.from({ length: 5 }, (_, i) => (
+          <i key={i} />
+        ))}
+      </span>
       <ObjectArt name="coin-sprout" size={96} />
       <div>
         <p className="scene-kicker">L'observatoire</p>
@@ -288,6 +294,7 @@ function Observatory({ state, reload }: { state: InvestState; reload: () => Prom
     <div className="money-page">
       <ObservatoryHeader
         title="Mes placements école"
+        lit={run.unseen > 0}
         subtitle={
           finished
             ? "Ta partie est terminée."

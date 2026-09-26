@@ -209,7 +209,12 @@ questsRouter.post(
           audience: "CHILD",
           childId: completion.childId,
           type: `quest_${req.body.decision.toLowerCase()}`,
-          payload: { questId: completion.quest.id, questTitle: completion.quest.title },
+          // Montants repris tels que crédités : l'écran de fête de l'enfant les affiche sans rien recalculer.
+          payload: {
+            questId: completion.quest.id,
+            questTitle: completion.quest.title,
+            ...(req.body.decision === "VALIDEE" ? { rewardCoins: completion.quest.rewardCoins, rewardXp: completion.quest.rewardXp, boosters: 1 } : {}),
+          },
         },
       });
 

@@ -26,5 +26,7 @@ code du dépôt (aucune banque d'images, aucun modèle génératif externe, aucu
   gitignorées (voir `CLAUDE.md`). Les anciens identifiants d'avatars restent lisibles : `Avatar.tsx` retombe sur un
   portrait du roster si le PNG manque.
 - `apps/web/src/assets/cards/card-{single,booster}.webp` : visuels du système de cartes repris de *Héros de la
-  classe* (voir `CLAUDE.md`), convertis en WebP 640 px (2,5 Mo → 260-280 Ko chacun). Un booster propre à
-  Okodukai (sans texte anglais) reste à proposer au propriétaire du produit.
+  classe* (voir `CLAUDE.md`), convertis en WebP 640 px (2,5 Mo → 260-280 Ko chacun). Le sachet est habillé
+  Okodukai par `components/booster/BoosterPack.tsx` : logo sur l'ancien titre anglais, ruban au nom de l'univers
+  sur le crâne. Décision du 26/09 : le propriétaire préfère cette matière dorée à un sachet vectoriel. Le dos de
+  carte d'origine n'est plus affiché par l'ouverture, qui dessine son propre dos en SVG.
