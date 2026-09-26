@@ -133,12 +133,25 @@ describe.skipIf(!process.env.DATABASE_URL)("placements école : moteur, relevés
       await post(`/child/invest/statements/${last}/seen`, {});
       expect(await xp()).toBe(40);
 
+      // Bilan final : frise des décisions ; pas de « autres choix » en 8-9.
+      const report = ((await (await fetch(`${base}/child/invest`, { headers: kid })).json()) as { run: { id: string; finalReport: { years: number; decisions: unknown[]; alternatives: unknown } } }).run;
+      expect(report.finalReport).toMatchObject({ years: 5, alternatives: null });
+      expect(report.finalReport.decisions.length).toBeGreaterThanOrEqual(1);
+
       // Nouvelle partie : l'XP de première répartition n'est pas redonnée.
       await post("/child/invest/new-game", {});
+      const games = (await (await fetch(`${base}/child/invest/games`, { headers: kid })).json()) as { games: { id: string; story: string | null; years: number }[] };
+      expect(games.games).toHaveLength(1);
+      expect(games.games[0]).toMatchObject({ id: report.id, years: 5 });
+      expect(games.games[0].story).toEqual(expect.any(String));
+      expect((await fetch(`${base}/child/invest/games/${report.id}`, { headers: kid })).status).toBe(200);
       expect((await get()).gate).toBe("onboarding");
       expect(await post("/child/invest/start", { allocation, idempotencyKey: randomUUID() })).toMatchObject({ status: 201, body: { xpAwarded: 0 } });
       expect(await xp()).toBe(40);
       expect(await prisma.xpTransaction.count({ where: { childId: child.id, sourceType: "FINANCE_LEARNING" } })).toBe(2);
+      // La partie en cours n'a pas de bilan final consultable.
+      const current = ((await (await fetch(`${base}/child/invest`, { headers: kid })).json()) as { run: { id: string } }).run;
+      expect((await fetch(`${base}/child/invest/games/${current.id}`, { headers: kid })).status).toBe(409);
     } finally {
       await new Promise<void>((resolve) => server.close(() => resolve()));
       await prisma.household.delete({ where: { id: household.id } });

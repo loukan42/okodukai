@@ -24,6 +24,7 @@ import { MoneyVault } from "./pages/child/money/MoneyVault";
 import { MoneyHistory } from "./pages/child/money/MoneyHistory";
 import { Invest } from "./pages/child/money/Invest";
 import { SupportSheet } from "./pages/child/money/SupportSheet";
+import { GameArchive, GamesArchive } from "./pages/child/money/GamesArchive";
 import { Orchard } from "./pages/child/money/Orchard";
 import { Learn } from "./pages/child/Learn";
 import { DevBar } from "./components/DevBar";
@@ -101,6 +102,8 @@ export default function App() {
           <Route path="investir/bibliotheque" element={<Learn />} />
           <Route path="investir/verger" element={<Orchard />} />
           <Route path="investir/support/:code" element={<SupportSheet />} />
+          <Route path="investir/parties" element={<GamesArchive />} />
+          <Route path="investir/parties/:id" element={<GameArchive />} />
         </Route>
         <Route path="coffre" element={<Navigate to="/enfant/argent/coffre" replace />} />
         <Route path="apprendre" element={<Navigate to="/enfant/argent/investir/bibliotheque" replace />} />

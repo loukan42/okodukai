@@ -100,3 +100,27 @@
 .support-curve { width: 100%; height: auto; }
 .support-curve-base { stroke: var(--parchment-line); stroke-dasharray: 4 4; }
 .support-curve-line { fill: none; stroke: var(--sky); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+
+/* Bilan final (E16) et Mes parties. */
+.game-end h3 { margin: 12px 0 4px; font-size: 17px; }
+.game-timeline { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.game-timeline li { display: grid; grid-template-columns: 92px 1fr; gap: 10px; padding: 8px 12px; border-left: 3px solid #d5c29a; border-radius: 8px; background: #fffaf0; line-height: 1.4; }
+.game-timeline-when { font-weight: 800; color: #8f5b24; }
+.game-alternatives { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.game-alternatives li { display: grid; grid-template-columns: minmax(120px, 1fr) 2fr auto; gap: 10px; align-items: center; font-size: 14px; }
+.game-alternatives-name { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
+.game-alternatives-bar { height: 10px; border-radius: 99px; background: var(--parchment-dim); overflow: hidden; }
+.game-alternatives-bar i { display: block; height: 100%; border-radius: inherit; background: #9fb7c8; }
+.game-alternatives-mine .game-alternatives-bar i { background: var(--sky); }
+.game-alternatives-mine { font-weight: 800; }
+.game-end-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.games-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.games-list a { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 14px 16px; border: 1px solid var(--parchment-line); border-radius: 16px; color: inherit; text-decoration: none; background: var(--surface-raised); }
+.games-list a > svg { grid-column: 2; grid-row: 1 / span 3; align-self: center; color: var(--ink-faint); }
+.games-list strong { font: 700 17px var(--font-display); }
+.games-list span, .games-list small { color: var(--ink-soft); }
+@media (max-width: 480px) { .game-alternatives li { grid-template-columns: 1fr auto; } .game-alternatives-bar { grid-column: 1 / -1; grid-row: 2; } .game-timeline li { grid-template-columns: 1fr; gap: 2px; } }
+.game-end-figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin: 0; }
+.game-end-figures div { padding: 10px 12px; border-radius: 12px; background: #fffaf0; border: 1px solid #eadfc4; }
+.game-end-figures dt { font-size: 12px; font-weight: 800; color: var(--ink-faint); }
+.game-end-figures dd { margin: 2px 0 0; font: 800 18px var(--font-display); color: var(--ink); }

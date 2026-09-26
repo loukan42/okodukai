@@ -27,6 +27,7 @@ import { XpEarned } from "../../../components/invest/XpEarned";
 import { FinanceQuestion } from "../../../components/finance/FinanceQuestion";
 import { FinanceTip } from "../../../components/finance/FinanceTip";
 import { GameIcon } from "../../../components/GameIcon";
+import { GameEnd } from "../../../components/invest/GameEnd";
 import { ObjectArt } from "../../../art/ObjectArt";
 
 const RISKS: Record<SupportCode, number> = { SECURISE: 1, PRETER: 2, MONDE: 4, ENTREPRISES: 5 };
@@ -399,15 +400,7 @@ function Observatory({ state, reload }: { state: InvestState; reload: () => Prom
       {run.pendingOperations > 0 && <p className="money-banner">Changement de répartition prévu au prochain relevé, {next}.</p>}
 
       {finished ? (
-        <section className="statement">
-          <h2>Ta partie est terminée</h2>
-          {run.scenarioRevealed && <p className="statement-main">Tu viens de vivre : {run.scenarioRevealed}.</p>}
-          <p>Personne ne pouvait savoir à l'avance comment le marché allait bouger. Une nouvelle partie te fera vivre une autre situation.</p>
-          <XpEarned amount={run.completionXp} reason="Partie terminée" />
-          <button className="btn btn-quest" onClick={() => void newGame()}>
-            Commencer une nouvelle partie
-          </button>
-        </section>
+        <GameEnd run={run} young={young} onNewGame={() => void newGame()} />
       ) : rebalancing ? (
         <section className="invest-step">
           <h2>Changer ma répartition</h2>

@@ -89,6 +89,13 @@ export interface InvestRun {
   scenarioRevealed: string | null;
   /** XP reçue pour le bilan final lu (0 avant). */
   completionXp: number;
+  /** Bilan final (E16), seulement quand la partie est terminée. */
+  finalReport: null | {
+    years: number;
+    decisions: { step: number; type: string; amount: number | null; amountPerMonth: number | null; allocation: Record<SupportCode, number> | null }[];
+    alternatives: Record<SupportCode, number> | null;
+    marketListEnd: number;
+  };
 }
 
 export interface InvestState {

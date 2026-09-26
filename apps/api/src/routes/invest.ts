@@ -16,6 +16,7 @@ import {
   financeXpKey,
   investSettingsFor,
   runView,
+  scenarioLabel,
   supportsFor,
   syncRun,
   validateAllocation,
@@ -289,4 +290,28 @@ investRouter.get("/child/invest/supports/:code", requireChild, async (req, res) 
     curve: young ? [] : prices.slice(0, revealed + 1).map((value, step) => ({ step, value })),
     managementRate: young ? null : managementRate,
   });
+});
+
+// ---------------------------------------------------------------------------
+// Mes parties (INVESTMENT_UX E16) : l'archive des parties terminées, consultables une à une.
+// Aucune comparaison de valeur entre parties : la liste ne montre que l'histoire et les dates.
+// ---------------------------------------------------------------------------
+
+investRouter.get("/child/invest/games", requireChild, async (req, res) => {
+  const { childId } = childSession(req);
+  const runs = await prisma.simulationRun.findMany({ where: { childId, OR: [{ status: { in: ["TERMINEE", "ARRETEE"] } }, { finishedAt: { not: null } }] }, orderBy: { startedAt: "desc" } });
+  res.json({
+    games: runs.map((r) => ({ id: r.id, mode: r.mode, story: scenarioLabel(r.scenario), years: r.horizonMonths / 12, startedAt: r.startedAt, finishedAt: r.finishedAt })),
+  });
+});
+
+investRouter.get("/child/invest/games/:id", requireChild, async (req, res) => {
+  const { childId } = childSession(req);
+  const run = await prisma.simulationRun.findUnique({ where: { id: req.params.id } });
+  if (!run || run.childId !== childId) return res.status(404).json({ error: "Partie introuvable" });
+  const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId } });
+  const view = await runView(prisma, run, pedagogyBand(child));
+  // Une partie en cours n'a pas de bilan final : rien du futur ne sort d'ici.
+  if (view.status !== "TERMINEE") return res.status(409).json({ error: "Cette partie n'est pas terminée." });
+  res.json({ run: view });
 });

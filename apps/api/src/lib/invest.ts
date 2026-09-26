@@ -10,6 +10,7 @@ import { prisma } from "./prisma.js";
 import {
   ENGINE_VERSION,
   EXAMPLE_CONTRACT_FEES,
+  alternativeOutcomes,
   NO_FEES,
   PARAMETERS_FINGERPRINT,
   RHYTHMS,
@@ -66,6 +67,9 @@ const SCENARIO_LABEL: Record<ScenarioCode, string> = {
   MARCHE_FAVORABLE: "un marché favorable",
   REALISTE: "un marché réaliste, sans scénario imposé",
 };
+
+/** Le nom lisible d'une histoire de marché, pour une partie terminée seulement. */
+export const scenarioLabel = (code: string) => SCENARIO_LABEL[code as ScenarioCode] ?? null;
 
 export async function investSettingsFor(client: Client, childId: string, ageBand: AgeBand) {
   const stored = await client.investSettings.findUnique({ where: { childId } });
@@ -268,6 +272,31 @@ export async function runView(client: Client, run: SimulationRun, ageBand: AgeBa
     scenarioRevealed: finished ? SCENARIO_LABEL[run.scenario as ScenarioCode] ?? null : null,
     /** XP reçue pour avoir lu le bilan final (0 tant qu'il n'est pas lu). */
     completionXp: completionXp?.amount ?? 0,
+    finalReport: finished ? finalReport(run, operations, ageBand) : null,
+  };
+}
+
+/**
+ * Bilan final (INVESTMENT_UX E16), calculé seulement une fois la partie terminée : frise des décisions,
+ * prix de la liste du marché, et en 10-12 « Et avec d'autres choix ? » (mêmes versements, 100 % sur un
+ * seul support, sans arbitrage). Jamais montré avant la fin, jamais pour classer ou culpabiliser.
+ */
+function finalReport(run: SimulationRun, ops: { step: number; type: string; amount: number | null; amountPerMonth: number | null; allocation: Prisma.JsonValue }[], ageBand: AgeBand) {
+  const market = run.marketPath as unknown as MarketPath;
+  const alternatives =
+    ageBand === "AGE_10_12"
+      ? alternativeOutcomes({
+          market,
+          operations: operationsOf(ops),
+          fees: run.fees as unknown as FeeSchedule,
+          ...(run.contributionCap !== null ? { contributionCap: run.contributionCap } : {}),
+        })
+      : null;
+  return {
+    years: run.horizonMonths / 12,
+    decisions: ops.map((o) => ({ step: o.step, type: o.type, amount: o.amount, amountPerMonth: o.amountPerMonth, allocation: (o.allocation ?? null) as Record<SupportCode, number> | null })),
+    alternatives,
+    marketListEnd: market.priceIndex[Math.min(run.horizonMonths, market.priceIndex.length - 1)],
   };
 }
 
