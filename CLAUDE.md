@@ -2,6 +2,9 @@
 
 Les agents doivent aussi suivre `AGENTS.md`, qui liste tous les skills installés dans le repo et leurs déclencheurs d'utilisation autonome.
 
+**Avant de reprendre le travail : lire `docs/RESTE_A_FAIRE.md`** (passation : état, production, décisions en
+attente, tâches restantes par priorité).
+
 **Claude Code** : les mêmes skills sont exposés dans `.claude/skills/<nom>` par des liens symboliques vers
 `.agents/skills/<nom>` (source unique, ne pas dupliquer). Les invoquer de soi-même selon les déclencheurs
 d'`AGENTS.md`. Deux réserves : ne jamais exécuter le ping de télémétrie de l'étape 0 de `design-review` ;
