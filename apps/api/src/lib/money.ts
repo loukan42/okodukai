@@ -145,6 +145,8 @@ export interface GoalView {
   id: string;
   title: string;
   targetCoins: number;
+  /** Récompense de la boutique visée par cet objectif, s'il y en a une. */
+  rewardId: string | null;
   /** Part de Mon coffre attribuée à cet objectif (remplissage dans l'ordre). */
   present: number;
   missing: number;
@@ -153,12 +155,12 @@ export interface GoalView {
 }
 
 /** Mon coffre remplit les objectifs l'un après l'autre, dans leur ordre. */
-export function allocateGoals(goals: { id: string; title: string; targetCoins: number; achievedAt: Date | null }[], vault: number): GoalView[] {
+export function allocateGoals(goals: { id: string; title: string; targetCoins: number; rewardId?: string | null; achievedAt: Date | null }[], vault: number): GoalView[] {
   let left = vault;
   return goals.map((g) => {
     const present = Math.max(0, Math.min(g.targetCoins, left));
     left -= present;
-    return { id: g.id, title: g.title, targetCoins: g.targetCoins, present, missing: g.targetCoins - present, reached: present >= g.targetCoins, achievedAt: g.achievedAt?.toISOString() ?? null };
+    return { id: g.id, title: g.title, targetCoins: g.targetCoins, rewardId: g.rewardId ?? null, present, missing: g.targetCoins - present, reached: present >= g.targetCoins, achievedAt: g.achievedAt?.toISOString() ?? null };
   });
 }
 

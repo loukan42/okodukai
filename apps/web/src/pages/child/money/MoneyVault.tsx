@@ -57,6 +57,14 @@ export function MoneyVault() {
   const [goalTitle, setGoalTitle] = useState("");
   const [goalTarget, setGoalTarget] = useState(50);
   const [goalError, setGoalError] = useState<string | null>(null);
+  const [rewards, setRewards] = useState<{ id: string; title: string; priceCoins: number }[]>([]);
+
+  useEffect(() => {
+    api
+      .get<{ rewards: { id: string; title: string; priceCoins: number }[] }>("/child/rewards")
+      .then((r) => setRewards(r.rewards))
+      .catch(() => setRewards([]));
+  }, []);
 
   // Nouvelle intention dès que le montant ou le sens change.
   useEffect(() => {
@@ -116,6 +124,28 @@ export function MoneyVault() {
     } catch (err) {
       setGoalError(err instanceof ApiError && err.status !== 0 ? err.message : "L'objectif n'a pas pu être créé. Réessaie.");
     }
+  }
+
+  /** Objectif pris dans la boutique : le serveur reprend le titre et le prix de la récompense. */
+  async function goalFromReward(rewardId: string) {
+    setGoalError(null);
+    try {
+      await api.post("/child/savings/goals", { title: "récompense", targetCoins: 1, rewardId });
+      await reload();
+    } catch (err) {
+      setGoalError(err instanceof ApiError && err.status !== 0 ? err.message : "L'objectif n'a pas pu être créé. Réessaie.");
+    }
+  }
+
+  /** Monter ou descendre un objectif : Mon coffre les remplit dans ce nouvel ordre. */
+  async function reorder(goalId: string, delta: -1 | 1) {
+    const ids = data!.goals.map((g) => g.id);
+    const i = ids.indexOf(goalId);
+    const j = i + delta;
+    if (j < 0 || j >= ids.length) return;
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+    await api.post("/child/savings/goals/order", { goalIds: ids }).catch(() => undefined);
+    await reload();
   }
 
   async function archive(goalId: string) {
@@ -227,10 +257,13 @@ export function MoneyVault() {
         </div>
         {data.goals.length > 1 && <p className="money-hint">Mon coffre remplit tes objectifs dans l'ordre : le premier d'abord, puis le suivant.</p>}
         <ol className="money-goals">
-          {data.goals.map((goal) => (
+          {data.goals.map((goal, index) => (
             <li key={goal.id} className={`money-goal${goal.reached ? " money-goal--reached" : ""}`}>
               <div className="money-goal-head">
-                <strong>{goal.title}</strong>
+                <strong>
+                  {goal.title}
+                  {goal.rewardId && <span className="money-goal-tag">Boutique</span>}
+                </strong>
                 <span>
                   {goal.present} sur {goal.targetCoins}
                 </span>
@@ -238,9 +271,21 @@ export function MoneyVault() {
               <ProgressBar value={goal.present} max={goal.targetCoins} />
               <p>
                 {goal.reached
-                  ? "Objectif atteint. Pour utiliser ces pièces, remets-les d'abord sur Mon compte."
+                  ? goal.rewardId
+                    ? `Objectif atteint. Remets ces pièces sur Mon compte, puis demande « ${goal.title} » à la boutique.`
+                    : "Objectif atteint. Pour utiliser ces pièces, remets-les d'abord sur Mon compte."
                   : `Il te manque ${pieces(goal.missing)}.`}
               </p>
+              {data.goals.length > 1 && (
+                <div className="money-goal-order">
+                  <button type="button" onClick={() => void reorder(goal.id, -1)} disabled={index === 0} aria-label={`Monter « ${goal.title} »`}>
+                    ↑ Avant
+                  </button>
+                  <button type="button" onClick={() => void reorder(goal.id, 1)} disabled={index === data.goals.length - 1} aria-label={`Descendre « ${goal.title} »`}>
+                    ↓ Après
+                  </button>
+                </div>
+              )}
               <button type="button" className="money-goal-archive" onClick={() => void archive(goal.id)}>
                 {goal.reached ? "C'est fait, ranger cet objectif" : "Ranger cet objectif"}
               </button>
@@ -278,6 +323,22 @@ export function MoneyVault() {
             <button type="submit" className="btn btn-primary btn-block" disabled={!goalTitle.trim()}>
               Enregistrer l'objectif
             </button>
+            {rewards.some((r) => !data.goals.some((g) => g.rewardId === r.id)) && (
+              <div className="money-goal-rewards">
+                <span className="field-label">Ou vise une récompense de la boutique :</span>
+                <div className="money-chips" role="group" aria-label="Récompenses de la boutique">
+                  {rewards
+                    .filter((r) => !data.goals.some((g) => g.rewardId === r.id))
+                    .sort((a, b) => b.priceCoins - a.priceCoins)
+                    .slice(0, 4)
+                    .map((r) => (
+                      <button key={r.id} type="button" className="money-chip" onClick={() => void goalFromReward(r.id)}>
+                        {r.title} · {r.priceCoins}
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
           </form>
         )}
       </section>

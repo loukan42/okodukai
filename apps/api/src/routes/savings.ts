@@ -244,9 +244,23 @@ savingsRouter.post("/child/savings/goals", requireChild, validateBody(createGoal
   if (goals.length >= MAX_ACTIVE_GOALS) {
     return res.status(409).json({ error: `Tu as déjà ${MAX_ACTIVE_GOALS} objectifs. Range-en un pour en créer un nouveau.` });
   }
+  // Objectif relié à une récompense : seulement une récompense active de ce foyer, visible par cet
+  // enfant ; son titre et son prix font foi (le client ne les fixe pas).
+  let fromReward: { id: string; title: string; priceCoins: number } | null = null;
+  if (req.body.rewardId) {
+    const reward = await prisma.reward.findFirst({ where: { id: req.body.rewardId, householdId, active: true } });
+    if (!reward || (reward.allowedChildIds.length > 0 && !reward.allowedChildIds.includes(childId))) return res.status(404).json({ error: "Récompense introuvable" });
+    fromReward = reward;
+  }
   const goal = await prisma.$transaction(async (tx) => {
     const created = await tx.savingsGoal.create({
-      data: { childId, title: req.body.title, targetCoins: req.body.targetCoins, rewardId: req.body.rewardId, position: (goals.at(-1)?.position ?? -1) + 1 },
+      data: {
+        childId,
+        title: fromReward?.title ?? req.body.title,
+        targetCoins: fromReward?.priceCoins ?? req.body.targetCoins,
+        rewardId: fromReward?.id ?? null,
+        position: (goals.at(-1)?.position ?? -1) + 1,
+      },
     });
     const wallet = await tx.wallet.findUniqueOrThrow({ where: { childId } });
     const ledger = await readLedger(tx, wallet.id);
@@ -260,6 +274,25 @@ savingsRouter.get("/child/savings/goals", requireChild, async (req, res) => {
   const { childId } = childSession(req);
   const goals = await prisma.savingsGoal.findMany({ where: { childId, archivedAt: null }, orderBy: [{ position: "asc" }, { createdAt: "asc" }] });
   res.json({ goals });
+});
+
+const orderSchema = z.object({ goalIds: z.array(z.string().uuid()).min(1).max(20) });
+
+/** Réordonner ses objectifs : Mon coffre les remplit dans ce nouvel ordre. */
+savingsRouter.post("/child/savings/goals/order", requireChild, validateBody(orderSchema), async (req, res) => {
+  const { childId, householdId } = childSession(req);
+  const goals = await activeGoals(prisma, childId);
+  const ids: string[] = req.body.goalIds;
+  if (ids.length !== goals.length || new Set(ids).size !== ids.length || !ids.every((id) => goals.some((g) => g.id === id))) {
+    return res.status(400).json({ error: "L'ordre doit contenir chacun de tes objectifs, une seule fois." });
+  }
+  await prisma.$transaction(async (tx) => {
+    for (const [position, id] of ids.entries()) await tx.savingsGoal.update({ where: { id }, data: { position } });
+    const wallet = await tx.wallet.findUniqueOrThrow({ where: { childId } });
+    const ledger = await readLedger(tx, wallet.id);
+    await syncGoals(tx, childId, householdId, ledger.balances.vault);
+  });
+  res.json({ ok: true });
 });
 
 /** Ranger un objectif (utilisé ou abandonné) : il ne compte plus dans le remplissage. */

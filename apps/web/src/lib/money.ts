@@ -23,6 +23,8 @@ export interface GoalView {
   id: string;
   title: string;
   targetCoins: number;
+  /** Récompense de la boutique visée, s'il y en a une. */
+  rewardId: string | null;
   present: number;
   missing: number;
   reached: boolean;

@@ -1673,3 +1673,10 @@
   .observatory-lanterns.is-lit i { animation: none; opacity: 1; background: #ffd98a; box-shadow: 0 0 10px 3px rgba(255, 196, 92, 0.75); }
 }
 @media (max-width: 600px) { .observatory-lanterns { inset: 0 0 52% 30%; } }
+
+/* Objectifs : récompense visée et ordre de remplissage. */
+.money-goal-tag { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; font: 800 11px var(--font-interface); color: #8f5b24; background: #f4e6c1; vertical-align: middle; }
+.money-goal-order { display: flex; gap: 6px; }
+.money-goal-order button { min-height: 40px; padding: 0 12px; border: 1px solid var(--parchment-line); border-radius: 10px; color: var(--ink-soft); background: var(--surface-raised); font: 700 13px var(--font-interface); cursor: pointer; }
+.money-goal-order button:disabled { opacity: 0.4; cursor: default; }
+.money-goal-rewards { display: grid; gap: 8px; margin-top: 6px; }
