@@ -8,6 +8,8 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      // Une navigation vers /api/* (ex. /api/health) doit atteindre le serveur, pas l'app en cache.
+      workbox: { navigateFallbackDenylist: [/^\/api\//] },
       includeAssets: ["favicon.png"],
       manifest: {
         name: "Okodukai",

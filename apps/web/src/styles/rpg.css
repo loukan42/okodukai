@@ -404,19 +404,6 @@ body { background: var(--parchment); color: var(--ink); }
 @media (max-width:600px) { .parent-nav { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0; padding:0 8px; overflow:visible; } .parent-nav a { text-align:center; padding:10px 3px; font-size:12px; white-space:normal; border-bottom-width:2px; } }
 
 /* Public entry */
-.landing-scene { min-height:100%; display:grid; align-items:center; padding:30px 20px; background:radial-gradient(circle at 78% 44%,#39566a 0%,#243f54 40%,#14293d 75%); color:#fff8e6; }
-.landing-shell { width:min(100%,1120px); margin:auto; display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:45px; }
-.landing-copy { padding:20px 0; }
-.landing-logo { width:min(100%,345px); height:auto; margin-bottom:20px; }
-.landing-copy h1 { font-size:clamp(34px,4vw,55px); line-height:1.08; margin:0 0 18px; color:#fff5da; text-wrap:balance; }
-.landing-copy p { max-width:47ch; color:#e8e7dd; font-size:17px; line-height:1.6; margin:0 0 28px; }
-.landing-actions { max-width:350px; display:grid; gap:10px; }
-.landing-actions .btn-ghost { background:transparent; color:#fff7e5; border-color:#b1a487; }
-.landing-scene-art { position:relative; min-height:540px; border-radius:32px; border:1px solid rgba(233,204,143,.3); background:radial-gradient(circle at 50% 50%,rgba(240,181,74,.22),transparent 30%),repeating-conic-gradient(from 3deg,rgba(239,215,161,.035) 0 5deg,transparent 5deg 18deg),#1b344b; box-shadow:inset 0 0 0 9px #1b344b,inset 0 0 0 10px rgba(233,204,143,.26),0 25px 45px rgba(0,0,0,.2); }
-.landing-coin { position:absolute; top:50%; left:50%; width:250px; height:250px; display:grid; place-items:center; transform:translate(-50%,-50%) rotate(-11deg); border:5px solid #a26621; border-radius:50%; background:linear-gradient(135deg,#fff0af,#d8992f 65%,#ac5b22); color:#774510; box-shadow:inset 0 0 0 11px #e1aa46,inset 0 0 0 14px #fff2bc,0 28px 40px rgba(0,0,0,.42); }
-.landing-feature { position:absolute; min-height:68px; display:flex; align-items:center; gap:9px; border:1px solid #d2b476; border-radius:14px; padding:10px 16px; background:#f6e6c1; color:#243747; box-shadow:0 11px 25px rgba(0,0,0,.28); font-weight:800; }
-.landing-feature--quest { top:13%; left:4%; transform:rotate(-5deg); }.landing-feature--vault { top:20%; right:2%; transform:rotate(5deg); }.landing-feature--collection { bottom:12%; left:21%; transform:rotate(3deg); }
-@media (max-width:760px) { .landing-shell { grid-template-columns:1fr; gap:10px; text-align:center; } .landing-logo { max-width:280px; } .landing-copy p { margin-left:auto; margin-right:auto; } .landing-actions { margin:auto; } .landing-scene-art { min-height:300px; } .landing-coin { width:150px; height:150px; } .landing-coin svg { width:70px; } .landing-feature { font-size:12px; min-height:48px; padding:6px 9px; } .landing-feature svg { width:20px; } }
 
 /* Parent workspace and learning details */
 .parent-manage-page { max-width:900px; margin:0 auto; }

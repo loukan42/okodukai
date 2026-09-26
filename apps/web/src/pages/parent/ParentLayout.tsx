@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { api } from "../../lib/api";
 import { useAuth } from "../../lib/AuthContext";
+import { Logo } from "../../art/Logo";
 
 export function ParentLayout() {
   const { session, refresh } = useAuth();
@@ -18,7 +19,7 @@ export function ParentLayout() {
     <div className="screen parent-screen">
       <div className="parent-topbar">
         <span className="parent-brand">
-          <img src="/logo-full.png" alt="Okodukai" />
+          <Logo />
         </span>
         <div className="row">
           <span className="text-sm" style={{ opacity: 0.8 }}>

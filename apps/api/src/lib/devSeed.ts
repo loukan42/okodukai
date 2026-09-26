@@ -41,7 +41,7 @@ export async function seedDatabase(prisma: PrismaClient) {
   ]);
 
   const household = await prisma.household.create({
-    data: { name: "Famille Martin", currencyName: "Pièces" },
+    data: { name: "Famille Martin", currencyName: "Pièces", onboardingCompletedAt: new Date() },
   });
 
   const sophie = await prisma.user.create({
@@ -71,7 +71,7 @@ export async function seedDatabase(prisma: PrismaClient) {
       householdId: household.id,
       displayName: "Emma",
       ageBand: "AGE_8_9",
-      avatarId: "fille 1.png",
+      avatarId: "aventurier-06",
       pinHash: await argon2.hash("1234"),
     },
   });
@@ -80,7 +80,7 @@ export async function seedDatabase(prisma: PrismaClient) {
       householdId: household.id,
       displayName: "Lucas",
       ageBand: "AGE_10_12",
-      avatarId: "garçon 1.png",
+      avatarId: "aventurier-05",
       pinHash: await argon2.hash("5678"),
     },
   });

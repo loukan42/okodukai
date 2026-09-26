@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { ApiError } from "../lib/api";
 import { Avatar, AVAILABLE_AVATARS } from "./Avatar";
 
 export interface ChildFormValues {
@@ -12,69 +13,90 @@ interface ChildFormProps {
   onSubmit: (values: ChildFormValues) => Promise<void>;
   submitting?: boolean;
   submitLabel?: string;
+  /** Préfixe des identifiants de champs, si le formulaire apparaît deux fois dans une page. */
+  idPrefix?: string;
 }
 
-/** Formulaire d'ajout d'un profil enfant, partagé entre l'onboarding et la gestion des enfants. */
-export function ChildForm({ onSubmit, submitting = false, submitLabel = "Créer le profil" }: ChildFormProps) {
+const AGE_BANDS = [
+  { value: "AGE_8_9", label: "8-9 ans" },
+  { value: "AGE_10_12", label: "10-12 ans" },
+] as const;
+
+/** Formulaire d'ajout d'un profil enfant, partagé entre l'accueil et la gestion des enfants. */
+export function ChildForm({ onSubmit, submitting = false, submitLabel = "Créer le profil", idPrefix = "child" }: ChildFormProps) {
   const [displayName, setDisplayName] = useState("");
-  const [ageBand, setAgeBand] = useState<"AGE_8_9" | "AGE_10_12">("AGE_8_9");
+  const [ageBand, setAgeBand] = useState<ChildFormValues["ageBand"]>("AGE_8_9");
   const [avatarId, setAvatarId] = useState(AVAILABLE_AVATARS[0]);
   const [pin, setPin] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!displayName || pin.length !== 4) return;
-    await onSubmit({ displayName, ageBand, avatarId, pin });
-    setDisplayName("");
-    setAgeBand("AGE_8_9");
-    setAvatarId(AVAILABLE_AVATARS[0]);
-    setPin("");
+    setError(null);
+    if (!displayName.trim()) return setError("Indiquez le prénom de l'enfant.");
+    if (pin.length !== 4) return setError("Le code doit comporter 4 chiffres.");
+    try {
+      await onSubmit({ displayName: displayName.trim(), ageBand, avatarId, pin });
+      setDisplayName("");
+      setAgeBand("AGE_8_9");
+      setAvatarId(AVAILABLE_AVATARS[0]);
+      setPin("");
+    } catch (err) {
+      setError(err instanceof ApiError && err.status !== 0 ? err.message : "Le profil n'a pas pu être créé. Réessayez dans un instant.");
+    }
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="child-form">
+      {error && (
+        <div className="form-error" role="alert">
+          {error}
+        </div>
+      )}
       <div className="field">
-        <label htmlFor="child-name">Prénom</label>
-        <input id="child-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
+        <label htmlFor={`${idPrefix}-name`}>Prénom</label>
+        <input id={`${idPrefix}-name`} value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={30} autoComplete="off" required />
       </div>
-      <div className="field">
-        <label htmlFor="child-age">Tranche d'âge</label>
-        <select
-          id="child-age"
-          value={ageBand}
-          onChange={(e) => setAgeBand(e.target.value as "AGE_8_9" | "AGE_10_12")}
-        >
-          <option value="AGE_8_9">8-9 ans</option>
-          <option value="AGE_10_12">10-12 ans</option>
-        </select>
-      </div>
-      <div className="field">
-        <label id="child-avatar-label">Avatar</label>
-        <div className="row-wrap" role="group" aria-labelledby="child-avatar-label">
-          {AVAILABLE_AVATARS.map((id) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setAvatarId(id)}
-              className={`avatar-pick${id === avatarId ? " avatar-pick--selected" : ""}`}
-              aria-pressed={id === avatarId}
-              aria-label={id.replace(/\.png$/i, "")}
-            >
-              <Avatar avatarId={id} />
-            </button>
+
+      <fieldset className="field choice-field">
+        <legend>Âge</legend>
+        <div className="segmented">
+          {AGE_BANDS.map((band) => (
+            <label key={band.value} className={`segmented-option${ageBand === band.value ? " segmented-option--on" : ""}`}>
+              <input type="radio" name={`${idPrefix}-age`} value={band.value} checked={ageBand === band.value} onChange={() => setAgeBand(band.value)} />
+              {band.label}
+            </label>
           ))}
         </div>
-      </div>
+      </fieldset>
+
+      <fieldset className="field choice-field">
+        <legend>Avatar</legend>
+        <div className="avatar-grid">
+          {AVAILABLE_AVATARS.map((id, i) => (
+            <label key={id} className={`avatar-pick${id === avatarId ? " avatar-pick--selected" : ""}`}>
+              <input type="radio" name={`${idPrefix}-avatar`} value={id} checked={id === avatarId} onChange={() => setAvatarId(id)} aria-label={`Avatar ${i + 1}`} />
+              <Avatar avatarId={id} />
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
       <div className="field">
-        <label htmlFor="child-pin">Code PIN (4 chiffres)</label>
+        <label htmlFor={`${idPrefix}-pin`}>Code à 4 chiffres</label>
         <input
-          id="child-pin"
+          id={`${idPrefix}-pin`}
+          className="pin-input"
           value={pin}
           onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
           inputMode="numeric"
-          placeholder="1234"
+          autoComplete="off"
+          aria-describedby={`${idPrefix}-pin-hint`}
           required
         />
+        <p id={`${idPrefix}-pin-hint`} className="field-hint">
+          L'enfant le tape pour entrer dans son espace.
+        </p>
       </div>
       <button type="submit" className="btn btn-primary btn-block" disabled={submitting}>
         {submitting ? "Création…" : submitLabel}

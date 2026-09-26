@@ -1,7 +1,8 @@
-// En local, le dev server Vite fait un reverse-proxy de /api vers l'API sur :4000
-// (voir vite.config.ts). En production, apps/web et apps/api sont deux déploiements
-// Vercel séparés : VITE_API_URL pointe vers l'URL publique de l'API.
-const API_BASE = import.meta.env.VITE_API_URL ?? "/api";
+// Toujours la même origine que le site : en local le serveur Vite relaie /api vers
+// l'API (:4000), en production la fonction Vercel `apps/web/api/proxy.js` fait de
+// même. Appeler l'API sur un autre domaine rendrait le cookie de session « tiers »,
+// bloqué par plusieurs navigateurs.
+const API_BASE = "/api";
 
 export class ApiError extends Error {
   status: number;
@@ -11,28 +12,42 @@ export class ApiError extends Error {
   }
 }
 
+const UNREACHABLE = "Impossible de joindre le serveur. Vérifie ta connexion et réessaie.";
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  } catch {
+    throw new ApiError(0, UNREACHABLE);
+  }
+
+  const isJson = (res.headers.get("content-type") ?? "").includes("application/json");
 
   if (!res.ok) {
-    let message = `Erreur ${res.status}`;
-    try {
-      const body = await res.json();
-      message = body.error ?? message;
-    } catch {
-      // ignore
+    let message = res.status >= 500 ? "Le serveur a rencontré un problème. Réessaie dans un instant." : `Erreur ${res.status}`;
+    if (isJson) {
+      try {
+        const body = await res.json();
+        message = body.error ?? message;
+      } catch {
+        // corps illisible : on garde le message par défaut
+      }
     }
     throw new ApiError(res.status, message);
   }
 
   if (res.status === 204) return undefined as T;
+  // Une page HTML à la place du JSON signifie que /api n'atteint pas l'API
+  // (réécriture ou proxy mal configuré) : on le dit plutôt que d'échouer au parsing.
+  if (!isJson) throw new ApiError(res.status, UNREACHABLE);
   return res.json() as Promise<T>;
 }
 

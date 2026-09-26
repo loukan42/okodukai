@@ -5,6 +5,7 @@ import { useAuth } from "../../lib/AuthContext";
 import { Avatar } from "../../components/Avatar";
 import { GameIcon, type GameIconName } from "../../components/GameIcon";
 import { useDialogFocus } from "../../lib/useDialogFocus";
+import { Logo } from "../../art/Logo";
 
 const navigation: { to: string; label: string; icon: GameIconName; end?: boolean }[] = [
   { to: "/enfant", label: "Accueil", icon: "home", end: true },
@@ -40,7 +41,7 @@ export function ChildLayout() {
   return (
     <div className="screen child-screen">
       <header className="child-header">
-        <div className="child-brand"><img src="/logo-full.png" alt="Okodukai" /></div>
+        <div className="child-brand"><Logo /></div>
         <div className="child-identity"><Avatar avatarId={session.child.avatarId} /><span>{session.child.displayName}</span></div>
         <button className="parent-gate" onClick={() => setShowExit(true)} aria-label="Accéder à l'espace parent">
           <GameIcon name="lock" size={19} /><span>Parent</span>

@@ -3,7 +3,7 @@ import argon2 from "argon2";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { validateBody } from "../lib/validation.js";
-import { attachSession, requireParent } from "../middleware/requireAuth.js";
+import { attachSession, requireParent, parentSession } from "../middleware/requireAuth.js";
 import { getBalances, recordWalletTransaction, InsufficientFundsError } from "../lib/ledger.js";
 import { levelFromTotalXp } from "../lib/levels.js";
 import { newIdempotencyKey } from "../lib/boosters.js";
@@ -51,6 +51,30 @@ householdRouter.post("/children", validateBody(createChildSchema), async (req, r
   });
 
   res.status(201).json({ child: { ...child, pinHash: undefined } });
+});
+
+const profileSchema = z.object({
+  parentName: z.string().trim().min(1).max(40),
+  householdName: z.string().trim().min(1).max(60),
+});
+
+/** Accueil : le parent donne son prénom et le nom de la famille (le foyer est créé provisoire). */
+householdRouter.put("/profile", validateBody(profileSchema), async (req, res) => {
+  const session = parentSession(req);
+  const [user, household] = await prisma.$transaction([
+    prisma.user.update({ where: { id: session.userId }, data: { displayName: req.body.parentName } }),
+    prisma.household.update({ where: { id: session.householdId }, data: { name: req.body.householdName } }),
+  ]);
+  res.json({ parentName: user.displayName, householdName: household.name });
+});
+
+householdRouter.post("/onboarding/complete", async (req, res) => {
+  const session = parentSession(req);
+  await prisma.household.updateMany({
+    where: { id: session.householdId, onboardingCompletedAt: null },
+    data: { onboardingCompletedAt: new Date() },
+  });
+  res.json({ ok: true });
 });
 
 householdRouter.get("/children", async (req, res) => {
