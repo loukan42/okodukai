@@ -44,7 +44,7 @@ function ObservatoryHeader({ title, subtitle, lit = false }: { title: string; su
           <i key={i} />
         ))}
       </span>
-      <ObjectArt name="coin-sprout" size={96} />
+      <ObjectArt name="telescope" size={96} />
       <div>
         <p className="scene-kicker">L'observatoire</p>
         <h1>{title}</h1>

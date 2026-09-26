@@ -4,6 +4,7 @@ import { EmptyState } from "../../components/EmptyState";
 import { GameIcon } from "../../components/GameIcon";
 import { Lessons } from "../../components/invest/Lessons";
 import { Carnet } from "../../components/finance/Carnet";
+import { ObjectArt } from "../../art/ObjectArt";
 import { useAuth } from "../../lib/AuthContext";
 
 interface ModuleContent {
@@ -148,7 +149,7 @@ export function Learn() {
 
   return (
     <div className="stack learn-page">
-      <header className="page-scene-title"><span className="page-scene-icon"><GameIcon name="learn" size={30}/></span><div><p className="scene-kicker">La bibliothèque de l'observatoire</p><h1>Apprendre</h1><p>Comprends l'argent à ton rythme.</p></div></header>
+      <header className="page-scene-title page-scene-title--art"><ObjectArt name="bookshelf" size={132} /><div><p className="scene-kicker">La bibliothèque de l'observatoire</p><h1>Apprendre</h1><p>Comprends l'argent à ton rythme.</p></div></header>
       {older && <Lessons />}
       {modules.map((m) => (
         <button

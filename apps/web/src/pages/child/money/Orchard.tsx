@@ -32,7 +32,7 @@ type OrchardState = { gate: "hidden" | "locked"; run: null } | ({ run: null } & 
 function OrchardHeader({ subtitle }: { subtitle: string }) {
   return (
     <header className="observatory-head orchard-head">
-      <ObjectArt name="coin-sprout" size={96} />
+      <ObjectArt name="orchard-tree" size={96} />
       <div>
         <p className="scene-kicker">Le verger du temps long</p>
         <h1>Mon contrat école</h1>
