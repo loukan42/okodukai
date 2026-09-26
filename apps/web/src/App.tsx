@@ -18,7 +18,10 @@ import { Quests } from "./pages/child/Quests";
 import { Shop } from "./pages/child/Shop";
 import { Collection } from "./pages/child/Collection";
 import { CollectionUniverse } from "./pages/child/CollectionUniverse";
-import { Vault } from "./pages/child/Vault";
+import { MoneyLayout } from "./pages/child/money/MoneyLayout";
+import { MoneyAccount } from "./pages/child/money/MoneyAccount";
+import { MoneyVault } from "./pages/child/money/MoneyVault";
+import { MoneyHistory } from "./pages/child/money/MoneyHistory";
 import { Learn } from "./pages/child/Learn";
 import { DevBar } from "./components/DevBar";
 
@@ -87,8 +90,14 @@ export default function App() {
         <Route path="boutique" element={<Shop />} />
         <Route path="collection" element={<Collection />} />
         <Route path="collection/:universeId" element={<CollectionUniverse />} />
-        <Route path="coffre" element={<Vault />} />
-        <Route path="apprendre" element={<Learn />} />
+        <Route path="argent" element={<MoneyLayout />}>
+          <Route index element={<MoneyAccount />} />
+          <Route path="coffre" element={<MoneyVault />} />
+          <Route path="historique" element={<MoneyHistory />} />
+          <Route path="investir" element={<Learn />} />
+        </Route>
+        <Route path="coffre" element={<Navigate to="/enfant/argent/coffre" replace />} />
+        <Route path="apprendre" element={<Navigate to="/enfant/argent/investir" replace />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,0 +1,874 @@
+/*
+ * « Mon argent » : un vrai relevé bancaire, habillé comme le reste du monde.
+ * Signes toujours écrits, rouge réservé aux erreurs (docs/FINANCIAL_EDUCATION.md §11.3).
+ */
+
+.money {
+  display: grid;
+  gap: 18px;
+}
+
+.money-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px;
+  border-radius: 16px;
+  background: var(--parchment-dim);
+  border: 1px solid var(--parchment-line);
+}
+
+.money-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.money-tab {
+  flex: 1 1 auto;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0 12px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 14.5px;
+  color: var(--ink-soft);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+
+.money-tab:hover {
+  background: rgba(255, 250, 240, 0.7);
+}
+
+.money-tab--on {
+  background: #253c51;
+  color: #fff8e7;
+  box-shadow: inset 0 0 0 1px #47627b;
+}
+
+.money-tab--on:hover {
+  background: #253c51;
+}
+
+.money-page {
+  display: grid;
+  gap: 22px;
+}
+
+.money-page h1 {
+  margin: 0;
+}
+
+/* Mon compte : le livret ---------------------------------------------------------- */
+
+.money-passbook {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(20px, 4vw, 30px);
+  border-radius: 24px;
+  color: #fff8e7;
+  background:
+    radial-gradient(circle at 88% 12%, rgba(232, 173, 63, 0.28), transparent 32%),
+    linear-gradient(150deg, #28435c, #172a40 70%);
+  border: 2px solid #102438;
+  box-shadow: 0 4px 0 #0f2538, 0 20px 35px rgba(23, 42, 64, 0.2);
+}
+
+/* Couture dorée du livret. */
+.money-passbook::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border: 1.5px dashed rgba(243, 214, 154, 0.35);
+  border-radius: 17px;
+  pointer-events: none;
+}
+
+.money-passbook-head {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.money-passbook-head h1 {
+  font-size: clamp(22px, 3vw, 28px);
+  color: #f5d289;
+}
+
+.money-passbook-coin {
+  width: 64px;
+  height: 64px;
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.35));
+}
+
+.money-passbook-balance {
+  position: relative;
+  margin: 6px 0 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.money-passbook-balance strong {
+  font-size: clamp(48px, 10vw, 76px);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.money-passbook-balance span {
+  font-size: clamp(18px, 2.5vw, 24px);
+  font-weight: 700;
+  color: #f6dfad;
+}
+
+.money-passbook-lead {
+  font-size: clamp(22px, 3vw, 28px) !important;
+  color: #fff8e7 !important;
+}
+
+.money-passbook-week {
+  position: relative;
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(244, 216, 155, 0.25);
+  color: #dfdbc8;
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+.money-passbook-week b {
+  color: #fff4da;
+  font-variant-numeric: tabular-nums;
+}
+
+.money-vault-card {
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 18px 14px 8px;
+  border-radius: 22px;
+  background: var(--surface-raised);
+  border: 1px solid #cbb688;
+  box-shadow: var(--shadow-md);
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast);
+}
+
+.money-vault-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.money-vault-card-chest {
+  width: 132px;
+  height: 132px;
+}
+
+.money-vault-card-text {
+  display: grid;
+  gap: 6px;
+  color: var(--ink-soft);
+  font-size: 14.5px;
+}
+
+.money-vault-card-title {
+  font-weight: 800;
+  color: #9b6729;
+}
+
+.money-vault-card-text strong {
+  font-size: 26px;
+  color: var(--night);
+  font-variant-numeric: tabular-nums;
+}
+
+.money-total {
+  margin: -6px 0 0;
+  font-size: 14.5px;
+  color: var(--ink-soft);
+}
+
+.money-total strong {
+  color: var(--night);
+}
+
+/* Lignes de relevé ------------------------------------------------------------------ */
+
+.money-lines {
+  display: grid;
+  border-radius: 18px;
+  background: var(--surface-raised);
+  border: 1px solid var(--parchment-line);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.money-line {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 62px;
+  padding: 10px 14px;
+  border: 0;
+  border-bottom: 1px solid #efe5cf;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  font: inherit;
+  width: 100%;
+}
+
+.money-line:last-child {
+  border-bottom: 0;
+}
+
+.money-line--button {
+  cursor: pointer;
+  transition: background var(--duration-fast);
+}
+
+.money-line--button:hover {
+  background: #fbf4e4;
+}
+
+.money-line--button:focus-visible {
+  outline-offset: -3px;
+}
+
+.money-line-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--forest);
+  background: var(--forest-soft);
+}
+
+.money-line-icon--out {
+  color: var(--ink-soft);
+  background: #e8e4da;
+}
+
+.money-line-icon--transfert {
+  color: var(--sky);
+  background: var(--sky-soft);
+}
+
+.money-line-icon--remboursement,
+.money-line-icon--bonus_epargne {
+  color: #8a5410;
+  background: #f4e4bf;
+}
+
+.money-line-icon--correction {
+  color: var(--ink-soft);
+  background: var(--parchment-dim);
+}
+
+.money-line-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.money-line-text strong {
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.money-line-text small {
+  color: var(--ink-faint);
+  font-size: 13px;
+}
+
+.money-line-pending {
+  color: #8a5410;
+  font-weight: 700;
+}
+
+.money-line-amounts {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+}
+
+.money-line-amount {
+  font-weight: 800;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.money-line-amount--in {
+  color: var(--forest);
+}
+
+.money-line-amounts small {
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fiche d'un mouvement --------------------------------------------------------------- */
+
+.money-sheet-backdrop {
+  align-items: end;
+}
+
+.money-sheet {
+  width: min(100%, 460px);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 22px;
+  border-radius: 24px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-lg);
+  display: grid;
+  gap: 18px;
+  animation: sheet-in 260ms var(--ease-out);
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+}
+
+@media (min-width: 700px) {
+  .money-sheet-backdrop {
+    align-items: center;
+  }
+}
+
+.money-sheet-head {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.money-sheet-head h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.money-sheet-head p {
+  margin: 2px 0 0;
+  color: var(--ink-faint);
+  font-size: 14px;
+}
+
+.money-sheet-math {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-radius: 16px;
+  border: 1px solid var(--parchment-line);
+  background: var(--parchment);
+  overflow: hidden;
+}
+
+.money-sheet-math > div {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  padding: 14px 6px;
+}
+
+.money-sheet-math > div + div {
+  border-left: 1px solid var(--parchment-line);
+}
+
+.money-sheet-math span {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-faint);
+}
+
+.money-sheet-math strong {
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+  color: var(--night);
+}
+
+.money-sheet-move--in strong {
+  color: var(--forest);
+}
+
+.money-sheet-facts {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.money-sheet-facts div {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 10px;
+}
+
+.money-sheet-facts dt {
+  font-weight: 700;
+  color: var(--ink-faint);
+  font-size: 14px;
+}
+
+.money-sheet-facts dd {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+
+/* Mon coffre ------------------------------------------------------------------------- */
+
+.money-vault-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 300px) 1fr;
+  gap: 18px;
+  align-items: center;
+  padding: 12px 22px 12px 8px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 26% 55%, rgba(255, 214, 140, 0.55), transparent 42%),
+    linear-gradient(160deg, #fbf2dc, #f1e3c2);
+  border: 1px solid #d8c29a;
+  box-shadow: var(--shadow-md);
+}
+
+.money-vault-hero-chest {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 18px 18px rgba(80, 48, 16, 0.3));
+}
+
+.money-vault-hero-text h1 {
+  font-size: clamp(26px, 3.4vw, 34px);
+  color: var(--night);
+}
+
+.money-vault-hero-balance {
+  margin: 4px 0 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.money-vault-hero-balance strong {
+  font-size: clamp(44px, 8vw, 64px);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--night);
+}
+
+.money-vault-hero-balance span {
+  font-weight: 700;
+  color: var(--ink-soft);
+  font-size: 18px;
+}
+
+.money-rule {
+  margin: 0 0 6px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.money-banner {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #f4e4bf;
+  border: 1px solid #d5ad61;
+  color: #5c3b0c;
+  font-weight: 700;
+}
+
+.money-transfer {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 22px;
+  background: var(--surface-raised);
+  border: 1px solid var(--parchment-line);
+  box-shadow: var(--shadow-md);
+}
+
+.money-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.money-chip {
+  min-height: 42px;
+  min-width: 52px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1.5px solid var(--parchment-line);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
+}
+
+.money-chip:hover {
+  border-color: #cba96e;
+}
+
+.money-chip--on {
+  background: #253c51;
+  border-color: #253c51;
+  color: #fff8e7;
+}
+
+.money-stepper {
+  display: grid;
+  grid-template-columns: 52px 1fr 52px;
+  align-items: center;
+  border-radius: 14px;
+  border: 1.5px solid var(--parchment-line);
+  background: var(--surface);
+  overflow: hidden;
+  max-width: 320px;
+}
+
+.money-stepper button {
+  height: 52px;
+  border: 0;
+  background: var(--parchment-dim);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--night);
+  cursor: pointer;
+}
+
+.money-stepper button:disabled {
+  color: var(--ink-faint);
+  cursor: not-allowed;
+}
+
+.money-stepper output {
+  text-align: center;
+  font-weight: 800;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.money-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.money-preview > div {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--parchment);
+  border: 1px solid var(--parchment-line);
+}
+
+.money-preview span {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-faint);
+}
+
+.money-preview strong {
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+  color: var(--night);
+}
+
+.money-preview p {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 14px;
+  color: #5c3b0c;
+}
+
+.money-hint {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.money-message {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.money-message--ok {
+  background: var(--forest-soft);
+  color: var(--forest);
+}
+
+.money-message--info {
+  background: var(--sky-soft);
+  color: #274a60;
+}
+
+.money-message--error {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.money-goals {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.money-goal {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--surface-raised);
+  border: 1px solid var(--parchment-line);
+  box-shadow: var(--shadow-sm);
+}
+
+.money-goal--reached {
+  border-color: #d5ad61;
+  background: linear-gradient(160deg, #fff8e4, #fbefcf);
+}
+
+.money-goal-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.money-goal-head strong {
+  font-size: 17px;
+}
+
+.money-goal-head span {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+.money-goal p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 14.5px;
+}
+
+.money-goal-archive {
+  justify-self: start;
+  border: 0;
+  background: none;
+  padding: 6px 0;
+  color: var(--ink-soft);
+  font-weight: 700;
+  font-size: 13.5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.money-goal-form {
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(255, 250, 240, 0.75);
+  border: 1px dashed #c8b892;
+}
+
+.money-goal-form h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.money-goal-form .money-chips {
+  margin-top: 8px;
+}
+
+/* Historique -------------------------------------------------------------------------- */
+
+.money-history-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.money-history-head p {
+  margin: 2px 0 0;
+  color: var(--ink-faint);
+}
+
+.money-history-balance {
+  font-size: 15px;
+}
+
+.money-history-balance strong {
+  font-size: 22px;
+  color: var(--night);
+  font-variant-numeric: tabular-nums;
+}
+
+.money-week-summary {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--parchment-dim);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.money-week-summary b {
+  color: var(--night);
+  font-variant-numeric: tabular-nums;
+}
+
+.money-day {
+  display: grid;
+  gap: 8px;
+}
+
+.money-day-title {
+  margin: 0;
+  font-family: var(--font-interface);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink-faint);
+}
+
+@media (max-width: 440px) {
+  .money-tab {
+    padding: 0 7px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 600px) {
+  .money-vault-hero {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    padding: 8px 16px 18px;
+  }
+
+  .money-vault-hero-chest {
+    width: min(240px, 70vw);
+  }
+
+  .money-vault-hero-balance {
+    justify-content: center;
+  }
+
+  .money-vault-card {
+    grid-template-columns: 96px 1fr;
+  }
+
+  .money-vault-card-chest {
+    width: 96px;
+    height: 96px;
+  }
+}
+
+/* Parent : règle de retrait du coffre --------------------------------------------------- */
+
+.vault-rule {
+  flex-basis: 100%;
+  margin: 12px 0 0;
+  padding: 14px 0 0;
+  border: 0;
+  border-top: 1px solid var(--parchment-line);
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.vault-rule legend {
+  padding: 0;
+  margin-bottom: 10px;
+  font-weight: 800;
+  color: var(--night);
+}
+
+.vault-rule-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 8px;
+}
+
+.vault-rule-option {
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1.5px solid var(--parchment-line);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.vault-rule-option input {
+  margin: 3px 0 0;
+  accent-color: #253c51;
+}
+
+.vault-rule-option--on {
+  border-color: #253c51;
+  background: #f3f6f9;
+}
+
+.vault-rule-option strong {
+  display: block;
+  font-size: 15px;
+}
+
+.vault-rule-option small {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink-soft);
+  line-height: 1.45;
+  font-size: 13.5px;
+}
+
+.vault-rule-days {
+  max-width: 200px;
+  margin: 0;
+}
+
+.vault-rule .btn {
+  justify-self: start;
+}

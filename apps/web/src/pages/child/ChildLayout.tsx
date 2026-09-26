@@ -9,10 +9,10 @@ import { Logo } from "../../art/Logo";
 
 const navigation: { to: string; label: string; icon: GameIconName; end?: boolean }[] = [
   { to: "/enfant", label: "Accueil", icon: "home", end: true },
+  { to: "/enfant/argent", label: "Mon argent", icon: "coin" },
   { to: "/enfant/quetes", label: "Quêtes", icon: "quest" },
   { to: "/enfant/boutique", label: "Boutique", icon: "shop" },
   { to: "/enfant/collection", label: "Collection", icon: "collection" },
-  { to: "/enfant/coffre", label: "Coffre", icon: "vault" },
 ];
 
 export function ChildLayout() {

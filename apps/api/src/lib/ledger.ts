@@ -49,6 +49,10 @@ export async function recordWalletTransaction(tx: Tx, input: RecordTransactionIn
     throw new Error("Le montant d'une transaction doit être positif");
   }
 
+  // Verrou de ligne sur le portefeuille jusqu'à la fin de la transaction : deux débits
+  // simultanés ne peuvent pas passer tous les deux le contrôle de solde ci-dessous.
+  await tx.$queryRaw`SELECT "id" FROM "Wallet" WHERE "id" = ${input.walletId} FOR UPDATE`;
+
   const existing = await tx.walletTransaction.findUnique({
     where: { idempotencyKey: input.idempotencyKey },
   });

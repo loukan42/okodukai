@@ -4,6 +4,7 @@ import { Avatar } from "../../components/Avatar";
 import { ChildForm, type ChildFormValues } from "../../components/ChildForm";
 import { CoinPill } from "../../components/CoinPill";
 import { GameIcon } from "../../components/GameIcon";
+import { VaultRuleEditor } from "../../components/VaultRuleEditor";
 
 interface ChildRow {
   id: string;
@@ -84,6 +85,7 @@ export function ChildrenManage() {
                 − Pièces
               </button>
             </div>
+            <VaultRuleEditor childId={child.id} childName={child.displayName} />
           </div>
         ))}
       </div>

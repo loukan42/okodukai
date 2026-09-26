@@ -90,6 +90,8 @@ model ChildProfile {
   learningProgress LearningProgress[]
   simPortfolios   SimulationPortfolio[]
   notifications   Notification[]
+  vaultRule       VaultRule?
+  vaultRequests   VaultWithdrawalRequest[]
 
   @@index([householdId])
 }
@@ -296,10 +298,55 @@ model SavingsGoal {
   title        String
   targetCoins  Int
   rewardId     String?
+  /// Ordre de remplissage : Mon coffre remplit les objectifs l'un après l'autre (le plus petit d'abord).
+  position     Int      @default(0)
   achievedAt   DateTime?
+  /// Objectif rangé par l'enfant (utilisé ou abandonné) : il ne compte plus dans le remplissage.
+  archivedAt   DateTime?
   createdAt    DateTime @default(now())
 
   @@index([childId])
+}
+
+/// Règle de retrait de Mon coffre, fixée par un parent pour un enfant.
+enum VaultRuleMode {
+  FREE
+  PARENT_APPROVAL
+  MIN_DAYS
+  GOAL_ONLY
+}
+
+model VaultRule {
+  childId     String   @id
+  child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  mode        VaultRuleMode @default(FREE)
+  /// Pour MIN_DAYS : nombre de jours pendant lesquels chaque dépôt reste dans le coffre.
+  minDays     Int?
+  /// Entrée en vigueur : les pièces déposées avant restent libres (on ne change pas les règles d'un dépôt déjà fait).
+  since       DateTime @default(now())
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+}
+
+enum VaultRequestStatus {
+  PENDING
+  APPROVED
+  REFUSED
+}
+
+/// Demande de retrait du coffre, quand la règle demande la validation d'un parent.
+model VaultWithdrawalRequest {
+  id             String   @id @default(uuid())
+  childId        String
+  child          ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  amount         Int
+  status         VaultRequestStatus @default(PENDING)
+  idempotencyKey String   @unique
+  createdAt      DateTime @default(now())
+  decidedAt      DateTime?
+  decidedById    String?
+
+  @@index([childId, status])
 }
 
 // ---------------------------------------------------------------------------

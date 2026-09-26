@@ -1,41 +1,125 @@
 import { Router } from "express";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { validateBody } from "../lib/validation.js";
 import { attachSession, requireChild, requireParent, childSession, parentSession } from "../middleware/requireAuth.js";
-import { recordWalletTransaction, getBalances, InsufficientFundsError } from "../lib/ledger.js";
+import { recordWalletTransaction, DuplicateTransactionError, InsufficientFundsError } from "../lib/ledger.js";
 import { checkAndAwardBadges } from "../lib/badges.js";
+import { readLedger, weekSummary, allocateGoals, vaultAvailability, activeGoals, type Place } from "../lib/money.js";
 
 export const savingsRouter = Router();
 savingsRouter.use(attachSession);
 
-const createGoalSchema = z.object({
-  title: z.string().min(1).max(120),
-  targetCoins: z.number().int().positive(),
-  rewardId: z.string().uuid().optional(),
-});
+type Tx = Prisma.TransactionClient;
 
-savingsRouter.post("/child/savings/goals", requireChild, validateBody(createGoalSchema), async (req, res) => {
-  const childId = childSession(req).childId;
-  const goal = await prisma.savingsGoal.create({
-    data: { childId, title: req.body.title, targetCoins: req.body.targetCoins, rewardId: req.body.rewardId },
+const MAX_ACTIVE_GOALS = 5;
+
+async function walletOf(childId: string) {
+  return prisma.wallet.findUniqueOrThrow({ where: { childId } });
+}
+
+/** Photographie complète de Mon argent : soldes, semaine, objectifs, règle du coffre. */
+async function moneyState(childId: string) {
+  const wallet = await walletOf(childId);
+  const [ledger, goals, rule, pending] = await Promise.all([
+    readLedger(prisma, wallet.id),
+    activeGoals(prisma, childId),
+    prisma.vaultRule.findUnique({ where: { childId } }),
+    prisma.vaultWithdrawalRequest.findFirst({ where: { childId, status: "PENDING" }, orderBy: { createdAt: "desc" } }),
+  ]);
+  const goalViews = allocateGoals(goals, ledger.balances.vault);
+  const availability = vaultAvailability(ledger.transactions, rule, goalViews[0]);
+  return { wallet, ledger, goals: goalViews, availability, pendingRequest: pending };
+}
+
+/** Marque atteints les objectifs que Mon coffre remplit désormais (une seule fois chacun). */
+async function syncGoals(tx: Tx, childId: string, householdId: string, vault: number) {
+  const goals = await activeGoals(tx, childId);
+  const views = allocateGoals(goals, vault);
+  let reachedNow = false;
+  for (const [i, view] of views.entries()) {
+    if (view.reached && !goals[i].achievedAt) {
+      reachedNow = true;
+      await tx.savingsGoal.update({ where: { id: view.id }, data: { achievedAt: new Date() } });
+      await tx.notification.create({
+        data: { householdId, audience: "CHILD", childId, type: "goal_completed", payload: { goalId: view.id, goalTitle: view.title } },
+      });
+    }
+  }
+  const first = views.find((v) => !v.reached) ?? views[0];
+  await tx.childProfile.update({ where: { id: childId }, data: { activeGoalId: first?.id ?? null } });
+  if (reachedNow) await checkAndAwardBadges(tx, childId, householdId);
+}
+
+function isDuplicate(err: unknown) {
+  return err instanceof DuplicateTransactionError || (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002");
+}
+
+// ---------------------------------------------------------------------------
+// Lecture (enfant)
+// ---------------------------------------------------------------------------
+
+savingsRouter.get("/child/money", requireChild, async (req, res) => {
+  const { childId } = childSession(req);
+  const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId }, select: { ageBand: true } });
+  const state = await moneyState(childId);
+  const accountLines = state.ledger.lines.filter((l) => l.place === "account");
+  res.json({
+    ageBand: child.ageBand,
+    balances: state.ledger.balances,
+    week: weekSummary(state.ledger.lines),
+    recent: accountLines.slice(-5).reverse(),
+    goals: state.goals,
+    vault: { ...state.availability, pendingRequest: state.pendingRequest ? { id: state.pendingRequest.id, amount: state.pendingRequest.amount, createdAt: state.pendingRequest.createdAt } : null },
   });
-  await prisma.childProfile.update({ where: { id: childId }, data: { activeGoalId: goal.id } });
-  res.status(201).json({ goal });
 });
 
-savingsRouter.get("/child/savings/goals", requireChild, async (req, res) => {
-  const childId = childSession(req).childId;
-  const goals = await prisma.savingsGoal.findMany({ where: { childId }, orderBy: { createdAt: "desc" } });
-  res.json({ goals });
+const historyQuery = z.object({
+  place: z.enum(["account", "vault"]).default("account"),
+  filter: z.enum(["all", "in", "out", "transfer"]).default("all"),
+  cursor: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
 });
 
-const moveSchema = z.object({ amount: z.number().int().positive() });
+savingsRouter.get("/child/money/history", requireChild, async (req, res) => {
+  const parsed = historyQuery.safeParse(req.query);
+  if (!parsed.success) return res.status(400).json({ error: "Requête invalide" });
+  const { place, filter, cursor, limit } = parsed.data;
+  const { childId } = childSession(req);
+  const ledger = await readLedger(prisma, (await walletOf(childId)).id);
+  const lines = ledger.lines
+    .filter((l) => l.place === (place as Place))
+    .filter((l) => (filter === "transfer" ? l.kind === "transfert" : filter === "in" ? l.kind !== "transfert" && l.amount > 0 : filter === "out" ? l.kind !== "transfert" && l.amount < 0 : true))
+    .reverse();
+  const start = cursor ? lines.findIndex((l) => l.id === cursor) + 1 : 0;
+  const page = lines.slice(start, start + limit);
+  res.json({
+    items: page,
+    nextCursor: start + limit < lines.length ? page[page.length - 1]?.id ?? null : null,
+    week: weekSummary(ledger.lines),
+    balance: place === "account" ? ledger.balances.available : ledger.balances.vault,
+  });
+});
+
+savingsRouter.get("/child/money/lines/:transactionId", requireChild, async (req, res) => {
+  const { childId } = childSession(req);
+  const ledger = await readLedger(prisma, (await walletOf(childId)).id);
+  const lines = ledger.lines.filter((l) => l.transactionId === req.params.transactionId);
+  if (!lines.length) return res.status(404).json({ error: "Mouvement introuvable" });
+  res.json({ lines });
+});
+
+// ---------------------------------------------------------------------------
+// Transferts entre Mon compte et Mon coffre (enfant)
+// ---------------------------------------------------------------------------
+
+// Une clé par intention, générée par le client : un double appui ne crée pas deux transferts.
+const moveSchema = z.object({ amount: z.number().int().positive().max(1_000_000), idempotencyKey: z.string().uuid() });
 
 savingsRouter.post("/child/savings/lock", requireChild, validateBody(moveSchema), async (req, res) => {
-  const childId = childSession(req).childId;
-  const wallet = await prisma.wallet.findUniqueOrThrow({ where: { childId } });
-
+  const { childId, householdId } = childSession(req);
+  const wallet = await walletOf(childId);
   try {
     await prisma.$transaction(async (tx) => {
       await recordWalletTransaction(tx, {
@@ -43,86 +127,267 @@ savingsRouter.post("/child/savings/lock", requireChild, validateBody(moveSchema)
         amount: req.body.amount,
         type: "SAVINGS_LOCK",
         actorId: childId,
-        idempotencyKey: `savings-lock:${childId}:${Date.now()}:${Math.random().toString(36).slice(2)}`,
+        idempotencyKey: `savings-lock:${childId}:${req.body.idempotencyKey}`,
+        sourceType: "savings_transfer",
       });
+      const ledger = await readLedger(tx, wallet.id);
+      await syncGoals(tx, childId, householdId, ledger.balances.vault);
     });
   } catch (err) {
-    if (err instanceof InsufficientFundsError) return res.status(400).json({ error: "Solde insuffisant" });
-    throw err;
+    if (err instanceof InsufficientFundsError) {
+      const { ledger } = await moneyState(childId);
+      return res.status(400).json({
+        error: `Il te manque ${req.body.amount - ledger.balances.available} pièces sur Mon compte pour en mettre ${req.body.amount} de côté.`,
+        code: "INSUFFICIENT_ACCOUNT",
+        available: ledger.balances.available,
+      });
+    }
+    if (!isDuplicate(err)) throw err;
   }
-
-  await maybeCompleteActiveGoal(childId);
-  const balances = await getBalances(prisma, wallet.id);
-  res.json({ balances });
+  const state = await moneyState(childId);
+  res.json({ outcome: "done", balances: state.ledger.balances, goals: state.goals });
 });
 
 savingsRouter.post("/child/savings/unlock", requireChild, validateBody(moveSchema), async (req, res) => {
-  const childId = childSession(req).childId;
-  const wallet = await prisma.wallet.findUniqueOrThrow({ where: { childId } });
+  const { childId, householdId } = childSession(req);
+  const amount: number = req.body.amount;
 
+  // Rejeu d'une intention déjà traitée (réseau, double appui) : on renvoie l'état, sans rien refaire.
+  const [doneBefore, requestedBefore] = await Promise.all([
+    prisma.walletTransaction.findUnique({ where: { idempotencyKey: `savings-unlock:${childId}:${req.body.idempotencyKey}` } }),
+    prisma.vaultWithdrawalRequest.findUnique({ where: { idempotencyKey: `vault-request:${childId}:${req.body.idempotencyKey}` } }),
+  ]);
+  if (requestedBefore) {
+    return res.status(202).json({ outcome: "requested", request: { id: requestedBefore.id, amount: requestedBefore.amount, createdAt: requestedBefore.createdAt } });
+  }
+  if (doneBefore) {
+    const current = await moneyState(childId);
+    return res.json({ outcome: "done", balances: current.ledger.balances, goals: current.goals });
+  }
+
+  const state = await moneyState(childId);
+  const { balances } = state.ledger;
+
+  if (amount > balances.vault) {
+    return res.status(400).json({ error: `Mon coffre contient ${balances.vault} pièces. Tu peux en reprendre jusqu'à ${balances.vault}.`, code: "INSUFFICIENT_VAULT", vault: balances.vault });
+  }
+
+  if (amount > state.availability.withdrawableNow) {
+    const { mode, nextUnlockAt } = state.availability;
+    const firstGoal = state.goals[0];
+    const approval = mode === "PARENT_APPROVAL" || (mode === "GOAL_ONLY" && !firstGoal);
+    if (approval) {
+      if (state.pendingRequest) {
+        return res.status(409).json({ error: "Tu as déjà une demande en attente. Un parent va la regarder.", code: "REQUEST_PENDING" });
+      }
+      const request = await prisma.vaultWithdrawalRequest
+        .create({ data: { childId, amount, idempotencyKey: `vault-request:${childId}:${req.body.idempotencyKey}` } })
+        .catch(async (err: unknown) => {
+          if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+            return prisma.vaultWithdrawalRequest.findUniqueOrThrow({ where: { idempotencyKey: `vault-request:${childId}:${req.body.idempotencyKey}` } });
+          }
+          throw err;
+        });
+      await prisma.notification.create({
+        data: { householdId, audience: "PARENT", childId, type: "vault_request_created", payload: { requestId: request.id, amount } },
+      });
+      return res.status(202).json({ outcome: "requested", request: { id: request.id, amount: request.amount, createdAt: request.createdAt } });
+    }
+    if (mode === "MIN_DAYS" && nextUnlockAt) {
+      return res.status(409).json({ error: "Ces pièces restent dans Mon coffre un peu plus longtemps. C'est la règle choisie avec tes parents.", code: "VAULT_LOCKED_UNTIL", until: nextUnlockAt, withdrawableNow: state.availability.withdrawableNow });
+    }
+    return res.status(409).json({
+      error: firstGoal ? `Il te manque ${firstGoal.missing} pièces pour ton objectif. Ensuite, tu pourras les reprendre.` : "Ces pièces restent dans Mon coffre pour l'instant.",
+      code: "VAULT_LOCKED_GOAL",
+      missing: firstGoal?.missing ?? null,
+      withdrawableNow: state.availability.withdrawableNow,
+    });
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      await recordWalletTransaction(tx, {
+        walletId: state.wallet.id,
+        amount,
+        type: "SAVINGS_UNLOCK",
+        actorId: childId,
+        idempotencyKey: `savings-unlock:${childId}:${req.body.idempotencyKey}`,
+        sourceType: "savings_transfer",
+      });
+      const ledger = await readLedger(tx, state.wallet.id);
+      await syncGoals(tx, childId, householdId, ledger.balances.vault);
+    });
+  } catch (err) {
+    if (err instanceof InsufficientFundsError) {
+      return res.status(400).json({ error: `Mon coffre contient ${balances.vault} pièces. Tu peux en reprendre jusqu'à ${balances.vault}.`, code: "INSUFFICIENT_VAULT", vault: balances.vault });
+    }
+    if (!isDuplicate(err)) throw err;
+  }
+  const after = await moneyState(childId);
+  res.json({ outcome: "done", balances: after.ledger.balances, goals: after.goals });
+});
+
+// ---------------------------------------------------------------------------
+// Objectifs (enfant)
+// ---------------------------------------------------------------------------
+
+const createGoalSchema = z.object({
+  title: z.string().trim().min(1).max(60),
+  targetCoins: z.number().int().positive().max(100_000),
+  rewardId: z.string().uuid().optional(),
+});
+
+savingsRouter.post("/child/savings/goals", requireChild, validateBody(createGoalSchema), async (req, res) => {
+  const { childId, householdId } = childSession(req);
+  const goals = await activeGoals(prisma, childId);
+  if (goals.length >= MAX_ACTIVE_GOALS) {
+    return res.status(409).json({ error: `Tu as déjà ${MAX_ACTIVE_GOALS} objectifs. Range-en un pour en créer un nouveau.` });
+  }
+  const goal = await prisma.$transaction(async (tx) => {
+    const created = await tx.savingsGoal.create({
+      data: { childId, title: req.body.title, targetCoins: req.body.targetCoins, rewardId: req.body.rewardId, position: (goals.at(-1)?.position ?? -1) + 1 },
+    });
+    const wallet = await tx.wallet.findUniqueOrThrow({ where: { childId } });
+    const ledger = await readLedger(tx, wallet.id);
+    await syncGoals(tx, childId, householdId, ledger.balances.vault);
+    return created;
+  });
+  res.status(201).json({ goal });
+});
+
+savingsRouter.get("/child/savings/goals", requireChild, async (req, res) => {
+  const { childId } = childSession(req);
+  const goals = await prisma.savingsGoal.findMany({ where: { childId, archivedAt: null }, orderBy: [{ position: "asc" }, { createdAt: "asc" }] });
+  res.json({ goals });
+});
+
+/** Ranger un objectif (utilisé ou abandonné) : il ne compte plus dans le remplissage. */
+savingsRouter.post("/child/savings/goals/:goalId/archive", requireChild, async (req, res) => {
+  const { childId, householdId } = childSession(req);
+  const goal = await prisma.savingsGoal.findUnique({ where: { id: req.params.goalId } });
+  if (!goal || goal.childId !== childId) return res.status(404).json({ error: "Objectif introuvable" });
+  await prisma.$transaction(async (tx) => {
+    await tx.savingsGoal.update({ where: { id: goal.id }, data: { archivedAt: goal.archivedAt ?? new Date() } });
+    const wallet = await tx.wallet.findUniqueOrThrow({ where: { childId } });
+    const ledger = await readLedger(tx, wallet.id);
+    await syncGoals(tx, childId, householdId, ledger.balances.vault);
+  });
+  res.json({ ok: true });
+});
+
+// ---------------------------------------------------------------------------
+// Parent : bonus d'épargne, règle du coffre, demandes de retrait
+// ---------------------------------------------------------------------------
+
+async function childOfHousehold(childId: string, householdId: string) {
+  const child = await prisma.childProfile.findUnique({ where: { id: childId } });
+  return child && child.householdId === householdId ? child : null;
+}
+
+const bonusSchema = z.object({ childId: z.string().uuid(), amount: z.number().int().positive().max(100_000), reason: z.string().max(200).optional(), idempotencyKey: z.string().uuid().optional() });
+
+savingsRouter.post("/household/savings/bonus", requireParent, validateBody(bonusSchema), async (req, res) => {
+  const { householdId, userId } = parentSession(req);
+  const child = await childOfHousehold(req.body.childId, householdId);
+  if (!child) return res.status(404).json({ error: "Enfant introuvable" });
+  const wallet = await walletOf(child.id);
   try {
     await prisma.$transaction(async (tx) => {
       await recordWalletTransaction(tx, {
         walletId: wallet.id,
         amount: req.body.amount,
-        type: "SAVINGS_UNLOCK",
-        actorId: childId,
-        idempotencyKey: `savings-unlock:${childId}:${Date.now()}:${Math.random().toString(36).slice(2)}`,
+        type: "SAVINGS_BONUS",
+        actorId: userId,
+        idempotencyKey: `savings-bonus:${child.id}:${req.body.idempotencyKey ?? `${Date.now()}`}`,
+        reason: req.body.reason ?? "Bonus d'épargne",
+      });
+      const ledger = await readLedger(tx, wallet.id);
+      await syncGoals(tx, child.id, householdId, ledger.balances.vault);
+    });
+  } catch (err) {
+    if (!isDuplicate(err)) throw err;
+  }
+  const state = await moneyState(child.id);
+  res.json({ balances: state.ledger.balances });
+});
+
+savingsRouter.get("/household/children/:childId/vault-rule", requireParent, async (req, res) => {
+  const child = await childOfHousehold(req.params.childId, parentSession(req).householdId);
+  if (!child) return res.status(404).json({ error: "Enfant introuvable" });
+  const rule = await prisma.vaultRule.findUnique({ where: { childId: child.id } });
+  res.json({ rule: { mode: rule?.mode ?? "FREE", minDays: rule?.minDays ?? null, since: rule?.since ?? null } });
+});
+
+const ruleSchema = z
+  .object({ mode: z.enum(["FREE", "PARENT_APPROVAL", "MIN_DAYS", "GOAL_ONLY"]), minDays: z.number().int().min(1).max(365).nullish() })
+  .refine((r) => r.mode !== "MIN_DAYS" || r.minDays, { message: "Indiquez une durée en jours." });
+
+savingsRouter.put("/household/children/:childId/vault-rule", requireParent, validateBody(ruleSchema), async (req, res) => {
+  const { householdId, userId } = parentSession(req);
+  const child = await childOfHousehold(req.params.childId, householdId);
+  if (!child) return res.status(404).json({ error: "Enfant introuvable" });
+  const minDays = req.body.mode === "MIN_DAYS" ? req.body.minDays : null;
+  const current = await prisma.vaultRule.findUnique({ where: { childId: child.id } });
+  const changed = !current || current.mode !== req.body.mode || current.minDays !== minDays;
+  const rule = await prisma.vaultRule.upsert({
+    where: { childId: child.id },
+    create: { childId: child.id, mode: req.body.mode, minDays, updatedById: userId },
+    // La règle ne s'applique qu'aux dépôts faits après le changement.
+    update: changed ? { mode: req.body.mode, minDays, since: new Date(), updatedById: userId } : {},
+  });
+  await prisma.auditLog.create({
+    data: { householdId, actorUserId: userId, action: "vault_rule_updated", targetType: "ChildProfile", targetId: child.id, metadata: { mode: rule.mode, minDays: rule.minDays } },
+  });
+  res.json({ rule: { mode: rule.mode, minDays: rule.minDays, since: rule.since } });
+});
+
+savingsRouter.get("/household/vault-requests", requireParent, async (req, res) => {
+  const requests = await prisma.vaultWithdrawalRequest.findMany({
+    where: { status: "PENDING", child: { householdId: parentSession(req).householdId } },
+    include: { child: { select: { id: true, displayName: true, avatarId: true } } },
+    orderBy: { createdAt: "asc" },
+  });
+  res.json({ requests });
+});
+
+const decisionSchema = z.object({ decision: z.enum(["approve", "refuse"]) });
+
+savingsRouter.post("/household/vault-requests/:requestId/decision", requireParent, validateBody(decisionSchema), async (req, res) => {
+  const { householdId, userId } = parentSession(req);
+  const request = await prisma.vaultWithdrawalRequest.findUnique({ where: { id: req.params.requestId }, include: { child: true } });
+  if (!request || request.child.householdId !== householdId) return res.status(404).json({ error: "Demande introuvable" });
+  if (request.status !== "PENDING") return res.json({ request });
+
+  const wallet = await walletOf(request.childId);
+  let approved = req.body.decision === "approve";
+  try {
+    await prisma.$transaction(async (tx) => {
+      if (approved) {
+        await recordWalletTransaction(tx, {
+          walletId: wallet.id,
+          amount: request.amount,
+          type: "SAVINGS_UNLOCK",
+          actorId: userId,
+          idempotencyKey: `vault-request:${request.id}`,
+          sourceType: "vault_request",
+          sourceId: request.id,
+        });
+        const ledger = await readLedger(tx, wallet.id);
+        await syncGoals(tx, request.childId, householdId, ledger.balances.vault);
+      }
+      await tx.vaultWithdrawalRequest.update({ where: { id: request.id }, data: { status: approved ? "APPROVED" : "REFUSED", decidedAt: new Date(), decidedById: userId } });
+      await tx.notification.create({
+        data: { householdId, audience: "CHILD", childId: request.childId, type: "vault_request_decided", payload: { requestId: request.id, amount: request.amount, approved } },
       });
     });
   } catch (err) {
-    if (err instanceof InsufficientFundsError) return res.status(400).json({ error: "Coffre insuffisant" });
-    throw err;
+    if (err instanceof InsufficientFundsError) {
+      // Le coffre ne contient plus assez : la demande ne peut pas être acceptée telle quelle.
+      approved = false;
+      await prisma.vaultWithdrawalRequest.update({ where: { id: request.id }, data: { status: "REFUSED", decidedAt: new Date(), decidedById: userId } });
+      return res.status(409).json({ error: "Le coffre ne contient plus assez de pièces pour cette demande. Elle a été refusée." });
+    }
+    if (!isDuplicate(err)) throw err;
   }
-
-  const balances = await getBalances(prisma, wallet.id);
-  res.json({ balances });
+  res.json({ request: { id: request.id, status: approved ? "APPROVED" : "REFUSED" } });
 });
-
-const bonusSchema = z.object({ childId: z.string().uuid(), amount: z.number().int().positive(), reason: z.string().max(200).optional() });
-
-savingsRouter.post("/household/savings/bonus", requireParent, validateBody(bonusSchema), async (req, res) => {
-  const householdId = req.session!.householdId;
-  const child = await prisma.childProfile.findUnique({ where: { id: req.body.childId } });
-  if (!child || child.householdId !== householdId) return res.status(404).json({ error: "Enfant introuvable" });
-
-  const wallet = await prisma.wallet.findUniqueOrThrow({ where: { childId: child.id } });
-  await prisma.$transaction(async (tx) => {
-    await recordWalletTransaction(tx, {
-      walletId: wallet.id,
-      amount: req.body.amount,
-      type: "SAVINGS_BONUS",
-      actorId: parentSession(req).userId,
-      idempotencyKey: `savings-bonus:${child.id}:${Date.now()}`,
-      reason: req.body.reason ?? "Bonus d'épargne",
-    });
-  });
-
-  const balances = await getBalances(prisma, wallet.id);
-  res.json({ balances });
-});
-
-async function maybeCompleteActiveGoal(childId: string) {
-  const child = await prisma.childProfile.findUnique({ where: { id: childId } });
-  if (!child?.activeGoalId) return;
-  const goal = await prisma.savingsGoal.findUnique({ where: { id: child.activeGoalId } });
-  if (!goal || goal.achievedAt) return;
-
-  const wallet = await prisma.wallet.findUniqueOrThrow({ where: { childId } });
-  const balances = await getBalances(prisma, wallet.id);
-  if (balances.vault >= goal.targetCoins) {
-    await prisma.$transaction(async (tx) => {
-      await tx.savingsGoal.update({ where: { id: goal.id }, data: { achievedAt: new Date() } });
-      await tx.notification.create({
-        data: {
-          householdId: child.householdId,
-          audience: "CHILD",
-          childId,
-          type: "goal_completed",
-          payload: { goalId: goal.id, goalTitle: goal.title },
-        },
-      });
-      await checkAndAwardBadges(tx, childId, child.householdId);
-    });
-  }
-}
