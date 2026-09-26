@@ -18,3 +18,6 @@ apps/web/tsconfig.tsbuildinfo
 # Okodukai, ou Git LFS) — voir CLAUDE.md.
 apps/web/public/cards/
 apps/web/public/avatars/
+
+# Python (scripts de skills)
+__pycache__/
