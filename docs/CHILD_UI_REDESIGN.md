@@ -2,7 +2,7 @@
 
 ## Structure
 
-L'accueil est une scène navigable. Chaque destination est un lien HTML nommé et ciblable au clavier ; l'illustration sert de carte du monde, et les plaques portent le texte. Le HUD regroupe profil, niveau, XP et pièces disponibles. Le niveau du serveur choisit un palier `data-world-tier` (1, 5, 10, 20, 30) ; les décors supplémentaires pourront s'y brancher sans changer les URL ni les règles métier.
+L'accueil est une scène navigable. Chaque destination est un lien HTML nommé et ciblable au clavier ; l'illustration sert de carte du monde, et les plaques portent le texte. Le HUD regroupe profil, niveau, XP et pièces disponibles. Le niveau du serveur choisit un palier `data-world-tier` (1, 5, 10, 20, 30) ; les calques peints de chaque palier enrichissent la vallée sans changer les URL ni les règles métier.
 
 | Route | Lieu | Objet et contenu prioritaires |
 | --- | --- | --- |
@@ -20,7 +20,7 @@ Les pièces et XP demeurent des valeurs serveur. Une quête en attente n'affiche
 
 Les récompenses usuelles du foyer de démonstration possèdent maintenant des objets distincts, notamment dessert, musique, invitation d'un ami, figurine et livre. Le temps d'écran réemploie le sablier de la vallée. Une récompense libre créée par le parent conserve un pictogramme de catégorie si aucun objet ne correspond à son titre ; l'illustration ne change ni le prix ni la validation parentale.
 
-Le journal choisit l'objet de chaque fiche d'après sa catégorie serveur, plutôt que sa position dans une liste. Maison, autonomie, apprentissage et entraide ont quatre objets distincts ; les autres catégories gardent provisoirement les objets existants. Le nom de la catégorie et le type de quête sont écrits en français et en anglais. Les habitude et grandes quêtes ont chacune un bord de fiche reconnaissable ; la numérotation arbitraire des fiches a été retirée.
+Le journal choisit l'objet de chaque fiche d'après sa catégorie serveur, plutôt que sa position dans une liste. Maison, autonomie, apprentissage, entraide, créativité, école, jardin et animaux ont huit objets distincts. Le nom de la catégorie et le type de quête sont écrits en français et en anglais. Les habitudes et grandes quêtes ont chacune un bord de fiche reconnaissable ; la numérotation arbitraire des fiches a été retirée.
 
 L'XP fait aussi pousser un arbre personnel, visible dans le HUD et sur le profil. Cinq illustrations de la même espèce correspondent aux niveaux 1, 5, 10, 20 et 30. La taille varie légèrement entre ces seuils selon l'XP du niveau courant ; le prochain seuil est indiqué en texte. Un gain détecté depuis la dernière visite sur l'appareil déclenche une réaction courte, jamais un gain simulé. Ce compagnon visuel est purement cosmétique ; les nombres et les récompenses restent ceux du serveur. Le registre de compte possède maintenant sa propre scène intérieure, avec le solde sur une surface sombre lisible. Chaque objectif du coffre est une destination au bout d'un chemin : la pièce avance selon le montant du serveur, les quatre récompenses illustrées connues montrent leur objet, et les titres libres utilisent un poteau sans texte peint.
 
@@ -34,12 +34,12 @@ Depuis l'espace parent, **Espace enfant** ouvre le choix d'un profil. Pour prêt
 - À 768 px, le panorama montre les six bâtiments et les panneaux de contenu restent limités en largeur.
 - À 1280 px, le monde remplit une grande scène sans étirer les fiches de lecture. La navigation flotte au bas de la fenêtre, sans couvrir les plaques du village.
 - Les actions ont au moins 44 px ; le focus est visible. Les animations s'arrêtent avec `prefers-reduced-motion`.
-- L'arbre, le profil, le registre, un objectif du coffre, la collection, ses albums et la bibliothèque ont été capturés aux trois largeurs dans `docs/screenshots/child-experience-*` ; la capture est régénérable par `node apps/web/scripts/capture-child-experience.mjs` avec Chrome local. Les chargements enfant montrent le sablier illustré, sans spinner bloquant.
+- L'arbre, le profil, le registre, un objectif du coffre, les huit catégories de quête, la collection, ses albums et la bibliothèque ont été capturés aux trois largeurs dans `docs/screenshots/child-experience-*` ; la capture est régénérable par `node apps/web/scripts/capture-child-experience.mjs` avec Chrome local. Les cinq paliers de la vallée sont dans `docs/screenshots/child-valley-tier-*`. Les chargements enfant montrent le sablier illustré, sans spinner bloquant.
 
 ## Langue et contenu
 
 Les nouveaux textes de l'accueil, de la navigation, du journal, de la boutique, du profil, du PIN et du passage parent/enfant utilisent `defineCopy` avec français et anglais. La langue est transmise à l'API par `X-Locale`. Les titres de quêtes, de récompenses, de modules et de cartes sont des contenus créés en français par le foyer ou le seed et ne sont pas traduits automatiquement ; la localisation de ces contenus demande un modèle éditorial distinct.
 
-## Suite prévue
+## Personnages et paliers livrés
 
-Les 16 portraits ont chacun un personnage en pied. Emma (`aventurier-06`) et Lucas (`aventurier-05`) disposent des six poses cohérentes prévues : repos, heureux, fier, réflexion, victoire et découverte. La place montre la pose heureuse, le profil la pose fière et les étapes de leçon passent de découverte à réflexion puis fier ; la validation de quête utilise victoire. Les 14 autres personnages conservent les traits et vêtements de leur portrait et utilisent une pose repos sur ces écrans. Les cinq paliers du village sont sélectionnés par le niveau mais partagent encore le même décor, conformément au report demandé ; aucun effet de progression fictif n'est affiché.
+Les 16 portraits ont chacun un personnage en pied. Emma (`aventurier-06`) et Lucas (`aventurier-05`) disposent des six poses cohérentes prévues : repos, heureux, fier, réflexion, victoire et découverte. La place montre la pose heureuse, le profil la pose fière et les étapes de leçon passent de découverte à réflexion puis fier ; la validation de quête utilise victoire. Les 14 autres personnages conservent les traits et vêtements de leur portrait et utilisent une pose repos sur ces écrans. Les paliers 5, 10, 20 et 30 ajoutent chacun un calque complet au village ; le hameau du fond est le palier 1.

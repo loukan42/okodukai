@@ -19,10 +19,10 @@ const questArt: Record<QuestCategory, { name: string; folder: "quests" | "object
   AUTONOMIE: { name: "quest-autonomy", folder: "quests" },
   APPRENTISSAGE: { name: "quest-learning", folder: "quests" },
   ENTRAIDE: { name: "quest-help", folder: "quests" },
-  CREATIVITE: { name: "quest-scroll", folder: "objects" },
-  ECOLE: { name: "bookshelf", folder: "objects" },
-  JARDIN: { name: "quest-scroll", folder: "objects" },
-  ANIMAUX: { name: "quest-scroll", folder: "objects" },
+  CREATIVITE: { name: "quest-creativity", folder: "quests" },
+  ECOLE: { name: "quest-school", folder: "quests" },
+  JARDIN: { name: "quest-garden", folder: "quests" },
+  ANIMAUX: { name: "quest-animals", folder: "quests" },
 };
 
 export function Quests() {

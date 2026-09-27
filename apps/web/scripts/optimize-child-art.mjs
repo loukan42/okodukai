@@ -10,7 +10,7 @@ const output = join(webRoot, "public", "assets");
 
 const images = [
   ...["01", "02", "03", "04", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16"].map((id) => ({ name: `adventurer-${id}-idle`, folder: "characters", sizes: [256, 512, 768] })),
-  ...["home", "autonomy", "learning", "help"].map((name) => ({ name: `quest-${name}`, folder: "quests", sizes: [180, 360, 540] })),
+  ...["home", "autonomy", "learning", "help", "creativity", "school", "garden", "animals"].map((name) => ({ name: `quest-${name}`, folder: "quests", sizes: [180, 360, 540] })),
   { name: "adventurer-emma-idle", folder: "characters", sizes: [256, 512, 768] },
   { name: "adventurer-emma-victory", folder: "characters", sizes: [256, 512, 768] },
   { name: "adventurer-lucas-idle", folder: "characters", sizes: [256, 512, 768] },
@@ -29,7 +29,7 @@ for (const [shape, widths] of hubShapes) {
   for (const width of widths) {
     const target = join(folder, `child-hub-${shape}-${width}.webp`);
     await sharp(join(source, `hub-${shape}.png`))
-      .resize({ width, withoutEnlargement: true })
+      .resize({ width })
       .webp({ quality: 82, effort: 6 })
       .toFile(target);
     console.log(target);
@@ -37,8 +37,8 @@ for (const [shape, widths] of hubShapes) {
 }
 
 // Calques de progression de la vallée : un calque transparent complet par palier, posé sur le fond du
-// campement. Il doit garder le cadrage de `hub-{shape}.png` ; il est ramené à ses dimensions exactes pour
-// que le fond et le calque se recouvrent au pixel près. Un palier sans source n'est pas encore produit.
+// hameau. Il doit garder le cadrage de `hub-{shape}.png` ; le fond et le calque sont redimensionnés
+// de la même manière, y compris pour les variantes 1920/1080, afin que le srcset annonce leur vraie largeur.
 for (const tier of [5, 10, 20, 30]) {
   for (const [shape, widths] of hubShapes) {
     const file = join(source, `hub-tier-${tier}-${shape}.png`);
@@ -57,7 +57,7 @@ for (const tier of [5, 10, 20, 30]) {
     for (const width of widths) {
       const target = join(folder, `hub-tier-${tier}-${shape}-${width}.webp`);
       await sharp(aligned)
-        .resize({ width, withoutEnlargement: true })
+        .resize({ width })
         .webp({ quality: 84, effort: 6, alphaQuality: 95 })
         .toFile(target);
       console.log(target);

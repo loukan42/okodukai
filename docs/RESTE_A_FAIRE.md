@@ -1,11 +1,24 @@
 # Reste à faire : passation (26 septembre 2026)
 
+## Bilan du 27 septembre 2026 : refonte enfant livrée
+
+- La vallée navigable, ses quatre paliers peints, les 16 personnages en pied, l'arbre qui grandit avec l'XP, les huit catégories de quêtes illustrées, les lieux intérieurs, le coffre, la boutique, la collection et la bibliothèque sont intégrés. Le parent peut prêter son téléphone avec retour protégé par PIN ou envoyer une invitation unique à l'enfant sur son propre appareil.
+- Captures contrôlées à 375, 768 et 1280 px : `child-experience-*`, `child-character-*` et les 15 `child-valley-tier-*` dans `docs/screenshots/`. Les cinq paliers gardent les lieux cliquables, le HUD visible et aucun débordement. Les objets du journal sont tous chargés et lisibles aux trois largeurs.
+- Vérifications finales : `npm run build` réussi (typecheck shared, API et web) ; `npm test` avec `apps/api/.env` réussi (81 tests). Le dépôt ne définit ni script `lint` ni configuration ESLint/Biome ; aucun lint dédié n'a été lancé. Les variantes WebP 1920/1080 du fond et des calques ont leur largeur annoncée et le même cadrage.
+- Limites connues : Emma et Lucas ont six poses ; les 14 autres personnages ont la pose repos. Les titres de quêtes et récompenses écrits par une famille restent dans leur langue de saisie. Ce sont des choix de contenu, sans incidence sur le PIN ni sur les valeurs serveur. Les autres chantiers généraux du produit ci-dessous restent indépendants de cette refonte.
+
+## Point d'étape du 27 septembre 2026 : les huit catégories de quêtes sont illustrées
+
+- Créativité, école, jardin et animaux disposent maintenant d'objets propres : boîte de peinture, cartable, arrosoir et matériel de soin. Les huit catégories du journal ont donc chacune un objet distinct. Les sources transparentes, WebP 180/360/540 et correspondances dans `Quests.tsx` sont versionnés.
+- Les captures `docs/screenshots/child-experience-quests-{375,768,1280}.png` montrent les huit catégories dans une fixture visuelle sans écriture en base. Le script fait défiler et décode chaque illustration différée avant de vérifier qu'elle charge. Aucun débordement horizontal ; build web vert. La fixture montre des gains fictifs uniquement pour la revue graphique.
+- La revue finale est consignée dans le bilan ci-dessus et `CHILD_DESIGN_AUDIT.md`.
+
 ## Point d'étape du 27 septembre 2026 : les quatre paliers de la vallée sont livrés
 
 - Les paliers 5, 10, 20 et 30 ont chacun un calque peint complet pour le cadrage paysage et portrait. Les huit scènes successives ont été produites depuis `hub-wide.png` ou `hub-tall.png` ; un essai portrait au mauvais cadrage a été écarté. Le hameau existant reste le palier 1. Les ajouts cumulés sont lanternes et fanion, échoppe et potager, maisonnettes et pont, puis nouvelle lisière. `Home.tsx` active les quatre calques, choisis par le niveau renvoyé par `/child/me`.
 - Les sources intégrales et les calques transparents sont dans `apps/web/art/source/child/`, les WebP optimisés dans `apps/web/public/assets/backgrounds/`. L'extraction a modifié 1,8 à 29,3 % de chaque scène, sous le seuil d'un tiers du brief. Les aperçus de calque posé sur le fond ont été inspectés ; les lieux initiaux, le personnage et les chemins restent lisibles.
 - `node apps/web/scripts/capture-child-valley-tiers.mjs` a contrôlé les cinq paliers à 375, 768 et 1280 px : calque aligné, non cliquable, cibles de lieu utilisables, HUD visible et aucun débordement. Les 15 captures sont dans `docs/screenshots/child-valley-tier-*.png` et ont été revues visuellement. Build web vert. `docs/BRIEF_CODEX_VALLEE_PALIERS.md` est exécuté ; le garder comme procédure de régénération.
-- Pour une prochaine reprise : restent les illustrations dédiées des quêtes créativité, école, jardin et animaux, puis la revue finale de la mission initiale dans `CHILD_ASSET_PLAN.md` et `CHILD_UI_REDESIGN.md`.
+- Les autres catégories de quête et la revue finale sont consignées au début du document.
 
 ## Point d'étape du 27 septembre 2026 : vallée par paliers, architecture prête, illustrations à produire
 
@@ -20,7 +33,7 @@
 
 - Le journal montre une illustration selon la catégorie de chaque quête renvoyée par l'API. Maison, autonomie, apprentissage et entraide ont quatre nouveaux objets cohérents ; le type habitude ou grande quête reste identifiable par le bord de la fiche. Les numéros de fiche arbitraires ont été retirés. Les chaînes de catégorie sont en français et en anglais.
 - Captures `docs/screenshots/child-experience-quests-{375,768,1280}.png`, avec fixture visuelle en lecture seule : le foyer local n'avait plus de quêtes actives pour Emma. Images chargées, pas de débordement horizontal ; build web vert. Les récompenses affichées dans ces captures sont fictives et ne servent qu'à la revue graphique.
-- Restent les illustrations dédiées aux catégories créativité, école, jardin et animaux. Le serveur donne désormais un booster toutes les trois quêtes validées : une fiche individuelle ne promet donc pas de booster.
+- Les quatre autres catégories disposent désormais de leurs propres objets (voir le point d'étape ci-dessus). Le serveur donne un booster toutes les trois quêtes validées : une fiche individuelle ne promet donc pas de booster.
 
 ## Point d'étape du 27 septembre 2026 : liste des comptes parents dans l'administration
 

@@ -26,12 +26,16 @@ try {
     if (!loginResponse.ok()) throw new Error(`Demo login: HTTP ${loginResponse.status()}`);
     if (questsOnly) {
       // L'état mutable du foyer de démo peut ne plus contenir de quêtes actives.
-      // Cette fixture visuelle couvre les quatre illustrations sans modifier la base.
+      // Cette fixture visuelle couvre les huit catégories sans modifier la base.
       const questSamples = [
         ["MAISON", "Vider le lave-vaisselle", "FACILE"],
         ["AUTONOMIE", "Ranger sa chambre", "MOYENNE"],
         ["ENTRAIDE", "Mettre la table", "FACILE"],
         ["APPRENTISSAGE", "Lire 15 minutes", "IMPORTANTE"],
+        ["CREATIVITE", "Peindre une carte", "FACILE"],
+        ["ECOLE", "Préparer son cartable", "MOYENNE"],
+        ["JARDIN", "Arroser les plantes", "FACILE"],
+        ["ANIMAUX", "Remplir la gamelle", "MOYENNE"],
       ].map(([category, title, difficulty], index) => ({ id: `visual-quest-${index}`, category, title, difficulty, description: null, status: "DISPONIBLE", recurrence: "UNIQUE", rewardCoins: 10, rewardXp: 15 }));
       await page.route("**/api/child/quests", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ quests: questSamples }) }));
     }
@@ -55,7 +59,11 @@ try {
       await page.locator(ready).first().waitFor({ state: "visible" });
       if (screen === "quests") {
         const images = page.locator(".quest-sheet-index .object-art");
-        await images.first().evaluate((image) => image.decode());
+        for (const image of await images.all()) {
+          await image.scrollIntoViewIfNeeded();
+          await image.evaluate((element) => element.decode());
+        }
+        await page.evaluate(() => window.scrollTo(0, 0));
         const broken = await images.evaluateAll((items) => items.filter((image) => !image.complete || image.naturalWidth === 0).length);
         if (broken) throw new Error(`Quests ${width}px: ${broken} illustrations did not load`);
       }
