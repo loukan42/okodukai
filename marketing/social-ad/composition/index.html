@@ -7,108 +7,169 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Manrope:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div id="stage" class="stage" data-variant="story12" aria-hidden="true">
-      <div class="bg"></div>
-      <div class="vignette"></div>
+    <div id="stage" class="stage" data-variant="story12">
+      <div class="world" aria-hidden="true">
+        <img class="world-plate world-plate--a" id="bg-a" alt="" />
+        <img class="world-plate world-plate--b" id="bg-b" alt="" />
+        <div class="world-glow"></div>
+        <div class="world-vignette"></div>
+      </div>
 
-      <!-- Scene 1: parental phrases -->
-      <section class="scene scene-hook" data-from="0" data-to="1.5">
-        <p class="eyebrow">Vous répétez ça tous les jours ?</p>
-        <ul class="phrases">
-          <li class="phrase p1">Range ta chambre.</li>
-          <li class="phrase p2">Prépare ton sac.</li>
-          <li class="phrase p3">Mets la table.</li>
-        </ul>
+      <!-- 0 → hook -->
+      <section class="scene scene-hook" data-id="hook">
+        <p class="caption caption--hero">Vous répétez ça tous les jours ?</p>
+        <div class="speech-stack">
+          <div class="speech s1"><span>Range ta chambre.</span></div>
+          <div class="speech s2"><span>Prépare ton sac.</span></div>
+          <div class="speech s3"><span>Mets la table.</span></div>
+        </div>
       </section>
 
-      <!-- Scene 2: phrases become quest cards -->
-      <section class="scene scene-quests" data-from="1.5" data-to="3.5">
-        <p class="line">Transformez les routines en missions.</p>
-        <article class="quest-card">
-          <header>
-            <span class="quest-tag">Quête</span>
-            <span class="quest-reward">+10</span>
-          </header>
-          <h2>Ranger sa chambre</h2>
-          <p>Pour Lina · validée par un parent</p>
-        </article>
-      </section>
-
-      <!-- Scene 3: validation + coins -->
-      <section class="scene scene-validate" data-from="3.5" data-to="5.5">
-        <p class="line">Une mission. Une validation. +10.</p>
-        <div class="phone-panel">
-          <div class="row">
-            <span>Lina a terminé</span>
-            <strong>Ranger sa chambre</strong>
-          </div>
-          <div class="actions">
-            <span class="btn ghost">À refaire</span>
-            <span class="btn primary">Valider</span>
-          </div>
-          <div class="coin-burst">
-            <img class="coin" src="" alt="" width="72" height="72" />
-            <span class="plus">+10</span>
+      <!-- quest transform -->
+      <section class="scene scene-quest" data-id="quest">
+        <p class="caption">Transformez les routines en missions.</p>
+        <div class="phone">
+          <div class="phone-bezel">
+            <div class="phone-notch"></div>
+            <div class="phone-screen phone-screen--quest">
+              <header class="app-top">
+                <img class="asset-logo-sm" alt="" />
+                <div class="app-user">
+                  <img class="asset-avatar" alt="" />
+                  <strong>Lina</strong>
+                </div>
+              </header>
+              <article class="quest-sheet">
+                <img class="quest-art" alt="" />
+                <div class="quest-meta">
+                  <span class="pill pill--forest">Quête</span>
+                  <span class="pill pill--gold">+10</span>
+                </div>
+                <h2>Ranger sa chambre</h2>
+                <p>Maison · Facile · +10 pièces · +10 XP</p>
+              </article>
+              <div class="quest-board-hint">
+                <img class="asset-board" alt="" />
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- Scene 4: choices -->
-      <section class="scene scene-choice" data-from="5.5" data-to="8">
-        <p class="line">Après, c’est à elle de choisir.</p>
-        <div class="choice-grid">
-          <div class="choice"><span>Dépenser</span></div>
-          <div class="choice highlight"><span>Mon coffre</span></div>
-          <div class="choice"><span>Placer</span></div>
-        </div>
-        <div class="balance">
-          <img class="coin small" src="" alt="" width="36" height="36" />
-          <strong>42</strong>
-          <span>pièces disponibles</span>
+      <!-- validate -->
+      <section class="scene scene-validate" data-id="validate">
+        <p class="caption">Une mission. Une validation. +10.</p>
+        <div class="validate-layout">
+          <div class="parent-card">
+            <p class="parent-kicker">À valider</p>
+            <div class="parent-row">
+              <img class="asset-avatar" alt="" />
+              <div>
+                <span>Lina a terminé</span>
+                <strong>Ranger sa chambre</strong>
+                <small>+10 pièces · +10 XP</small>
+              </div>
+            </div>
+            <div class="parent-actions">
+              <span class="btn ghost">À refaire</span>
+              <span class="btn primary pulse">Valider</span>
+            </div>
+          </div>
+          <div class="coin-pop">
+            <img class="asset-coin" alt="" />
+            <em>+10</em>
+          </div>
         </div>
       </section>
 
-      <!-- Scene 5: montage -->
-      <section class="scene scene-montage" data-from="8" data-to="10.5">
-        <p class="line">Dépenser. Économiser. Comprendre.</p>
-        <div class="montage">
-          <div class="tile">Glace en famille</div>
-          <div class="tile">Objectif 80</div>
-          <div class="tile chart">
-            <svg viewBox="0 0 120 48" width="120" height="48" aria-hidden="true">
+      <!-- choices -->
+      <section class="scene scene-choice" data-id="choice">
+        <p class="caption">Après, c’est à elle de choisir.</p>
+        <div class="phone">
+          <div class="phone-bezel">
+            <div class="phone-notch"></div>
+            <div class="phone-screen phone-screen--money">
+              <header class="money-head">
+                <img class="asset-coin coin-inline" alt="" />
+                <div>
+                  <span>Disponible</span>
+                  <strong>42 <small>pièces</small></strong>
+                </div>
+              </header>
+              <div class="choice-row">
+                <div class="choice-tile">
+                  <img class="asset-shop" alt="" />
+                  <span>Dépenser</span>
+                </div>
+                <div class="choice-tile is-hot">
+                  <img class="asset-chest" alt="" />
+                  <span>Mon coffre</span>
+                </div>
+                <div class="choice-tile">
+                  <img class="asset-scope" alt="" />
+                  <span>Placer</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- montage -->
+      <section class="scene scene-montage" data-id="montage">
+        <p class="caption">Dépenser. Économiser. Comprendre.</p>
+        <div class="montage-grid">
+          <div class="tile tile-a">
+            <img class="asset-reward" alt="" />
+            <span>Glace en famille</span>
+          </div>
+          <div class="tile tile-b">
+            <img class="asset-chest" alt="" />
+            <span>Objectif 80</span>
+            <div class="bar"><i style="width: 55%"></i></div>
+          </div>
+          <div class="tile tile-c">
+            <svg viewBox="0 0 160 70" aria-hidden="true">
               <polyline
                 fill="none"
                 stroke="#d59b38"
-                stroke-width="4"
+                stroke-width="5"
                 stroke-linecap="round"
-                points="4,36 28,28 52,30 76,14 100,18 116,10"
+                stroke-linejoin="round"
+                points="6,52 34,44 58,46 86,22 114,28 152,14"
               />
+              <circle cx="152" cy="14" r="6" fill="#f1d389" />
             </svg>
+            <span>Simulation</span>
           </div>
-          <div class="tile booster">Booster</div>
+          <div class="tile tile-d">
+            <img class="asset-booster" alt="" />
+            <span>Booster</span>
+          </div>
         </div>
       </section>
 
-      <!-- Scene 6: end card -->
-      <section class="scene scene-end" data-from="10.5" data-to="15">
-        <img class="logo" src="" alt="Okodukai" width="280" height="72" />
+      <!-- end -->
+      <section class="scene scene-end" data-id="end">
+        <img class="asset-logo-lg end-logo" alt="Okodukai" />
         <h1>Son premier compte. Pour de faux.</h1>
         <p class="tagline">Ses premiers réflexes avec l’argent. Pour de vrai.</p>
-        <p class="cta">100 % gratuit</p>
+        <p class="cta-pill">100 % gratuit</p>
         <p class="url">okodukai-gold.vercel.app</p>
       </section>
 
-      <!-- Short-cut overlays for 6s variant copy -->
-      <section class="scene scene-short-end" data-from="4.5" data-to="6" hidden>
-        <img class="logo" src="" alt="Okodukai" width="280" height="72" />
-        <p class="line short">Le quotidien devient un jeu. L’argent s’apprend en faisant.</p>
-        <p class="cta">100 % gratuit</p>
+      <!-- short end -->
+      <section class="scene scene-short-end" data-id="short-end">
+        <img class="asset-logo-lg end-logo" alt="Okodukai" />
+        <p class="caption caption--hero">Le quotidien devient un jeu.</p>
+        <p class="tagline">L’argent s’apprend en faisant.</p>
+        <p class="cta-pill">100 % gratuit</p>
       </section>
     </div>
     <script src="./timeline.js"></script>

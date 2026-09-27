@@ -3,7 +3,7 @@
 ## Point d'étape du 27 septembre 2026 (soir) : partage organique parent
 
 - Branche `feat/parent-organic-share` : campagne `parent-organic-v1` (concept A, routines → missions).
-- Vidéos rendues (`npm run social:render`, FFmpeg + ASS) dans `apps/web/public/social/parent-organic-v1/` (story 6s/12s, feed 4:5, carré, paysage 15s, versions muettes, poster, OG).
+- Vidéos premium rendues (`npm run social:render`, composition HTML + Playwright + FFmpeg) dans `apps/web/public/social/parent-organic-v1/` : vallée Okodukai, UI produit (quête Lina, validation parent, coffre, montage), story 6s/12s, feed, carré, paysage, muettes, poster, OG. Frames QA : `docs/screenshots/social-qa/`.
 - Espace parent : carte dismissible après première quête validée (`hasValidatedQuest`), accès permanent dans Compte, modale de partage (natif / téléchargement / copies / intentions), i18n FR/EN.
 - Analytics anonymes `ShareEvent` + `POST /share/events` (liste blanche, throttle) ; totaux dans Admin ; UTM `parent_referral` ; Open Graph dans `index.html`.
 - Docs : `marketing/*`, `docs/PARENT_SHARE_FEATURE.md`, `docs/SOCIAL_SHARE_COMPATIBILITY.md`.

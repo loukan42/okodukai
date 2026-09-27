@@ -4,6 +4,7 @@
   "headline": "Son premier compte. Pour de faux.",
   "concept": "A",
   "demoChildName": "Lina",
+  "engine": "html-composition + playwright + ffmpeg",
   "formats": {
     "story12": {
       "url": "/social/parent-organic-v1/video/okodukai-story-12s.mp4",

@@ -39,5 +39,7 @@ Généré localement par `marketing/social-ad/scripts/render.mjs` via FFmpeg `la
 npm run social:render
 ```
 
-Composition de référence (storyboard HTML) : `marketing/social-ad/composition/`.
-Rendu productif : `marketing/social-ad/scripts/render.mjs` — FFmpeg (lavfi, sous-titres ASS, overlays pièce/logo, AAC). Aucune dépendance npm obligatoire pour le rendu.
+Composition premium (storyboard HTML + CSS + timeline seekable) : `marketing/social-ad/composition/`.
+Utilise les assets produit (`valley-golden`, `valley-hamlet-dawn`, pièce, coffre, quête maison, logo, avatar démo).
+Rendu : `marketing/social-ad/scripts/render.mjs` — Playwright (enregistrement Edge/Chromium) + FFmpeg H.264/AAC.
+QA frames : `docs/screenshots/social-qa/story-*.jpg`.
