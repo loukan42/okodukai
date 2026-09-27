@@ -6,7 +6,8 @@
 - **Aucun calque n'est encore illustré** : cette session n'avait pas d'outil de génération d'images. `tierLayers` est vide dans `apps/web/src/pages/child/Home.tsx`, donc rien ne change à l'écran tant qu'un palier n'y est pas ajouté.
 - Outils livrés : `optimize-child-art.mjs` produit `backgrounds/hub-tier-<palier>-{wide,tall}-*.webp` quand la source existe et refuse un calque opaque ou mal cadré ; `extract-hub-tier-layer.mjs` tire le calque d'une scène complète éditée par le générateur ; `capture-child-valley-tiers.mjs` capture les cinq paliers à 375/768/1280 px avec un niveau remplacé dans le navigateur seulement. Zones libres, contenu de chaque palier et consigne de génération : `docs/CHILD_ASSET_PLAN.md`.
 - Vérifié avec un calque de test jetable (contours du fond en rouge, non versionné) : alignement exact aux trois largeurs, lieux et personnage cliquables, HUD intact, pas de débordement. Extraction testée sur une édition simulée (teinte décalée, grain, JPEG, autre résolution). Build web vert.
-- Reste : générer les huit scènes (`hub-tier-<palier>-{wide,tall}-full.png`), extraire, optimiser, ajouter les paliers à `tierLayers`, lancer la capture, versionner les captures et ajouter la ligne du registre. Point à trancher : le fond actuel montre déjà un hameau, pas un campement ; les paliers ajoutent des éléments en plus. Redessiner un vrai campement pour le palier 1 changerait l'accueil de tous les enfants et demande l'accord du propriétaire.
+- Décisions du propriétaire : il génère lui-même les huit scènes (`hub-tier-<palier>-{wide,tall}-full.png`, à déposer dans `apps/web/art/source/child/`) ; le hameau du fond actuel reste le palier 1, sans campement redessiné.
+- Reste, une fois les scènes déposées : extraire, contrôler, optimiser, ajouter les paliers à `tierLayers`, lancer la capture, versionner les sources, les WebP et les captures, et ajouter la ligne du registre.
 
 ## Point d'étape du 27 septembre 2026 : objets des quêtes courantes
 
