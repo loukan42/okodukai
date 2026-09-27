@@ -14,7 +14,7 @@ L'accueil est une scène navigable. Chaque destination est un lien HTML nommé e
 | `/enfant/argent/investir/bibliotheque` | Bibliothèque | Scènes de notion, leçons chiffrées et carnet |
 | `/enfant/boutique` | Échoppe | Objets familiaux illustrés, prix en pièces, demande soumise au parent |
 | `/enfant/collection` | Galerie aux lanternes | Booster à ouvrir, univers, cartes exposées ; salle conservée dans chaque album |
-| `/enfant/profil` | Atelier du personnage | Personnage, niveau et choix parmi 16 portraits |
+| `/enfant/profil` | Atelier du personnage | Personnage, niveau, choix parmi 16 portraits et cadres déverrouillés par l'XP |
 
 Les pièces et XP demeurent des valeurs serveur. Une quête en attente n'affiche pas son gain comme acquis. Le compte garde un relevé lisible ; les placements restent une simulation pédagogique. Les cartes et l'ouverture de booster existantes sont réemployées.
 
@@ -23,6 +23,8 @@ Les récompenses usuelles du foyer de démonstration possèdent maintenant des o
 Le journal choisit l'objet de chaque fiche d'après sa catégorie serveur, plutôt que sa position dans une liste. Maison, autonomie, apprentissage, entraide, créativité, école, jardin et animaux ont huit objets distincts. Le nom de la catégorie et le type de quête sont écrits en français et en anglais. Les habitudes et grandes quêtes ont chacune un bord de fiche reconnaissable ; la numérotation arbitraire des fiches a été retirée.
 
 L'XP fait aussi pousser un arbre personnel, visible dans le HUD et sur le profil. Cinq illustrations de la même espèce correspondent aux niveaux 1, 5, 10, 20 et 30. La taille varie légèrement entre ces seuils selon l'XP du niveau courant ; le prochain seuil est indiqué en texte. Un gain détecté depuis la dernière visite sur l'appareil déclenche une réaction courte, jamais un gain simulé. Ce compagnon visuel est purement cosmétique ; les nombres et les récompenses restent ceux du serveur. Le registre de compte possède maintenant sa propre scène intérieure, avec le solde sur une surface sombre lisible. Chaque objectif du coffre est une destination au bout d'un chemin : la pièce avance selon le montant du serveur, les quatre récompenses illustrées connues montrent leur objet, et les titres libres utilisent un poteau sans texte peint.
+
+Le profil propose aussi trois cadres de portrait : bois et laiton au niveau 5, feuillage au niveau 10, observatoire au niveau 20. L'enfant peut revenir au portrait sans cadre. Le serveur vérifie le niveau calculé depuis l'XP avant d'enregistrer le choix sur son profil ; le cadre apparaît dans l'en-tête, sur l'accueil et dans le choix des portraits. Aucun cadre ne modifie les pièces, l'XP ou les récompenses. Les cadres verrouillés restent visibles avec leur niveau requis.
 
 ## Deux appareils, un foyer
 
@@ -35,6 +37,7 @@ Depuis l'espace parent, **Espace enfant** ouvre le choix d'un profil. Pour prêt
 - À 1280 px, le monde remplit une grande scène sans étirer les fiches de lecture. La navigation flotte au bas de la fenêtre, sans couvrir les plaques du village.
 - Les actions ont au moins 44 px ; le focus est visible. Les animations s'arrêtent avec `prefers-reduced-motion`.
 - L'arbre, le profil, le registre, un objectif du coffre, les huit catégories de quête, la collection, ses albums et la bibliothèque ont été capturés aux trois largeurs dans `docs/screenshots/child-experience-*` ; la capture est régénérable par `node apps/web/scripts/capture-child-experience.mjs` avec Chrome local. Les cinq paliers de la vallée sont dans `docs/screenshots/child-valley-tier-*`. Les chargements enfant montrent le sablier illustré, sans spinner bloquant.
+- Le choix des cadres est contrôlé à 375, 768 et 1280 px dans `docs/screenshots/child-portrait-frames-*`, régénérable par `node apps/web/scripts/capture-child-frames.mjs` avec Chrome local. La fixture remplace le niveau et le cadre dans les réponses du navigateur ; elle n'écrit pas dans la base.
 
 ## Langue et contenu
 

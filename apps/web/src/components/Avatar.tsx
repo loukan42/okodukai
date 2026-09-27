@@ -23,13 +23,14 @@ function avatarIndex(avatarId: string) {
   return hash % AVAILABLE_AVATARS.length;
 }
 
-export function Avatar({ avatarId, size = "md" }: { avatarId: string; size?: "md" | "lg" }) {
+export function Avatar({ avatarId, size = "md", frameId = "none" }: { avatarId: string; size?: "md" | "lg"; frameId?: string }) {
   const index = avatarIndex(avatarId);
   const column = index % 4;
   const row = Math.floor(index / 4);
   return (
     <span className={`avatar ${size === "lg" ? "avatar-lg" : ""}`} aria-hidden="true">
       <span className="avatar-illustration" style={{ backgroundPosition: `${(column / 3) * 100}% ${(row / 3) * 100}%` }} />
+      {(["camp", "grove", "observatory"].includes(frameId)) && <img className="avatar-frame-art" src={`/assets/frames/frame-${frameId}-128.webp`} srcSet={`/assets/frames/frame-${frameId}-128.webp 128w, /assets/frames/frame-${frameId}-256.webp 256w`} sizes={size === "lg" ? "88px" : "56px"} alt="" draggable={false} />}
     </span>
   );
 }

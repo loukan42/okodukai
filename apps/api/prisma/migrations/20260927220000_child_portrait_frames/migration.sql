@@ -1,0 +1,1 @@
+ALTER TABLE "ChildProfile" ADD COLUMN "frameId" TEXT NOT NULL DEFAULT 'none';

@@ -259,7 +259,7 @@ authRouter.get("/me", async (req, res) => {
   if (!child) return res.status(401).json({ error: "Non authentifié" });
   return res.json({
     kind: "child",
-    child: { id: child.id, displayName: child.displayName, avatarId: child.avatarId, ageBand: pedagogyBand(child) },
+    child: { id: child.id, displayName: child.displayName, avatarId: child.avatarId, frameId: child.frameId, ageBand: pedagogyBand(child) },
     householdId: req.session.householdId,
     // L'espace enfant suit la langue choisie par le parent (pas de choix de langue côté enfant).
     locale: child.household.locale,

@@ -8,6 +8,9 @@ import { catchUpMoney } from "../lib/moneyCatchUp.js";
 import { levelView } from "../lib/levels.js";
 import { validateBody } from "../lib/validation.js";
 
+// Keep this gate on the server: a modified client must not equip a locked frame.
+const frameMinLevel = { none: 1, camp: 5, grove: 10, observatory: 20 } as const;
+
 export const childRouter = Router();
 childRouter.use(attachSession);
 
@@ -33,6 +36,7 @@ childRouter.get("/child/me", requireChild, async (req, res) => {
       id: child.id,
       displayName: child.displayName,
       avatarId: child.avatarId,
+      frameId: child.frameId,
       ageBand: pedagogyBand(child),
       activeGoalId: child.activeGoalId,
     },
@@ -44,4 +48,14 @@ childRouter.get("/child/me", requireChild, async (req, res) => {
 childRouter.patch("/child/me/avatar", requireChild, validateBody(z.object({ avatarId: z.string().regex(/^aventurier-(0[1-9]|1[0-6])$/) })), async (req, res) => {
   const child = await prisma.childProfile.update({ where: { id: childSession(req).childId }, data: { avatarId: req.body.avatarId }, select: { avatarId: true } });
   res.json(child);
+});
+
+/** A child's XP determines which cosmetic frames may be worn. */
+childRouter.patch("/child/me/frame", requireChild, validateBody(z.object({ frameId: z.enum(["none", "camp", "grove", "observatory"]) })), async (req, res) => {
+  const childId = childSession(req).childId;
+  const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId }, select: { currentXp: true } });
+  const frameId = req.body.frameId as keyof typeof frameMinLevel;
+  if (levelView(child.currentXp).level < frameMinLevel[frameId]) return res.status(403).json({ error: "Ce cadre se débloque à un niveau supérieur." });
+  const updated = await prisma.childProfile.update({ where: { id: childId }, data: { frameId }, select: { frameId: true } });
+  res.json(updated);
 });

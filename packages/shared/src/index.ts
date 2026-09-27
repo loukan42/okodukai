@@ -31,6 +31,15 @@ export type MasteryTier = "DECOUVERTE" | "CONNAISSEUR" | "EXPERT" | "MAITRE" | n
 
 export type Locale = "fr" | "en";
 
+/** Portrait decorations unlock with XP; they never change money or rewards. */
+export const COSMETIC_FRAMES = [
+  { id: "none", level: 1 },
+  { id: "camp", level: 5 },
+  { id: "grove", level: 10 },
+  { id: "observatory", level: 20 },
+] as const;
+export type CosmeticFrameId = (typeof COSMETIC_FRAMES)[number]["id"];
+
 export const RARITY_LABELS_BY_LOCALE: Record<Locale, Record<CardRarity, string>> = {
   fr: {
     COMMUNE: "Commune",

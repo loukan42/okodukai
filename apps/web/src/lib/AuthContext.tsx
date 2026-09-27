@@ -20,7 +20,7 @@ export interface ParentSession {
 
 export interface ChildSession {
   kind: "child";
-  child: { id: string; displayName: string; avatarId: string; ageBand: "AGE_8_9" | "AGE_10_12" };
+  child: { id: string; displayName: string; avatarId: string; frameId?: string; ageBand: "AGE_8_9" | "AGE_10_12" };
   householdId: string;
   /** Langue choisie par le parent : l'espace enfant n'a pas de choix de langue. */
   locale?: Locale;

@@ -2,6 +2,8 @@
 
 ## Bilan du 27 septembre 2026 : refonte enfant livrée
 
+- Ajout après la revue finale : trois cadres de portrait cosmétiques aux niveaux 5, 10 et 20. Le choix est conservé sur le profil enfant et vérifié côté API. Captures à 375, 768 et 1280 px : `child-portrait-frames-*`. Les 16 portraits et l'arbre d'XP restent en place.
+
 - La vallée navigable, ses quatre paliers peints, les 16 personnages en pied, l'arbre qui grandit avec l'XP, les huit catégories de quêtes illustrées, les lieux intérieurs, le coffre, la boutique, la collection et la bibliothèque sont intégrés. Le parent peut prêter son téléphone avec retour protégé par PIN ou envoyer une invitation unique à l'enfant sur son propre appareil.
 - Captures contrôlées à 375, 768 et 1280 px : `child-experience-*`, `child-character-*` et les 15 `child-valley-tier-*` dans `docs/screenshots/`. Les cinq paliers gardent les lieux cliquables, le HUD visible et aucun débordement. Les objets du journal sont tous chargés et lisibles aux trois largeurs.
 - Vérifications finales : `npm run build` réussi (typecheck shared, API et web) ; `npm test` avec `apps/api/.env` réussi (81 tests). Le dépôt ne définit ni script `lint` ni configuration ESLint/Biome ; aucun lint dédié n'a été lancé. Les variantes WebP 1920/1080 du fond et des calques ont leur largeur annoncée et le même cadrage.

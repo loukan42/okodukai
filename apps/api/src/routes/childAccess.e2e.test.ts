@@ -25,10 +25,12 @@ describe.skipIf(!process.env.DATABASE_URL)("accès enfant sur téléphone partag
     const stranger = await prisma.childProfile.create({ data: { householdId: other.id, displayName: "Autre", ageBand: "AGE_8_9", avatarId: "aventurier-02", pinHash: await argon2.hash("1234") } });
 
     const post = (path: string, body: unknown, cookie?: string) => fetch(`${base}${path}`, { method: "POST", headers: { ...json, ...(cookie ? { cookie } : {}) }, body: JSON.stringify(body) });
+    const patch = (path: string, body: unknown, cookie?: string) => fetch(`${base}${path}`, { method: "PATCH", headers: { ...json, ...(cookie ? { cookie } : {}) }, body: JSON.stringify(body) });
     try {
       const login = await post("/auth/continue", { email, password: "motdepasse123" });
       expect(login.status).toBe(200);
       const parentCookie = cookies(login);
+      expect((await patch("/child/me/frame", { frameId: "none" }, parentCookie)).status).toBe(401);
       expect((await post(`/auth/switch-child/${child.id}`, {}, parentCookie)).status).toBe(409);
       expect((await post("/auth/parent-pin", { password: "incorrect", pin: "2345" }, parentCookie)).status).toBe(401);
       expect((await post("/auth/parent-pin", { password: "motdepasse123", pin: "2345" }, parentCookie)).status).toBe(200);
@@ -37,6 +39,19 @@ describe.skipIf(!process.env.DATABASE_URL)("accès enfant sur téléphone partag
       const switched = await post(`/auth/switch-child/${child.id}`, {}, parentCookie);
       expect(switched.status).toBe(200);
       const sharedChildCookie = cookies(switched);
+      expect((await (await fetch(`${base}/child/me`, { headers: { cookie: sharedChildCookie } })).json() as { child: { frameId: string } }).child.frameId).toBe("none");
+      expect((await patch("/child/me/frame", { frameId: "camp" }, sharedChildCookie)).status).toBe(403);
+      expect((await patch("/child/me/frame", { frameId: "unknown" }, sharedChildCookie)).status).toBe(400);
+      await prisma.childProfile.update({ where: { id: child.id }, data: { currentXp: 550 } });
+      expect((await patch("/child/me/frame", { frameId: "camp" }, sharedChildCookie)).status).toBe(200);
+      expect((await patch("/child/me/frame", { frameId: "grove" }, sharedChildCookie)).status).toBe(403);
+      await prisma.childProfile.update({ where: { id: child.id }, data: { currentXp: 1800 } });
+      expect((await patch("/child/me/frame", { frameId: "grove" }, sharedChildCookie)).status).toBe(200);
+      expect((await patch("/child/me/frame", { frameId: "observatory" }, sharedChildCookie)).status).toBe(403);
+      expect((await (await fetch(`${base}/auth/me`, { headers: { cookie: sharedChildCookie } })).json() as { child: { frameId: string } }).child.frameId).toBe("grove");
+      await prisma.childProfile.update({ where: { id: child.id }, data: { currentXp: 6175 } });
+      expect((await patch("/child/me/frame", { frameId: "observatory" }, sharedChildCookie)).status).toBe(200);
+      expect((await (await fetch(`${base}/child/me`, { headers: { cookie: sharedChildCookie } })).json() as { child: { frameId: string } }).child.frameId).toBe("observatory");
       expect((await post("/auth/exit-child-mode/pin", { pin: "0000" }, sharedChildCookie)).status).toBe(401);
       const back = await post("/auth/exit-child-mode/pin", { pin: "2345" }, sharedChildCookie);
       expect(back.status).toBe(200);

@@ -12,6 +12,7 @@
 | Placements / apprendre | Décor générique et leçons textuelles | Observatoire et bibliothèque dédiés, quatre mini scènes de notions |
 | Accès enfant | Profil parent sans passage clair | Choix même téléphone avec PIN parent, ou invitation unique pour un appareil distinct |
 | XP | Barre abstraite | Arbre personnel en cinq formes, croissance graduelle et profil explicatif |
+| Portrait | Choix parmi 16 visages | Trois cadres cosmétiques à gagner aux niveaux 5, 10 et 20, sélection enregistrée et affichée dans l'en-tête et l'accueil |
 | Mon compte | Aplat bleu et solde | Registre intérieur illustré, solde sur contraste sombre, historique conservé lisible |
 | Objectifs | Barre seule | Chemin parcouru par la pièce, destination illustrée, montant écrit et progression accessible |
 
@@ -26,6 +27,8 @@
 - 375, 768 et 1280 px : `screenshots/child-experience-{quests,vault,shop,shop-end,observatory}-*.png`. Les captures de début et de fin de boutique montrent tous les objets courants et la navigation à sa place dans la fenêtre. Les images sont contrôlées après chargement et les pages ne débordent pas horizontalement.
 
 Les captures viennent du foyer local de démonstration ; le bouton « Démo » n'apparaît pas en production. Le contrôle a aussi porté sur le dialogue PIN à 375 px, sa fermeture par Échap et l'absence de débordement horizontal sur les principaux écrans.
+
+- Les cadres de portrait ont leurs captures `screenshots/child-portrait-frames-{375,768,1280}.png`. La fixture montre le niveau 10 et le cadre feuillage, laisse le cadre du niveau 20 verrouillé et vérifie que le choix du cadre campement actualise l'en-tête. Les trois PNG transparents ont été contrôlés au centre et hors de l'anneau ; les six WebP chargent et les trois pages ne débordent pas horizontalement. Le test `childAccess.e2e.test.ts` couvre le refus serveur avant les niveaux 5, 10 et 20 et l'enregistrement après chaque seuil.
 
 ## Points corrigés pendant la revue
 

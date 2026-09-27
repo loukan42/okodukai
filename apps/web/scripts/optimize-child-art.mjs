@@ -18,6 +18,7 @@ const images = [
   ...["emma", "lucas"].flatMap((character) => ["happy", "proud", "thinking", "discovery"].map((pose) => ({ name: `adventurer-${character}-${pose}`, folder: "characters", sizes: [256, 512, 768] }))),
   ...["cinema", "icecream", "dessert", "bicycle", "family-game", "music", "friend", "figurine", "book"].map((name) => ({ name: `reward-${name}`, folder: "rewards", sizes: [256, 512] })),
   { name: "goal-waypost", folder: "goals", sizes: [128, 256, 512] },
+  ...["camp", "grove", "observatory"].map((name) => ({ name: `frame-${name}`, folder: "frames", sizes: [128, 256], quality: 82, alphaQuality: 100 })),
   ...["sprout", "sapling", "young", "flowering", "mature"].map((name) => ({ name: `xp-tree-${name}`, folder: "experience", sizes: [256, 512] })),
 ];
 
@@ -72,7 +73,7 @@ for (const item of images) {
     const target = join(folder, `${item.name}-${size}.webp`);
     await sharp(join(source, `${item.name}.png`))
       .resize(size, size, { fit: "inside", withoutEnlargement: true })
-      .webp({ quality: 84, effort: 6, alphaQuality: 95 })
+      .webp({ quality: item.quality ?? 84, effort: 6, alphaQuality: item.alphaQuality ?? 95 })
       .toFile(target);
     console.log(target);
   }

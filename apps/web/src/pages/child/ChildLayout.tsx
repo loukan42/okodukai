@@ -80,7 +80,7 @@ export function ChildLayout() {
     <div className="screen child-screen">
       <header className="child-header">
         <div className="child-brand"><Logo /></div>
-        <div className="child-identity"><Avatar avatarId={session.child.avatarId} /><span>{session.child.displayName}</span></div>
+        <div className="child-identity"><Avatar avatarId={session.child.avatarId} frameId={session.child.frameId} /><span>{session.child.displayName}</span></div>
         <button className="parent-gate" onClick={() => setShowExit(true)} aria-label={t.parentAria}>
           <GameIcon name="lock" size={19} /><span>{t.parent}</span>
         </button>

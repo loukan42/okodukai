@@ -109,6 +109,7 @@ model ChildProfile {
   /// AUTO : la tranche d'âge décide ; sinon Découverte (8-9) ou Approfondi (10-12).
   pedagogyLevel PedagogyLevel @default(AUTO)
   avatarId      String
+  frameId       String        @default("none")
   pinHash       String
   currentXp     Int           @default(0)
   currentLevel  Int           @default(1)
