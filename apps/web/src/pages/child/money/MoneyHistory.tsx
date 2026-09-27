@@ -4,6 +4,7 @@ import { useAuth } from "../../../lib/AuthContext";
 import { groupByDay, signed, type MoneyLine, type Place, type WeekSummary } from "../../../lib/money";
 import { MoneyLineRow } from "../../../components/money/MoneyLineRow";
 import { LineDetailSheet } from "../../../components/money/LineDetailSheet";
+import { EmptyState } from "../../../components/EmptyState";
 import { MoneyLoadError } from "./MoneyAccount";
 import { FinanceTip } from "../../../components/finance/FinanceTip";
 import { defineCopy, useCopy } from "../../../i18n";
@@ -143,10 +144,7 @@ export function MoneyHistory() {
       )}
 
       {!loading && items.length === 0 ? (
-        <div className="empty-state">
-          <strong>{t.empty}</strong>
-          <p>{filter === "all" ? t.emptyAll : t.emptyFilter}</p>
-        </div>
+        <EmptyState art="coin-pouch" title={t.empty} subtitle={filter === "all" ? t.emptyAll : t.emptyFilter} />
       ) : (
         groupByDay(items).map((group) => (
           <section key={group.day} className="money-day" aria-label={group.day}>

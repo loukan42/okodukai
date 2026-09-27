@@ -100,7 +100,7 @@ export function DevBar() {
   }
 
   return (
-    <div style={{ position: "fixed", bottom: 86, right: 12, zIndex: 200, fontFamily: "var(--font-interface)" }}>
+    <div className="dev-bar" style={{ position: "fixed", bottom: 86, right: 12, zIndex: 200, fontFamily: "var(--font-interface)" }}>
       {open && (
         <div
           className="card"

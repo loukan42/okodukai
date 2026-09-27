@@ -397,8 +397,8 @@ export function BoosterOpenOverlay({ open, onOpen, onClose, universeTitle, remai
                   ref={orbRef}
                   type="button"
                   className="summon-orb"
-                  aria-label={COPY.crystalLabel(left)}
-                  disabled={phase === "shatter"}
+                  aria-label={left === 0 ? COPY.crystalBreaking : COPY.crystalLabel(left)}
+                  disabled={phase === "shatter" || left === 0}
                   onPointerDown={(e) => {
                     e.currentTarget.setPointerCapture?.(e.pointerId);
                     startHold();
@@ -435,7 +435,8 @@ export function BoosterOpenOverlay({ open, onOpen, onClose, universeTitle, remai
                   <p>{COPY.summonWaiting}</p>
                 </>
               )}
-              {phase === "crystal" && (
+              {phase === "crystal" && left === 0 && <h2 className="summon-prompt-title">{COPY.crystalBreaking}</h2>}
+              {phase === "crystal" && left > 0 && (
                 <>
                   <h2 className="summon-prompt-title">{COPY.crystalPrompt}</h2>
                   <p>{hits === 2 && hint ? COPY.crystalHint : hits === 0 ? COPY.crystalHold : COPY.crystalLeft(left)}</p>

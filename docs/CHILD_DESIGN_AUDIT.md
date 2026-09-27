@@ -21,6 +21,7 @@
 - 768 px : `screenshots/child-home-tablet-768.png`, `child-gallery-tablet-768.png`.
 - 1280 px : `screenshots/child-home-desktop-1280.png`, `child-observatory-desktop-1280.png`.
 - 375, 768 et 1280 px : `screenshots/child-experience-{home,profile,account,goal}-*.png`, régénérables par `node apps/web/scripts/capture-child-experience.mjs`.
+- 375, 768 et 1280 px : `screenshots/child-experience-{collection,album,album-empty}-*.png`. L'album possède maintenant la salle aux lanternes jusque dans la vue d'un univers ; les filtres vides montrent une bibliothèque et une consigne adaptée.
 
 Les captures viennent du foyer local de démonstration ; le bouton « Démo » n'apparaît pas en production. Le contrôle a aussi porté sur le dialogue PIN à 375 px, sa fermeture par Échap et l'absence de débordement horizontal sur les principaux écrans.
 
@@ -32,6 +33,20 @@ Les captures viennent du foyer local de démonstration ; le bouton « Démo » n
 - Contraste du texte blanc dans la chambre du trésor ; aucune donnée sur le décor nu.
 - PIN masqué et touche d'effacement nommée pour le lecteur d'écran.
 - Deux rendus d'échoppe évalués : le premier comportait des pseudo-inscriptions et a été écarté ; le second, sans texte peint, est intégré.
+- Album d'univers : son entête auparavant posé sur le fond beige reprend le décor de la galerie, avec un voile qui conserve la lisibilité. Les univers sans illustration de carte utilisent un pan de la galerie. Les chargements enfant affichent un sablier du monde. L'ouverture du booster a été vérifiée jusqu'au récapitulatif ; le dernier coup sur le cristal annonce sa rupture au lieu d'afficher « encore 0 touche ».
+
+## Revue par profils (inspection de l'interface, sans test utilisateur)
+
+| Regard | Constat et décision |
+| --- | --- |
+| Direction artistique jeu | Bois, laiton, pierre et lumière de vallée relient la place, les intérieurs et les objets. Le même arbre traverse le HUD et le profil. |
+| Game UI | Les destinations sont des lieux, le booster forme une courte séquence avec passage direct et révélation complète, les quêtes ont un journal. Les chiffres du compte restent sur des surfaces lisibles. |
+| Concept art | Les nouvelles scènes n'ont pas d'inscriptions peintes et gardent une perspective compatible. Les cartes historiques préexistantes ont des cadrages plus variés ; leurs cadres les rassemblent visuellement. |
+| Produit | Les liens du village et les filtres de cartes sont des contrôles nommés ; PIN, soldes, historique et règles parentales restent explicites. Les captures aux trois largeurs ne montrent pas de débordement horizontal. |
+| Progression de jeu | L'XP fait pousser l'arbre, attribue des boosters de niveau côté serveur et annonce les prochains seuils. Aucun achat ou pari n'est associé au booster. |
+| Lecture 9 ans | Les lieux, objets et gros boutons donnent des points d'entrée visuels. Les données complexes restent dans les vues financières adaptées à l'âge. |
+| Lecture 12 ans | Le dessin garde un ton d'aventure sans mascotte bébé ; l'historique et les placements offrent le détail supplémentaire. |
+| Parent et découverte | Le passage parent/enfant est visible sur le téléphone partagé. Les captures de la place et des intérieurs montrent d'abord le monde, puis l'usage éducatif. |
 
 ## Limites constatées
 

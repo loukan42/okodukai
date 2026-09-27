@@ -103,6 +103,13 @@
 .shop-header .page-scene-title { border: 0; }
 .collection-header { border-width: 3px; background: url('/assets/backgrounds/child-gallery-interior-1280.webp') center 56% / cover no-repeat, #263b4b; }
 .collection-header::before { background: linear-gradient(90deg, rgba(13, 27, 40, .88), rgba(13, 27, 40, .34) 78%); }
+.universe-tile-pattern { inset: 0 0 0 auto; top: 0; right: 0; width: 58%; height: 100%; border: 0; border-radius: 0; background: url('/assets/backgrounds/child-gallery-interior-1280.webp') 62% 50% / cover no-repeat; box-shadow: none; opacity: .8; }
+.album-header.collection-header { min-height: 215px; background-image: url('/assets/backgrounds/child-gallery-interior-1280.webp'); }
+.album-header.collection-header h1, .album-header.collection-header p:last-child { color: #fff7e5; }
+.album-header.collection-header .scene-kicker { color: #f4ca80; }
+.album-header.collection-header .album-count { flex: none; }
+.child-screen .loading-message { width: 100%; min-height: 200px; display: grid; place-content: center; justify-items: center; gap: 8px; margin: 0; padding: 24px; border: 2px solid #c3a977; border-radius: 20px; background: #fff8e7; color: #465467; font-weight: 800; }
+.child-screen .loading-message::before { content: ''; display: block; width: 80px; height: 80px; background: url('/assets/objects/hourglass-128.webp') center / contain no-repeat; filter: drop-shadow(0 8px 9px rgba(77, 54, 24, .18)); }
 .observatory-head { min-height: 195px; border: 3px solid #a37a44; background: url('/assets/backgrounds/child-observatory-interior-1280.webp') center 54% / cover no-repeat, #23394b; }
 .observatory-head::before { background: linear-gradient(90deg, rgba(13, 30, 47, .88), rgba(13, 30, 47, .18)); }
 .learn-page > .page-scene-title { min-height: 210px; padding: 20px 26px; border: 3px solid #a37a44; border-radius: 22px; background: linear-gradient(90deg, rgba(19, 34, 48, .83), rgba(19, 34, 48, .15)), url('/assets/backgrounds/child-library-interior-1280.webp') 50% 50% / cover; box-shadow: var(--shadow-lg); }

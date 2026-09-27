@@ -13,7 +13,7 @@ L'accueil est une scène navigable. Chaque destination est un lien HTML nommé e
 | `/enfant/argent/investir` | Observatoire | Temps, supports, risques et courbe sans promesse de rendement |
 | `/enfant/argent/investir/bibliotheque` | Bibliothèque | Scènes de notion, leçons chiffrées et carnet |
 | `/enfant/boutique` | Échoppe | Objets familiaux illustrés, prix en pièces, demande soumise au parent |
-| `/enfant/collection` | Galerie aux lanternes | Booster à ouvrir, univers, cartes exposées |
+| `/enfant/collection` | Galerie aux lanternes | Booster à ouvrir, univers, cartes exposées ; salle conservée dans chaque album |
 | `/enfant/profil` | Atelier du personnage | Personnage, niveau et choix parmi 16 portraits |
 
 Les pièces et XP demeurent des valeurs serveur. Une quête en attente n'affiche pas son gain comme acquis. Le compte garde un relevé lisible ; les placements restent une simulation pédagogique. Les cartes et l'ouverture de booster existantes sont réemployées.
@@ -30,7 +30,7 @@ Depuis l'espace parent, **Espace enfant** ouvre le choix d'un profil. Pour prêt
 - À 768 px, le panorama montre les six bâtiments et les panneaux de contenu restent limités en largeur.
 - À 1280 px, le monde remplit une grande scène sans étirer les fiches de lecture. La navigation flotte au bas de la fenêtre, sans couvrir les plaques du village.
 - Les actions ont au moins 44 px ; le focus est visible. Les animations s'arrêtent avec `prefers-reduced-motion`.
-- L'arbre, le profil, le registre et un objectif du coffre ont été capturés aux trois largeurs dans `docs/screenshots/child-experience-*` ; la capture est régénérable par `node apps/web/scripts/capture-child-experience.mjs` avec Chrome local.
+- L'arbre, le profil, le registre, un objectif du coffre, la collection et ses albums ont été capturés aux trois largeurs dans `docs/screenshots/child-experience-*` ; la capture est régénérable par `node apps/web/scripts/capture-child-experience.mjs` avec Chrome local. Les chargements enfant montrent le sablier illustré, sans spinner bloquant.
 
 ## Langue et contenu
 

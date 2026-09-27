@@ -1,4 +1,4 @@
-// Captures de l'arbre d'XP dans le foyer de démonstration local.
+// Captures des scènes enfant dans le foyer de démonstration local.
 // API et Vite doivent être lancés : node apps/web/scripts/capture-child-experience.mjs
 import { mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -27,12 +27,37 @@ try {
       await page.goto(base + route, { waitUntil: "networkidle" });
       await page.locator(ready).first().waitFor({ state: "visible" });
       if (screen === "home" || screen === "profile") await page.locator(ready).first().evaluate((image) => image.decode());
-      await page.addStyleTag({ content: ".dev-launcher, [data-dev-tools] { display: none !important; }" });
+      await page.addStyleTag({ content: ".dev-bar { display: none !important; }" });
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       if (overflow > 1) throw new Error(`${screen} ${width}px: horizontal overflow ${overflow}px`);
       const file = `${out}/child-experience-${screen}-${width}.png`;
       if (screen === "goal") await page.locator(".money-goal").first().screenshot({ path: file });
       else await page.screenshot({ path: file, fullPage: true });
+      console.log(file);
+    }
+    const universesResponse = await page.request.get(`${base}/api/child/universes`);
+    if (!universesResponse.ok()) throw new Error(`Universes: HTTP ${universesResponse.status()} ${await universesResponse.text()}`);
+    const { universes } = await universesResponse.json();
+    const albumWithCards = universes.find((universe) => universe.title.includes("explorateurs")) ?? universes[0];
+    const albumWithoutCards = universes.find((universe) => universe.title.includes("époques")) ?? universes[1];
+    if (!albumWithCards || !albumWithoutCards) throw new Error("The demo needs at least two card universes");
+    for (const [screen, route, ready] of [["collection", "/enfant/collection", ".collection-universes"], ["album", `/enfant/collection/${albumWithCards.id}`, ".album-grid"], ["album-empty", `/enfant/collection/${albumWithoutCards.id}`, ".album-filter"]]) {
+      await page.goto(base + route, { waitUntil: "networkidle" });
+      await page.locator(ready).first().waitFor({ state: "visible" });
+      if (screen === "album-empty") {
+        await page.locator(".album-filter button").nth(1).click();
+        await page.locator(".empty-state--art").waitFor({ state: "visible" });
+      }
+      if (screen === "collection") {
+        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+        await page.waitForLoadState("networkidle");
+        await page.evaluate(() => window.scrollTo(0, 0));
+      }
+      await page.addStyleTag({ content: ".dev-bar { display: none !important; }" });
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      if (overflow > 1) throw new Error(`${screen} ${width}px: horizontal overflow ${overflow}px`);
+      const file = `${out}/child-experience-${screen}-${width}.png`;
+      await page.screenshot({ path: file, fullPage: true });
       console.log(file);
     }
     await context.close();

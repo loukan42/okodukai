@@ -8,6 +8,7 @@ import { ChestArt } from "../../../art/ChestArt";
 import { ProgressBar } from "../../../components/ProgressBar";
 import { MoneyLineRow } from "../../../components/money/MoneyLineRow";
 import { LineDetailSheet } from "../../../components/money/LineDetailSheet";
+import { EmptyState } from "../../../components/EmptyState";
 import { defineCopy, useCopy } from "../../../i18n";
 
 const COPY = defineCopy({
@@ -182,10 +183,7 @@ export function MoneyAccount() {
           <Link to="/enfant/argent/historique">{t.history}</Link>
         </div>
         {data.recent.length === 0 ? (
-          <div className="empty-state">
-            <strong>{t.nothing}</strong>
-            <p>{t.nothingHint}</p>
-          </div>
+          <EmptyState art="coin-pouch" title={t.nothing} subtitle={t.nothingHint} />
         ) : (
           <div className="money-lines">
             {data.recent.map((line) => (
