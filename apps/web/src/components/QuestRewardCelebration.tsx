@@ -8,22 +8,56 @@ import { BoosterPack } from "./booster/BoosterPack";
 import { GameIcon } from "./GameIcon";
 import { ChildCharacter } from "./ChildCharacter";
 import { useAuth } from "../lib/AuthContext";
+import { defineCopy, useCopy } from "../i18n";
+import { LEVEL_TITLE } from "../lib/levels";
 
 interface Notification {
   id: string;
   type: string;
   readAt: string | null;
-  payload: { questTitle?: string; rewardCoins?: number; rewardXp?: number; boosters?: number; amount?: number; reason?: string };
+  payload: { questTitle?: string; rewardCoins?: number; rewardXp?: number; boosters?: number; amount?: number; reason?: string; level?: number; title?: string | null };
 }
 
-const plural = (n: number, one: string, many: string) => (n > 1 ? many : one);
+const COPY = defineCopy({
+  fr: {
+    oneGift: "Un cadeau pour toi !",
+    gifts: (n: number) => `${n} cadeaux pour toi !`,
+    oneQuest: "Quête validée !",
+    quests: (n: number) => `${n} quêtes validées !`,
+    levelUp: (level: number) => `Niveau ${level} !`,
+    others: (n: number) => ` et ${n} ${n > 1 ? "autres" : "autre"}`,
+    gift: (reason: string) => `Cadeau : ${reason}`,
+    newLevel: (level: number) => `Tu passes au niveau ${level}.`,
+    newTitle: (title: string) => `Nouveau titre : ${title}`,
+    coins: (n: number) => (n > 1 ? "pièces" : "pièce"),
+    boosters: (n: number) => (n > 1 ? "boosters" : "booster"),
+    open: (n: number) => (n > 1 ? "Ouvrir mes boosters" : "Ouvrir mon booster"),
+    ok: "Super !",
+  },
+  en: {
+    oneGift: "A gift for you!",
+    gifts: (n: number) => `${n} gifts for you!`,
+    oneQuest: "Quest approved!",
+    quests: (n: number) => `${n} quests approved!`,
+    levelUp: (level: number) => `Level ${level}!`,
+    others: (n: number) => ` and ${n} more`,
+    gift: (reason: string) => `Gift: ${reason}`,
+    newLevel: (level: number) => `You've reached level ${level}.`,
+    newTitle: (title: string) => `New title: ${title}`,
+    coins: (n: number) => (n === 1 ? "coin" : "coins"),
+    boosters: (n: number) => (n === 1 ? "booster" : "boosters"),
+    open: (n: number) => (n === 1 ? "Open my booster" : "Open my boosters"),
+    ok: "Great!",
+  },
+});
 
 /**
  * Fête des quêtes validées : à l'ouverture de l'espace enfant, les validations pas encore vues
- * sont réunies en un seul moment (pièces qui volent vers « Mon argent », XP, booster gagné).
+ * sont réunies en un seul moment (pièces qui volent vers « Mon trésor », XP, booster gagné).
  * Les montants viennent de la notification écrite par le serveur au moment du crédit.
  */
 export function QuestRewardCelebration() {
+  const t = useCopy(COPY);
   const { session } = useAuth();
   const navigate = useNavigate();
   const [items, setItems] = useState<Notification[]>([]);
@@ -38,7 +72,7 @@ export function QuestRewardCelebration() {
       .get<{ notifications: Notification[] }>("/notifications")
       .then(({ notifications }) => {
         // Seules les notifications qui portent leurs montants (écrites au crédit) sont fêtées.
-        if (!cancelled) setItems(notifications.filter((n) => !n.readAt && ((n.type === "quest_validee" && typeof n.payload.rewardCoins === "number") || n.type === "gift")));
+        if (!cancelled) setItems(notifications.filter((n) => !n.readAt && ((n.type === "quest_validee" && typeof n.payload.rewardCoins === "number") || n.type === "gift" || n.type === "level_up")));
       })
       .catch(() => {
         /* la fête attendra la prochaine visite */
@@ -50,11 +84,14 @@ export function QuestRewardCelebration() {
 
   const quests = items.filter((n) => n.type === "quest_validee");
   const gifts = items.filter((n) => n.type === "gift");
+  const levelUps = items.filter((n) => n.type === "level_up").sort((a, b) => (a.payload.level ?? 0) - (b.payload.level ?? 0));
+  const topLevel = levelUps.at(-1)?.payload.level ?? null;
+  const newTitles = levelUps.map((n) => n.payload.title).filter((code): code is string => Boolean(code && LEVEL_TITLE[code]));
   const coins = items.reduce((sum, n) => sum + (n.payload.rewardCoins ?? n.payload.amount ?? 0), 0);
   const xp = items.reduce((sum, n) => sum + (n.payload.rewardXp ?? 0), 0);
   const boosters = items.reduce((sum, n) => sum + (n.payload.boosters ?? 0), 0);
 
-  // Les pièces s'envolent vers « Mon argent » dans la barre de navigation, une fois l'écran posé.
+  // Les pièces s'envolent vers « Mon trésor » dans la barre de navigation, une fois l'écran posé.
   useEffect(() => {
     if (!open || coins <= 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const timer = window.setTimeout(() => {
@@ -91,12 +128,14 @@ export function QuestRewardCelebration() {
   const titles = quests.map((n) => n.payload.questTitle).filter(Boolean) as string[];
   const heading =
     quests.length === 0
-      ? gifts.length === 1
-        ? "Un cadeau pour toi !"
-        : `${gifts.length} cadeaux pour toi !`
+      ? gifts.length === 0 && topLevel
+        ? t.levelUp(topLevel)
+        : gifts.length === 1
+          ? t.oneGift
+          : t.gifts(gifts.length)
       : quests.length === 1
-        ? "Quête validée !"
-        : `${quests.length} quêtes validées !`;
+        ? t.oneQuest
+        : t.quests(quests.length);
 
   return createPortal(
     <div className="celebration-backdrop">
@@ -108,11 +147,17 @@ export function QuestRewardCelebration() {
         </h2>
         <p className="celebration-quests">
           {titles.slice(0, 3).join(" · ")}
-          {titles.length > 3 ? ` et ${titles.length - 3} ${plural(titles.length - 3, "autre", "autres")}` : ""}
+          {titles.length > 3 ? t.others(titles.length - 3) : ""}
         </p>
+        {topLevel && (quests.length > 0 || gifts.length > 0) && <p className="celebration-level">{t.newLevel(topLevel)}</p>}
+        {newTitles.map((code) => (
+          <p key={code} className="celebration-gift">
+            {t.newTitle(LEVEL_TITLE[code])}
+          </p>
+        ))}
         {gifts.map((g) => (
           <p key={g.id} className="celebration-gift">
-            Cadeau : {g.payload.reason}
+            {t.gift(g.payload.reason ?? "")}
           </p>
         ))}
         <ul className="celebration-rewards">
@@ -121,7 +166,7 @@ export function QuestRewardCelebration() {
               <span ref={coinsRef} className="celebration-coin" aria-hidden="true">
                 <GameIcon name="coin" size={26} />
               </span>
-              <strong>+{coins}</strong> {plural(coins, "pièce", "pièces")}
+              <strong>+{coins}</strong> {t.coins(coins)}
             </li>
           )}
           {xp > 0 && (
@@ -135,18 +180,18 @@ export function QuestRewardCelebration() {
           {boosters > 0 && (
             <li style={{ "--i": 2 } as React.CSSProperties}>
               <BoosterPack className="celebration-pack" />
-              <strong>+{boosters}</strong> {plural(boosters, "booster", "boosters")}
+              <strong>+{boosters}</strong> {t.boosters(boosters)}
             </li>
           )}
         </ul>
         <div className="celebration-actions">
           {boosters > 0 && (
             <button type="button" className="btn btn-gold" onClick={() => void close("/enfant/collection")}>
-              Ouvrir {plural(boosters, "mon booster", "mes boosters")}
+              {t.open(boosters)}
             </button>
           )}
           <button type="button" className={boosters > 0 ? "btn btn-ghost" : "btn btn-gold"} onClick={() => void close()}>
-            Super !
+            {t.ok}
           </button>
         </div>
       </div>

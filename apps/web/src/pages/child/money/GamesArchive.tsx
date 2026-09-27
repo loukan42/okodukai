@@ -6,6 +6,8 @@ import type { InvestRun } from "../../../lib/invest";
 import { GameEnd } from "../../../components/invest/GameEnd";
 import { EmptyState } from "../../../components/EmptyState";
 import { GameIcon } from "../../../components/GameIcon";
+import { defineCopy, useCopy } from "../../../i18n";
+import { dateFormatter } from "../../../i18n/format";
 
 interface Game {
   id: string;
@@ -16,10 +18,44 @@ interface Game {
   finishedAt: string | null;
 }
 
-const DATE = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long" });
+const DATE = dateFormatter({ day: "numeric", month: "long" });
+
+const COPY = defineCopy({
+  fr: {
+    back: "Retour à l'observatoire",
+    title: "Mes parties",
+    hint: "Chaque partie raconte une histoire de marché différente : on les relit, on ne les compare pas.",
+    loading: "Ouverture des archives…",
+    empty: "Pas encore de partie terminée",
+    emptyHint: "Quand ta première partie sera finie, tu pourras la relire ici.",
+    place: (orchard: boolean, years: number) => `${orchard ? "Verger du temps long" : "Observatoire"} · ${years} ans`,
+    story: (s: string | null) => (s ? `Une histoire de ${s.replace(/^une? /, "")}` : "Histoire terminée"),
+    started: (d: string) => `Commencée le ${d}`,
+    finished: (d: string) => `, terminée le ${d}`,
+    games: "Mes parties",
+    error: "Cette partie ne s'ouvre pas.",
+    opening: "Ouverture de la partie…",
+  },
+  en: {
+    back: "Back to the observatory",
+    title: "My games",
+    hint: "Each game tells a different market story: you read them again, you don't compare them.",
+    loading: "Opening the archive…",
+    empty: "No finished game yet",
+    emptyHint: "When your first game is over, you can read it again here.",
+    place: (orchard: boolean, years: number) => `${orchard ? "Long-term orchard" : "Observatory"} · ${years} years`,
+    story: (s: string | null) => (s ? `Story: ${s}` : "Story finished"),
+    started: (d: string) => `Started on ${d}`,
+    finished: (d: string) => `, finished on ${d}`,
+    games: "My games",
+    error: "This game can't open.",
+    opening: "Opening the game…",
+  },
+});
 
 /** Mes parties (E16) : l'histoire et les dates de chaque partie, jamais un classement par valeur. */
 export function GamesArchive() {
+  const t = useCopy(COPY);
   const [games, setGames] = useState<Game[] | null>(null);
   useEffect(() => {
     api
@@ -31,24 +67,24 @@ export function GamesArchive() {
   return (
     <div className="money-page">
       <Link to="/enfant/argent/investir" className="support-sheet-back">
-        <GameIcon name="arrow" size={16} /> Retour à l'observatoire
+        <GameIcon name="arrow" size={16} /> {t.back}
       </Link>
-      <h1>Mes parties</h1>
-      <p className="money-hint">Chaque partie raconte une histoire de marché différente : on les relit, on ne les compare pas.</p>
+      <h1>{t.title}</h1>
+      <p className="money-hint">{t.hint}</p>
       {games === null ? (
-        <p className="loading-message" role="status">Ouverture des archives…</p>
+        <p className="loading-message" role="status">{t.loading}</p>
       ) : games.length === 0 ? (
-        <EmptyState art="hourglass" title="Pas encore de partie terminée" subtitle="Quand ta première partie sera finie, tu pourras la relire ici." />
+        <EmptyState art="hourglass" title={t.empty} subtitle={t.emptyHint} />
       ) : (
         <ul className="games-list">
           {games.map((g) => (
             <li key={g.id}>
               <Link to={`/enfant/argent/investir/parties/${g.id}`}>
-                <strong>{g.mode === "ASSURANCE_VIE" ? "Verger du temps long" : "Observatoire"} · {g.years} ans</strong>
-                <span>{g.story ? `Une histoire de ${g.story.replace(/^une? /, "")}` : "Histoire terminée"}</span>
+                <strong>{t.place(g.mode === "ASSURANCE_VIE", g.years)}</strong>
+                <span>{t.story(g.story)}</span>
                 <small>
-                  Commencée le {DATE.format(new Date(g.startedAt))}
-                  {g.finishedAt ? `, terminée le ${DATE.format(new Date(g.finishedAt))}` : ""}
+                  {t.started(DATE.format(new Date(g.startedAt)))}
+                  {g.finishedAt ? t.finished(DATE.format(new Date(g.finishedAt))) : ""}
                 </small>
                 <GameIcon name="arrow" size={16} />
               </Link>
@@ -61,6 +97,7 @@ export function GamesArchive() {
 }
 
 export function GameArchive() {
+  const t = useCopy(COPY);
   const { id } = useParams<{ id: string }>();
   const { session } = useAuth();
   const young = session?.kind === "child" && session.child.ageBand === "AGE_8_9";
@@ -77,9 +114,9 @@ export function GameArchive() {
   return (
     <div className="money-page">
       <Link to="/enfant/argent/investir/parties" className="support-sheet-back">
-        <GameIcon name="arrow" size={16} /> Mes parties
+        <GameIcon name="arrow" size={16} /> {t.games}
       </Link>
-      {error ? <p className="form-error" role="alert">Cette partie ne s'ouvre pas.</p> : run ? <GameEnd run={run} young={young} archived /> : <p className="loading-message" role="status">Ouverture de la partie…</p>}
+      {error ? <p className="form-error" role="alert">{t.error}</p> : run ? <GameEnd run={run} young={young} archived /> : <p className="loading-message" role="status">{t.opening}</p>}
     </div>
   );
 }

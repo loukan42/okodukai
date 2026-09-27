@@ -6,13 +6,15 @@ import { Phone } from "./Phone";
 import { HomeScreen } from "./AppDemo";
 import { SignatureCoin } from "./SignatureCoin";
 import type { Ctas } from "./ctas";
+import { LANDING } from "./copy";
+import { useCopy } from "../../i18n";
 
-const PATH: { label: string; href: string; icon: GameIconName }[] = [
-  { label: "Gagner", href: "#quetes", icon: "quest" },
-  { label: "Gérer", href: "#compte", icon: "coin" },
-  { label: "Économiser", href: "#coffre", icon: "vault" },
-  { label: "Décider", href: "#comment", icon: "shop" },
-  { label: "Comprendre", href: "#placements", icon: "learn" },
+const PATH: { href: string; icon: GameIconName }[] = [
+  { href: "#quetes", icon: "quest" },
+  { href: "#compte", icon: "coin" },
+  { href: "#coffre", icon: "vault" },
+  { href: "#comment", icon: "shop" },
+  { href: "#placements", icon: "learn" },
 ];
 
 const EASE = [0.23, 1, 0.32, 1] as const;
@@ -23,6 +25,7 @@ const plate = (base: string, frame: "wide" | "tall") =>
 
 /** Le premier écran : on entre dans la vallée, le produit est posé dans l'herbe, la pièce flotte. */
 export function Hero({ ctas }: { ctas: Ctas }) {
+  const t = useCopy(LANDING).hero;
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
@@ -54,18 +57,18 @@ export function Hero({ ctas }: { ctas: Ctas }) {
       <div className="lp-hero-inner">
         <motion.div className="lp-hero-copy" style={{ y: copyY, opacity: copyOpacity }}>
           <motion.h1 id="lp-hero-title" className="lp-display" {...enter(0.2, 24)}>
-            <span>Le premier compte</span>
-            <span className="lp-display-soft">de votre enfant.</span>
+            <span>{t.title}</span>
+            <span className="lp-display-soft">{t.titleSoft}</span>
           </motion.h1>
           <motion.p className="lp-hero-lead" {...enter(0.38)}>
-            Il gagne des pièces virtuelles avec les quêtes que vous lui proposez, puis apprend à les dépenser, les garder ou les placer.
+            {t.lead}
           </motion.p>
           <motion.div className="lp-hero-actions" {...enter(0.5)}>
             <Link to={ctas.primary.to} className="lp-btn lp-btn--tint">
               {ctas.primary.label}
             </Link>
             <a href="#comment" className="lp-btn lp-btn--clear">
-              Comment ça marche
+              {t.how}
             </a>
           </motion.div>
         </motion.div>
@@ -73,7 +76,7 @@ export function Hero({ ctas }: { ctas: Ctas }) {
 
       <motion.div className="lp-hero-product" style={{ y: productY }}>
         <motion.div className="lp-hero-product-rise" initial={reduce ? false : { opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 1.1, ease: EASE }}>
-          <Phone className="lp-hero-phone" label="Démonstration de l'écran d'accueil d'Emma : 32 pièces sur son compte, 70 dans son Coffre magique et une quête à faire.">
+          <Phone className="lp-hero-phone" label={t.phone}>
             <HomeScreen />
           </Phone>
           <img className="lp-hero-plinth" src="/assets/objects/stone-plinth-900.webp" srcSet="/assets/objects/stone-plinth-450.webp 450w, /assets/objects/stone-plinth-900.webp 900w" sizes="(max-width: 767px) 300px, 520px" alt="" width={900} height={520} decoding="async" />
@@ -93,13 +96,13 @@ export function Hero({ ctas }: { ctas: Ctas }) {
         </picture>
       </motion.div>
 
-      <motion.nav className="lp-hero-path" aria-label="Son parcours dans Okodukai" {...enter(0.9, 12)}>
+      <motion.nav className="lp-hero-path" aria-label={t.pathLabel} {...enter(0.9, 12)}>
         <ol>
-          {PATH.map((step) => (
-            <li key={step.label}>
+          {PATH.map((step, i) => (
+            <li key={step.href}>
               <a href={step.href}>
                 <GameIcon name={step.icon} size={18} />
-                {step.label}
+                {t.path[i]}
               </a>
             </li>
           ))}

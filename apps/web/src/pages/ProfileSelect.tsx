@@ -4,6 +4,7 @@ import { api, ApiError } from "../lib/api";
 import { useAuth, LAST_HOUSEHOLD_KEY } from "../lib/AuthContext";
 import { Avatar } from "../components/Avatar";
 import { PinPad } from "../components/PinPad";
+import { defineCopy, useCopy } from "../i18n";
 
 interface ChildOption {
   id: string;
@@ -12,7 +13,27 @@ interface ChildOption {
   ageBand: string;
 }
 
+const COPY = defineCopy({
+  fr: {
+    needsParent: "Connectez-vous d'abord en tant que parent sur cet appareil.",
+    parentLogin: "Connexion parent",
+    wrongCode: "Code incorrect",
+    hello: (name: string) => `Salut ${name} !`,
+    change: "← Changer de profil",
+    choose: "Choisis ton profil",
+  },
+  en: {
+    needsParent: "Log in as a parent on this device first.",
+    parentLogin: "Parent login",
+    wrongCode: "Wrong code",
+    hello: (name: string) => `Hi ${name}!`,
+    change: "← Choose another profile",
+    choose: "Choose your profile",
+  },
+});
+
 export function ProfileSelect() {
+  const t = useCopy(COPY);
   const navigate = useNavigate();
   const { refresh } = useAuth();
   const [children, setChildren] = useState<ChildOption[]>([]);
@@ -37,9 +58,9 @@ export function ProfileSelect() {
   if (!householdId || needsParent) {
     return (
       <div className="centered-auth">
-        <p className="text-faint">Connectez-vous d'abord en tant que parent sur cet appareil.</p>
+        <p className="text-faint">{t.needsParent}</p>
         <Link to="/connexion" className="btn btn-primary">
-          Connexion parent
+          {t.parentLogin}
         </Link>
       </div>
     );
@@ -54,7 +75,7 @@ export function ProfileSelect() {
       await refresh();
       navigate("/enfant", { replace: true });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Code incorrect");
+      setError(err instanceof ApiError ? err.message : t.wrongCode);
     } finally {
       setSubmitting(false);
     }
@@ -66,11 +87,11 @@ export function ProfileSelect() {
         <div style={{ textAlign: "center", width: "100%", maxWidth: 380 }}>
           <Avatar avatarId={selected.avatarId} size="lg" />
           <h1 className="font-display" style={{ fontSize: 24, margin: "12px 0 24px" }}>
-            Salut {selected.displayName} !
+            {t.hello(selected.displayName)}
           </h1>
           <PinPad onSubmit={submitPin} submitting={submitting} error={error} />
           <button className="btn btn-ghost btn-sm" style={{ marginTop: 24 }} onClick={() => setSelected(null)}>
-            ← Changer de profil
+            {t.change}
           </button>
         </div>
       </div>
@@ -81,7 +102,7 @@ export function ProfileSelect() {
     <div className="centered-auth">
       <div style={{ width: "100%", maxWidth: 420, textAlign: "center" }}>
         <h1 className="font-display" style={{ fontSize: 26, marginBottom: 24 }}>
-          Choisis ton profil
+          {t.choose}
         </h1>
         <div className="row-wrap" style={{ justifyContent: "center", gap: 20 }}>
           {children.map((child) => (
@@ -96,6 +117,8 @@ export function ProfileSelect() {
                 flexDirection: "column",
                 alignItems: "center",
                 gap: 8,
+                minWidth: 96,
+                minHeight: 44,
               }}
             >
               <Avatar avatarId={child.avatarId} size="lg" />

@@ -6,6 +6,7 @@ import { MoneyLineRow } from "../../../components/money/MoneyLineRow";
 import { LineDetailSheet } from "../../../components/money/LineDetailSheet";
 import { MoneyLoadError } from "./MoneyAccount";
 import { FinanceTip } from "../../../components/finance/FinanceTip";
+import { defineCopy, useCopy } from "../../../i18n";
 
 type Filter = "all" | "in" | "out" | "transfer";
 
@@ -16,15 +17,54 @@ interface HistoryPage {
   balance: number;
 }
 
-const FILTERS: { value: Filter; label: string }[] = [
-  { value: "all", label: "Tout" },
-  { value: "in", label: "Entrées" },
-  { value: "out", label: "Sorties" },
-  { value: "transfer", label: "Transferts" },
-];
+const FILTERS: Filter[] = ["all", "in", "out", "transfer"];
+
+const COPY = defineCopy({
+  fr: {
+    filters: { all: "Tout", in: "Entrées", out: "Sorties", transfer: "Transferts" } as Record<Filter, string>,
+    title: "Historique",
+    statement: "Ton relevé de compte",
+    account: "Ton compte",
+    vault: "Coffre magique",
+    colon: " : ",
+    place: "Lieu",
+    filter: "Filtrer",
+    week: "Cette semaine : entrées",
+    outs: "sorties",
+    diff: "différence",
+    saved: "mis de côté",
+    back: "repris",
+    empty: "Aucun mouvement ici",
+    emptyAll: "Les pièces qui entrent et qui sortent apparaîtront ici.",
+    emptyFilter: "Rien ne correspond à ce filtre pour l'instant.",
+    loading: "Chargement…",
+    more: "Voir plus",
+  },
+  en: {
+    filters: { all: "All", in: "Money in", out: "Money out", transfer: "Transfers" },
+    title: "History",
+    statement: "Your account statement",
+    account: "Your account",
+    vault: "Magic Vault",
+    colon: ": ",
+    place: "Place",
+    filter: "Filter",
+    week: "This week: money in",
+    outs: "money out",
+    diff: "difference",
+    saved: "put aside",
+    back: "taken back",
+    empty: "No movements here",
+    emptyAll: "Coins that come in and go out will show up here.",
+    emptyFilter: "Nothing matches this filter yet.",
+    loading: "Loading…",
+    more: "See more",
+  },
+});
 
 /** Historique : un relevé de compte, jour par jour, avec des signes toujours écrits. */
 export function MoneyHistory() {
+  const t = useCopy(COPY);
   const { session } = useAuth();
   const older = session?.kind === "child" && session.child.ageBand === "AGE_10_12";
   const [place, setPlace] = useState<Place>("account");
@@ -67,30 +107,30 @@ export function MoneyHistory() {
     <div className="money-page">
       <header className="money-history-head">
         <div>
-          <h1>Historique</h1>
-          {older && <p>Ton relevé de compte</p>}
+          <h1>{t.title}</h1>
+          {older && <p>{t.statement}</p>}
         </div>
         <p className="money-history-balance">
-          {place === "account" ? "Ton compte" : "Coffre magique"} : <strong>{balance}</strong>
+          {place === "account" ? t.account : t.vault}{t.colon}<strong>{balance}</strong>
         </p>
       </header>
 
       <FinanceTip screen="history" />
 
-      <div className="segmented" role="radiogroup" aria-label="Lieu">
+      <div className="segmented" role="radiogroup" aria-label={t.place}>
         {(["account", "vault"] as const).map((p) => (
           <label key={p} className={`segmented-option${place === p ? " segmented-option--on" : ""}`}>
             <input type="radio" name="history-place" checked={place === p} onChange={() => setPlace(p)} />
-            {p === "account" ? "Ton compte" : "Coffre magique"}
+            {p === "account" ? t.account : t.vault}
           </label>
         ))}
       </div>
 
       {older && (
-        <div className="money-chips" role="group" aria-label="Filtrer">
+        <div className="money-chips" role="group" aria-label={t.filter}>
           {FILTERS.map((f) => (
-            <button key={f.value} type="button" className={`money-chip${filter === f.value ? " money-chip--on" : ""}`} onClick={() => setFilter(f.value)} aria-pressed={filter === f.value}>
-              {f.label}
+            <button key={f} type="button" className={`money-chip${filter === f ? " money-chip--on" : ""}`} onClick={() => setFilter(f)} aria-pressed={filter === f}>
+              {t.filters[f]}
             </button>
           ))}
         </div>
@@ -98,14 +138,14 @@ export function MoneyHistory() {
 
       {older && week && place === "account" && (
         <p className="money-week-summary">
-          Cette semaine : entrées <b>{signed(week.entrees)}</b> · sorties <b>{signed(-week.sorties)}</b> · différence <b>{signed(week.difference)}</b> · mis de côté <b>{week.misDeCote}</b> · repris <b>{week.repris}</b>
+          {t.week} <b>{signed(week.entrees)}</b> · {t.outs} <b>{signed(-week.sorties)}</b> · {t.diff} <b>{signed(week.difference)}</b> · {t.saved} <b>{week.misDeCote}</b> · {t.back} <b>{week.repris}</b>
         </p>
       )}
 
       {!loading && items.length === 0 ? (
         <div className="empty-state">
-          <strong>Aucun mouvement ici</strong>
-          <p>{filter === "all" ? "Les pièces qui entrent et qui sortent apparaîtront ici." : "Rien ne correspond à ce filtre pour l'instant."}</p>
+          <strong>{t.empty}</strong>
+          <p>{filter === "all" ? t.emptyAll : t.emptyFilter}</p>
         </div>
       ) : (
         groupByDay(items).map((group) => (
@@ -122,7 +162,7 @@ export function MoneyHistory() {
 
       {cursor && (
         <button type="button" className="btn btn-ghost btn-block" onClick={() => void load(cursor)} disabled={loading}>
-          {loading ? "Chargement…" : "Voir plus"}
+          {loading ? t.loading : t.more}
         </button>
       )}
 

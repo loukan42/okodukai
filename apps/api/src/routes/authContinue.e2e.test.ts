@@ -29,7 +29,7 @@ describe.skipIf(!process.env.DATABASE_URL)("créer un compte ou se connecter", (
 
       const me = (await (await fetch(`${base}/auth/me`, { headers: { cookie } })).json()) as Me;
       expect(me.user.email).toBe(email);
-      expect(me.household).toEqual({ name: "Ma famille", onboardingCompleted: false });
+      expect(me.household).toEqual({ name: "Ma famille", onboardingCompleted: false, locale: "fr" });
 
       const profile = await fetch(`${base}/household/profile`, { method: "PUT", headers: { ...json, cookie }, body: JSON.stringify({ parentName: " Camille ", householdName: "Famille Durand" }) });
       expect(await profile.json()).toEqual({ parentName: "Camille", householdName: "Famille Durand" });

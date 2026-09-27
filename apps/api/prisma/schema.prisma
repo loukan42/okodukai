@@ -15,6 +15,8 @@ model Household {
   id                    String    @id @default(uuid())
   name                  String
   currencyName          String    @default("Pièces")
+  /// Langue de l'application pour toute la famille (fr, en), choisie par le parent ; l'espace enfant la suit.
+  locale                String    @default("fr")
   /// Renseigné quand le parent a terminé l'accueil (prénom, nom de la famille, enfants).
   onboardingCompletedAt DateTime?
   createdAt             DateTime  @default(now())
@@ -798,6 +800,8 @@ model PushSubscription {
   endpoint  String       @unique
   p256dh    String
   auth      String
+  /// Langue de l'appareil (fr, en) : celle du texte de la notification.
+  locale    String       @default("fr")
   createdAt DateTime     @default(now())
 
   @@index([childId])

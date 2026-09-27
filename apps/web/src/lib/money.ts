@@ -1,4 +1,4 @@
-// Types et formats de « Mon argent » (voir docs/FINANCIAL_EDUCATION.md §11).
+// Types et formats de « Mon trésor » (voir docs/FINANCIAL_EDUCATION.md §11).
 import type { ChestState } from "../art/ChestArt";
 import { defineCopy, pick } from "../i18n";
 import { dateFormatter } from "../i18n/format";

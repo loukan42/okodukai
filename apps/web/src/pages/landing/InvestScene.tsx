@@ -1,5 +1,7 @@
 import { useRef, useState } from "react";
 import { motion, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { LANDING } from "./copy";
+import { useCopy } from "../../i18n";
 
 /** Une partie de démonstration : dix ans de marché simulé, un point par année (valeurs illustratives). */
 const YEARS = [100, 104, 101, 109, 106, 114, 121, 117, 126, 133, 138];
@@ -9,18 +11,13 @@ const points = YEARS.map((v, i) => [24 + (i * (W - 48)) / (YEARS.length - 1), H 
 const LINE = points.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`).join(" ");
 const AREA = `${LINE} L${points.at(-1)![0].toFixed(1)} ${H} L${points[0][0].toFixed(1)} ${H} Z`;
 
-const SUPPORTS = [
-  { name: "Sécurisé", move: "bouge très peu" },
-  { name: "Prêter", move: "bouge un peu" },
-  { name: "Panier Monde", move: "bouge" },
-  { name: "Entreprises", move: "bouge beaucoup" },
-];
 
 /**
  * Investir, c'est voir le temps passer : en défilant, le jour tombe sur la vallée (heure dorée,
  * puis crépuscule), la courbe se trace année après année. La vraie interface reste lisible.
  */
 export function InvestScene() {
+  const t = useCopy(LANDING).invest;
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
@@ -57,22 +54,22 @@ export function InvestScene() {
         <div className="lp-invest-inner">
           <div className="lp-invest-copy">
             <h2 id="lp-invest-title" className="lp-h2 lp-h2--light">
-              Que deviennent 100 pièces <em>en dix ans ?</em>
+              {t.title} <em>{t.titleEm}</em>
             </h2>
-            <p>Votre enfant place des pièces dans une partie. Chaque soir à 17 h, un relevé montre six mois d'un marché simulé, qui monte et qui baisse. Il apprend à répartir ses pièces et à attendre. À la fin de la partie, le montant revient sur son compte.</p>
-            <p className="lp-invest-note">Le marché est une simulation pédagogique, sans argent réel ni produit financier. Une partie dure dix ans simulés pour les 10-12 ans, cinq pour les 8-9 ans.</p>
+            <p>{t.text}</p>
+            <p className="lp-invest-note">{t.note}</p>
           </div>
 
           <figure className="lp-invest-panel">
             <img className="lp-invest-telescope" src="/assets/objects/telescope-256.webp" srcSet="/assets/objects/telescope-256.webp 256w, /assets/objects/telescope-512.webp 512w" sizes="140px" alt="" width={140} height={140} loading="lazy" />
             <div className="lp-invest-head">
-              <span>Ma partie · démonstration</span>
+              <span>{t.game}</span>
               <strong>
-                {value} <small>pièces</small>
+                {value} <small>{t.coins}</small>
               </strong>
-              <em>Année {year} sur 10</em>
+              <em>{t.year(year)}</em>
             </div>
-            <svg className="lp-invest-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Courbe de démonstration : la valeur monte et descend au fil des dix années, de 100 à 138 pièces.">
+            <svg className="lp-invest-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t.chart}>
               <defs>
                 <linearGradient id="lp-invest-fill" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0" stopColor="#f1d389" stopOpacity="0.45" />
@@ -89,7 +86,7 @@ export function InvestScene() {
               <motion.path d={LINE} className="lp-invest-line" style={{ pathLength: draw }} />
             </svg>
             <ul className="lp-invest-supports">
-              {SUPPORTS.map((s) => (
+              {t.supports.map((s) => (
                 <li key={s.name}>
                   <strong>{s.name}</strong>
                   <span>{s.move}</span>

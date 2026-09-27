@@ -2,23 +2,25 @@ import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { Logo } from "../../art/Logo";
 import type { Ctas } from "./ctas";
-
-const NOT = ["Pas d'argent réel,", "pas de publicité,", "pas de réseau social,", "pas de chat."];
+import { LANDING } from "./copy";
+import { useCopy } from "../../i18n";
+import { LanguageSwitch } from "../../components/LanguageSwitch";
 
 /** Confiance, en court : ce qu'Okodukai n'a pas, et ce qu'il a. */
 export function Trust() {
+  const t = useCopy(LANDING).trust;
   return (
     <section className="lp-trust" aria-labelledby="lp-trust-title">
       <h2 id="lp-trust-title" className="sr-only">
-        Ce qu'Okodukai n'a pas
+        {t.title}
       </h2>
       <ul className="lp-trust-not">
-        {NOT.map((t) => (
-          <li key={t}>{t}</li>
+        {t.not.map((line) => (
+          <li key={line}>{line}</li>
         ))}
       </ul>
       <p className="lp-trust-yes">
-        Les pièces sont virtuelles : elles ne s'achètent pas et ne se convertissent pas en euros. <strong>Vous fixez les règles, et les écrans sont pensés pour les 8-12 ans.</strong>
+        {t.yes} <strong>{t.yesStrong}</strong>
       </p>
     </section>
   );
@@ -26,6 +28,7 @@ export function Trust() {
 
 /** La fin revient dans le monde du début : le chemin mène au hameau, au lever du jour. */
 export function Finale({ ctas }: { ctas: Ctas }) {
+  const t = useCopy(LANDING).finale;
   const reduce = useReducedMotion();
   return (
     <>
@@ -37,10 +40,10 @@ export function Finale({ ctas }: { ctas: Ctas }) {
         <div className="lp-finale-veil" aria-hidden="true" />
         <motion.div className="lp-finale-inner" initial={reduce ? false : { opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}>
           <h2 id="lp-finale-title" className="lp-display lp-display--finale">
-            <span>Sa première aventure</span>
-            <span className="lp-display-soft">avec l'argent peut commencer ici.</span>
+            <span>{t.title}</span>
+            <span className="lp-display-soft">{t.titleSoft}</span>
           </h2>
-          <p>Il suffit d'un e-mail et du nom de votre famille, puis d'un profil par enfant. Le reste se règle plus tard.</p>
+          <p>{t.text}</p>
           <div className="lp-hero-actions">
             <Link to={ctas.primary.to} className="lp-btn lp-btn--tint">
               {ctas.primary.label}
@@ -53,7 +56,8 @@ export function Finale({ ctas }: { ctas: Ctas }) {
       </section>
       <footer className="lp-footer">
         <Logo sizes="120px" alt="Okodukai" className="lp-footer-logo" />
-        <p>Okodukai n'est pas une banque. Les pièces sont virtuelles : elles ne s'achètent pas et ne se convertissent pas en euros. Les placements sont une simulation pédagogique.</p>
+        <p>{t.footer}</p>
+        <LanguageSwitch className="lp-footer-lang" tone="dark" />
       </footer>
     </>
   );

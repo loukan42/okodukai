@@ -1,13 +1,17 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { api, ApiError } from "./api";
+import { getLocale, useLocale, type Locale } from "../i18n";
 
 export interface ParentSession {
   kind: "parent";
   user: { id: string; email: string; displayName: string };
   householdId: string;
   role: "PARENT_ADMIN" | "PARENT";
-  /** Foyer du parent ; `onboardingCompleted` est faux tant que l'accueil n'est pas terminé. */
-  household: { name: string; onboardingCompleted: boolean };
+  /**
+   * Foyer du parent ; `onboardingCompleted` est faux tant que l'accueil n'est pas terminé.
+   * `locale` : langue de l'application pour toute la famille, réglée dans l'en-tête parent.
+   */
+  household: { name: string; onboardingCompleted: boolean; locale?: Locale };
   hasParentPin: boolean;
 }
 
@@ -15,6 +19,8 @@ export interface ChildSession {
   kind: "child";
   child: { id: string; displayName: string; avatarId: string; ageBand: "AGE_8_9" | "AGE_10_12" };
   householdId: string;
+  /** Langue choisie par le parent : l'espace enfant n'a pas de choix de langue. */
+  locale?: Locale;
 }
 
 export type Session = ParentSession | ChildSession;
@@ -34,6 +40,7 @@ export const LAST_HOUSEHOLD_KEY = "okodukai:lastHouseholdId";
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const { setLocale } = useLocale();
 
   const refresh = useCallback(async (): Promise<Session | null> => {
     try {
@@ -41,6 +48,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Une API antérieure à l'accueil ne renvoie pas `household` : on considère le foyer prêt.
       if (me.kind === "parent" && !me.household) me = { ...me, household: { name: "", onboardingCompleted: true } };
       setSession(me);
+      // Une fois connecté, l'application parle la langue de la famille.
+      const familyLocale = me.kind === "parent" ? me.household.locale : me.locale;
+      if (familyLocale && familyLocale !== getLocale()) setLocale(familyLocale);
       if (me?.householdId) {
         localStorage.setItem(LAST_HOUSEHOLD_KEY, me.householdId);
       }
@@ -53,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setLocale]);
 
   useEffect(() => {
     refresh();

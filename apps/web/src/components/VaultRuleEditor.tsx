@@ -1,21 +1,47 @@
 import { useEffect, useState } from "react";
 import { api, ApiError } from "../lib/api";
 import type { VaultMode } from "../lib/money";
+import { deName } from "../lib/french";
+import { defineCopy, useCopy } from "../i18n";
 
-const MODES: { value: VaultMode; label: string; help: string }[] = [
-  { value: "FREE", label: "Libre", help: "L'enfant reprend ses pièces quand il veut." },
-  { value: "PARENT_APPROVAL", label: "Avec votre accord", help: "Chaque retrait vous est demandé ; vous acceptez ou refusez." },
-  { value: "MIN_DAYS", label: "Durée minimale", help: "Chaque dépôt reste au coffre un nombre de jours choisi." },
-  { value: "GOAL_ONLY", label: "Objectif atteint", help: "Les pièces se reprennent une fois l'objectif atteint (sans objectif : avec votre accord)." },
-];
+const ORDER: VaultMode[] = ["FREE", "PARENT_APPROVAL", "MIN_DAYS", "GOAL_ONLY"];
 
-/** « de Léa », « d'Emma » : élision devant une voyelle. */
-function ofName(name: string) {
-  return /^[aeiouyàâäéèêëîïôöùûü]/i.test(name) ? `d'${name}` : `de ${name}`;
-}
+const COPY = defineCopy({
+  fr: {
+    modes: {
+      FREE: ["Libre", "L'enfant reprend ses pièces quand il veut."],
+      PARENT_APPROVAL: ["Avec votre accord", "Chaque retrait vous est demandé ; vous acceptez ou refusez."],
+      MIN_DAYS: ["Durée minimale", "Chaque dépôt reste au coffre un nombre de jours choisi."],
+      GOAL_ONLY: ["Objectif atteint", "Les pièces se reprennent une fois l'objectif atteint (sans objectif : avec votre accord)."],
+    } as Record<VaultMode, string[]>,
+    saved: "Règle enregistrée. Elle s'applique aux pièces déposées à partir de maintenant.",
+    notSaved: "La règle n'a pas été enregistrée. Réessayez.",
+    legend: (name: string) => `Coffre magique ${deName(name)}`,
+    hint: (name: string) => `${name} peut y garder des pièces pour un objectif. Pour les dépenser dans la boutique, il faut d'abord les reprendre sur son compte. Choisissez ici quand ce retrait est possible.`,
+    days: "Nombre de jours",
+    saving: "Enregistrement…",
+    save: "Enregistrer la règle",
+  },
+  en: {
+    modes: {
+      FREE: ["Free", "Your child takes coins back whenever they like."],
+      PARENT_APPROVAL: ["With your approval", "Each withdrawal comes to you; you accept or decline it."],
+      MIN_DAYS: ["Minimum time", "Each deposit stays in the vault for a number of days you choose."],
+      GOAL_ONLY: ["Goal reached", "Coins can come out once the goal is reached (with no goal: with your approval)."],
+    },
+    saved: "Rule saved. It applies to coins put in from now on.",
+    notSaved: "The rule wasn't saved. Please try again.",
+    legend: (name: string) => `${name}'s Magic Vault`,
+    hint: (name: string) => `${name} can keep coins here for a goal. To spend them in the shop, they first have to move them back to their account. Choose when that's allowed.`,
+    days: "Number of days",
+    saving: "Saving…",
+    save: "Save the rule",
+  },
+});
 
 /** Règle de retrait de Mon coffre pour un enfant ; elle s'applique aux dépôts faits ensuite. */
 export function VaultRuleEditor({ childId, childName }: { childId: string; childName: string }) {
+  const t = useCopy(COPY);
   const [mode, setMode] = useState<VaultMode>("FREE");
   const [minDays, setMinDays] = useState(7);
   const [saved, setSaved] = useState<{ mode: VaultMode; minDays: number | null } | null>(null);
@@ -41,9 +67,9 @@ export function VaultRuleEditor({ childId, childName }: { childId: string; child
     try {
       const { rule } = await api.put<{ rule: { mode: VaultMode; minDays: number | null } }>(`/household/children/${childId}/vault-rule`, { mode, minDays: mode === "MIN_DAYS" ? minDays : null });
       setSaved(rule);
-      setStatus({ tone: "ok", text: "Règle enregistrée. Elle s'applique aux pièces déposées à partir de maintenant." });
+      setStatus({ tone: "ok", text: t.saved });
     } catch (err) {
-      setStatus({ tone: "error", text: err instanceof ApiError && err.status !== 0 ? err.message : "La règle n'a pas été enregistrée. Réessayez." });
+      setStatus({ tone: "error", text: err instanceof ApiError && err.status !== 0 ? err.message : t.notSaved });
     } finally {
       setBusy(false);
     }
@@ -52,23 +78,23 @@ export function VaultRuleEditor({ childId, childName }: { childId: string; child
   const name = `vault-rule-${childId}`;
   return (
     <fieldset className="vault-rule">
-      <legend>Coffre magique {ofName(childName)}</legend>
-      <p className="money-hint">{childName} peut y garder des pièces pour un objectif. Pour les dépenser dans la boutique, il faut d'abord les reprendre sur son compte. Choisissez ici quand ce retrait est possible.</p>
+      <legend>{t.legend(childName)}</legend>
+      <p className="money-hint">{t.hint(childName)}</p>
       <div className="vault-rule-options">
-        {MODES.map((m) => (
-          <label key={m.value} className={`vault-rule-option${mode === m.value ? " vault-rule-option--on" : ""}`}>
-            <input type="radio" name={name} value={m.value} checked={mode === m.value} onChange={() => setMode(m.value)} />
+        {ORDER.map((value) => (
+          <label key={value} className={`vault-rule-option${mode === value ? " vault-rule-option--on" : ""}`}>
+            <input type="radio" name={name} value={value} checked={mode === value} onChange={() => setMode(value)} />
             <span>
-              <strong>{m.label}</strong>
-              <small>{m.help}</small>
+              <strong>{t.modes[value][0]}</strong>
+              <small>{t.modes[value][1]}</small>
             </span>
           </label>
         ))}
       </div>
       {mode === "MIN_DAYS" && (
         <div className="field vault-rule-days">
-          <label htmlFor={`${name}-days`}>Nombre de jours</label>
-          <input id={`${name}-days`} type="number" min={1} max={365} value={minDays} onChange={(e) => setMinDays(Math.max(1, Math.min(365, Number(e.target.value) || 1)))} />
+          <label htmlFor={`${name}-days`}>{t.days}</label>
+          <input id={`${name}-days`} type="number" inputMode="numeric" min={1} max={365} value={minDays} onChange={(e) => setMinDays(Math.max(1, Math.min(365, Number(e.target.value) || 1)))} />
         </div>
       )}
       {status && (
@@ -77,7 +103,7 @@ export function VaultRuleEditor({ childId, childName }: { childId: string; child
         </p>
       )}
       <button type="button" className="btn btn-primary btn-sm" onClick={() => void save()} disabled={!dirty || busy}>
-        {busy ? "Enregistrement…" : "Enregistrer la règle"}
+        {busy ? t.saving : t.save}
       </button>
     </fieldset>
   );

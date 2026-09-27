@@ -73,7 +73,19 @@
 }
 
 .world-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   padding: max(14px, env(safe-area-inset-top)) clamp(16px, 4vw, 40px) 0;
+}
+
+/* Choix de la langue sur les écrans d'entrée, lisible sur le fond de la vallée. */
+.world-lang {
+  background: rgba(255, 250, 240, 0.82);
+  box-shadow: 0 4px 14px rgba(19, 35, 58, 0.18);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
 .world-brand {

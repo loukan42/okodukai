@@ -1,5 +1,21 @@
 import { ArrowCounterClockwise, ArrowsLeftRight, DownloadSimple, PencilSimple, PlusCircle, Sparkle, UploadSimple } from "@phosphor-icons/react";
-import { kindWord, dayLabel, signed, timeLabel, type LineKind, type MoneyLine } from "../../lib/money";
+import { kindWord, dayLabel, pieces, signed, timeLabel, type LineKind, type MoneyLine } from "../../lib/money";
+import { defineCopy, useCopy } from "../../i18n";
+
+const COPY = defineCopy({
+  fr: {
+    pending: "En attente de validation",
+    pendingSpoken: ", en attente de validation",
+    balance: (n: number) => `Solde ${n}`,
+    details: "Voir le détail",
+  },
+  en: {
+    pending: "Waiting for approval",
+    pendingSpoken: ", waiting for approval",
+    balance: (n: number) => `Balance ${n}`,
+    details: "See details",
+  },
+});
 
 /** Icône de sens : elle accompagne toujours le mot, elle ne le remplace jamais. */
 export function KindIcon({ kind, amount }: { kind: LineKind; amount: number }) {
@@ -31,8 +47,9 @@ interface MoneyLineRowProps {
 
 /** Une ligne de relevé : ce qui s'est passé, le mot de sens, le montant signé. */
 export function MoneyLineRow({ line, showBalance = false, when = "time", onOpen }: MoneyLineRowProps) {
+  const t = useCopy(COPY);
   const word = kindWord(line.kind);
-  const spoken = `${word}, ${Math.abs(line.amount)} ${Math.abs(line.amount) > 1 ? "pièces" : "pièce"}, ${line.label}${line.pending ? ", en attente de validation" : ""}`;
+  const spoken = `${word}, ${pieces(Math.abs(line.amount))}, ${line.label}${line.pending ? t.pendingSpoken : ""}`;
   const content = (
     <>
       <span className={`money-line-icon money-line-icon--${line.kind}${line.amount < 0 ? " money-line-icon--out" : ""}`}>
@@ -43,12 +60,12 @@ export function MoneyLineRow({ line, showBalance = false, when = "time", onOpen 
         <small>
           {word}
           {` · ${when === "time" ? timeLabel(line.createdAt) : dayLabel(line.createdAt)}`}
-          {line.pending && <span className="money-line-pending"> · En attente de validation</span>}
+          {line.pending && <span className="money-line-pending"> · {t.pending}</span>}
         </small>
       </span>
       <span className="money-line-amounts">
         <span className={`money-line-amount${line.amount > 0 ? " money-line-amount--in" : ""}`}>{signed(line.amount)}</span>
-        {showBalance && <small>Solde {line.balanceAfter}</small>}
+        {showBalance && <small>{t.balance(line.balanceAfter)}</small>}
       </span>
     </>
   );
@@ -60,7 +77,7 @@ export function MoneyLineRow({ line, showBalance = false, when = "time", onOpen 
     );
   }
   return (
-    <button type="button" className="money-line money-line--button" onClick={() => onOpen(line)} aria-label={`${spoken}. Voir le détail`}>
+    <button type="button" className="money-line money-line--button" onClick={() => onOpen(line)} aria-label={`${spoken}. ${t.details}`}>
       {content}
     </button>
   );

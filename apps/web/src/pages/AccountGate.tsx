@@ -5,34 +5,54 @@ import { useAuth } from "../lib/AuthContext";
 import { WorldShell } from "../components/WorldShell";
 import { OnboardingPath } from "../components/OnboardingPath";
 import { ChestArt } from "../art/ChestArt";
+import { defineCopy, useCopy } from "../i18n";
 
 interface ContinueResponse {
   outcome: "created" | "signed_in";
   onboardingCompleted: boolean;
 }
 
-const COPY = {
-  title: "Votre compte Okodukai",
-  lead: "Un e-mail et un mot de passe. Nouveau ici : le compte est créé. Déjà inscrit : vous êtes connecté.",
-  email: "E-mail",
-  password: "Mot de passe",
-  passwordHint: "8 caractères minimum pour un nouveau compte.",
-  show: "Afficher",
-  hide: "Masquer",
-  submit: "Continuer",
-  submitting: "Un instant…",
-  unreachable: "Le serveur ne répond pas. Vérifiez votre connexion puis réessayez.",
-  cookieBlocked:
-    "Le compte est prêt, mais votre navigateur a refusé le cookie de connexion. Autorisez les cookies pour ce site puis réessayez.",
-  fallback: "La connexion n'a pas abouti. Réessayez dans un instant.",
-  privacy: "Aucun paiement, aucune carte bancaire : les pièces d'Okodukai restent virtuelles.",
-};
+const TEXT = defineCopy({
+  fr: {
+    title: "Votre compte Okodukai",
+    lead: "Un e-mail et un mot de passe. Nouveau ici : le compte est créé. Déjà inscrit : vous êtes connecté.",
+    email: "E-mail",
+    password: "Mot de passe",
+    passwordHint: "8 caractères minimum pour un nouveau compte.",
+    show: "Afficher",
+    hide: "Masquer",
+    submit: "Continuer",
+    submitting: "Un instant…",
+    unreachable: "Le serveur ne répond pas. Vérifiez votre connexion puis réessayez.",
+    cookieBlocked:
+      "Le compte est prêt, mais votre navigateur a refusé le cookie de connexion. Autorisez les cookies pour ce site puis réessayez.",
+    fallback: "La connexion n'a pas abouti. Réessayez dans un instant.",
+    privacy: "Aucun paiement, aucune carte bancaire : les pièces d'Okodukai restent virtuelles.",
+  },
+  en: {
+    title: "Your Okodukai account",
+    lead: "An email and a password. New here: we create the account. Already signed up: you're logged in.",
+    email: "Email",
+    password: "Password",
+    passwordHint: "At least 8 characters for a new account.",
+    show: "Show",
+    hide: "Hide",
+    submit: "Continue",
+    submitting: "One moment…",
+    unreachable: "The server isn't responding. Check your connection and try again.",
+    cookieBlocked:
+      "Your account is ready, but your browser blocked the login cookie. Allow cookies for this site and try again.",
+    fallback: "We couldn't log you in. Try again in a moment.",
+    privacy: "No payment and no bank card: Okodukai coins are only virtual.",
+  },
+});
 
 /**
  * Entrée unique du parent (/inscription et /connexion) : si l'e-mail existe on
  * connecte, sinon on crée le compte. Le nom de famille et les enfants viennent après.
  */
 export function AccountGate() {
+  const COPY = useCopy(TEXT);
   const navigate = useNavigate();
   const { session, refresh } = useAuth();
   const [email, setEmail] = useState("");

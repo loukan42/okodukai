@@ -255,3 +255,36 @@
 @media (prefers-reduced-motion: reduce) {
   .village-place, .village-dispatch > a, .village-character .avatar, .village-character-art, .reward-item-art img, .celebration-character, .village-loading .coin-art { animation: none !important; transition: none !important; }
 }
+
+/* Niveau et XP : ce que l'XP débloque, dit simplement ------------------------------------ */
+.character-xp { margin-top: 18px; scroll-margin-top: 90px; }
+.xp-guide { display: grid; gap: 12px; padding: 20px; border: 2px solid #d0b98d; border-radius: 18px; background: #fff9e9; color: var(--ink); }
+.xp-guide-head { display: flex; align-items: center; gap: 12px; }
+.xp-guide-badge { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; background: #1c3550; color: #ffdc83; }
+.xp-guide-kicker { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: #8b5923; }
+.xp-guide h2 { margin: 0; font-size: 22px; line-height: 1.15; }
+.xp-guide-level { margin: 2px 0 0; font-size: 14px; font-weight: 700; color: var(--ink-soft); }
+.xp-guide .progress-track { height: 12px; background: #eadfc6; }
+.xp-guide .progress-fill { background: linear-gradient(90deg, #d59b38, #f1c35d); }
+.xp-guide-left { margin: 0; font-size: 14px; color: var(--ink-soft); }
+.xp-guide-left strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+.xp-guide-reward { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: #f3e6c6; }
+.xp-guide-pack { width: 40px; flex-shrink: 0; }
+.xp-guide-reward p { display: grid; margin: 0; font-size: 14px; line-height: 1.3; }
+.xp-guide-reward small { font-size: 12px; font-weight: 700; color: #8b5923; }
+.xp-guide-reward strong { font-size: 16px; }
+.xp-guide-more { border-top: 1px solid #e3d3ae; padding-top: 10px; }
+.xp-guide-more summary { min-height: 44px; display: flex; align-items: center; font-weight: 800; cursor: pointer; color: #1c3550; }
+.xp-guide-more p { margin: 6px 0 10px; line-height: 1.5; }
+.xp-guide-rule { padding: 10px 12px; border-radius: 12px; background: var(--forest-soft); color: #1f4d39; font-weight: 700; }
+.xp-guide-more h3 { margin: 14px 0 6px; font-size: 16px; }
+.xp-guide-sources { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.xp-guide-sources li { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.xp-guide-sources svg { color: #b87a1f; flex-shrink: 0; }
+.xp-guide-titles { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.xp-guide-titles li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 10px; border-radius: 10px; background: #f7eed9; font-size: 14px; color: var(--ink-faint); }
+.xp-guide-titles li strong { color: var(--ink-soft); text-align: right; }
+.xp-guide-titles li.is-earned { background: #f1dca9; color: var(--ink); }
+.xp-guide-titles li.is-earned strong { color: var(--ink); }
+.village-hud a.village-hud-xp { color: #f4e3bb; border-radius: 10px; }
+.character-level-line { margin: 12px 0 0; font-weight: 700; }

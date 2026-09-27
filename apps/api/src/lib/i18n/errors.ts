@@ -1,0 +1,123 @@
+// Messages d'erreur de l'API en anglais. Les routes écrivent le message français ; le middleware de
+// langue (`lib/i18n.ts`) le remplace ici quand la requête demande l'anglais. Un message absent de la
+// table reste en français : ajouter sa traduction ici quand on en crée un nouveau.
+
+const EXACT: Record<string, string> = {
+  "Accès parent requis": "A parent account is required.",
+  "Action impossible": "This action isn't possible.",
+  "Activez un univers de cartes avant de valider cette quête.": "Turn on a card world before approving this quest.",
+  "Aucun foyer associé": "No household is linked to this account.",
+  "Aucun foyer n'est associé à ce compte.": "No household is linked to this account.",
+  "Aucun univers activé pour ce foyer.": "No card world is turned on for this household.",
+  "Aucune carte de cette rareté": "No card of this rarity.",
+  "Aucune partie en cours.": "No game in progress.",
+  "Authentification enfant requise": "A child profile is required.",
+  "Authentification parent requise": "A parent login is required.",
+  "Authentification requise": "Please log in.",
+  "Bilan introuvable": "Report not found.",
+  "Booster indisponible pour ce foyer": "This booster isn't available for this household.",
+  "Booster introuvable": "Booster not found.",
+  "CRON_SECRET manquant": "CRON_SECRET is missing.",
+  "Ce compte vient d'être créé. Réessayez de vous connecter.": "This account was just created. Try logging in again.",
+  "Ce lien a déjà été utilisé.": "This link has already been used.",
+  "Ce lien a expiré ou a déjà été utilisé.": "This link has expired or has already been used.",
+  "Ce mot de passe ne correspond pas à ce compte.": "This password doesn't match this account.",
+  "Ces pièces doivent rester un peu plus longtemps dans ton coffre, selon la règle choisie par tes parents.":
+    "These coins need to stay in your vault a little longer, under the rule your parents chose.",
+  "Cet encart ne s'applique pas ici.": "This note doesn't apply here.",
+  "Cet écran s'ouvre en niveau Approfondi.": "This screen opens at the In depth level.",
+  "Cette demande a déjà été traitée": "This request has already been handled.",
+  "Cette déclaration a déjà été traitée": "This quest has already been reviewed.",
+  "Cette partie n'est pas terminée.": "This game isn't finished.",
+  "Cette quête doit d'abord être acceptée": "This quest has to be accepted first.",
+  "Cette quête n'est pas disponible": "This quest isn't available.",
+  "Cette récompense n'est plus disponible": "This reward isn't available any more.",
+  "Cette récompense revient bientôt disponible": "This reward will be available again soon.",
+  "Choisis où vont tes versements : il faut répartir exactement 100 %.": "Choose where your deposits go: the split has to add up to exactly 100%.",
+  "Code incorrect": "Wrong code.",
+  "Code parent indisponible": "The parent code isn't available.",
+  "Configuration du serveur incomplète (JWT_SECRET manquant).": "The server isn't fully set up (JWT_SECRET is missing).",
+  "Connectez-vous avec le mot de passe parent sur cet appareil.": "Log in with the parent password on this device.",
+  "Demande introuvable": "Request not found.",
+  "Déclaration introuvable": "Quest submission not found.",
+  "Définissez d'abord votre code parent.": "Set your parent code first.",
+  "Encart introuvable": "Note not found.",
+  "Enfant introuvable dans ce foyer": "This child isn't in this household.",
+  "Enfant introuvable": "Child not found.",
+  "Erreur interne": "Something went wrong on the server.",
+  "Espace enfant requis": "A child profile is required.",
+  "Gardez au moins un univers actif pour les boosters gagnés après chaque quête.": "Keep at least one world turned on for the boosters earned after each quest.",
+  "Identifiants invalides": "Wrong email or password.",
+  "L'observatoire est en pause.": "The observatory is paused.",
+  "L'observatoire s'ouvre après ton premier dépôt dans le coffre.": "The observatory opens after your first deposit in the vault.",
+  "L'ordre doit contenir chacun de tes objectifs, une seule fois.": "The order must include each of your goals, once.",
+  "La base de données ne répond pas. Réessaie dans un instant.": "The database isn't responding. Try again in a moment.",
+  "Le coffre ne contient plus assez de pièces pour cette demande. Elle a été refusée.": "The vault no longer has enough coins for this request, so it was declined.",
+  "Le verger n'est pas encore ouvert.": "The orchard isn't open yet.",
+  "Les versements programmés ne sont pas ouverts.": "Regular deposits aren't turned on.",
+  "Lien invalide": "Invalid link.",
+  "Module introuvable": "Lesson not found.",
+  "Mot de passe incorrect": "Wrong password.",
+  "Mouvement introuvable": "Movement not found.",
+  "Non authentifié": "Not logged in.",
+  "Non autorisé": "Not allowed.",
+  "Notification introuvable": "Notification not found.",
+  "Objectif introuvable": "Goal not found.",
+  "Partie introuvable": "Game not found.",
+  "Pour créer votre compte, choisissez un mot de passe d'au moins 8 caractères.": "To create your account, choose a password with at least 8 characters.",
+  "Profil introuvable": "Profile not found.",
+  "Question introuvable": "Question not found.",
+  "Quête introuvable": "Quest not found.",
+  "Rareté inconnue": "Unknown rarity.",
+  "Requête invalide": "Invalid request.",
+  "Récompense expirée": "This reward has expired.",
+  "Récompense introuvable": "Reward not found.",
+  "Récompense non disponible pour ce profil": "This reward isn't available for this profile.",
+  "Réponse invalide": "Invalid answer.",
+  "Réservé à l'administrateur du foyer": "Only the household admin can do this.",
+  "Solde insuffisant pour ce retrait": "Not enough coins for this withdrawal.",
+  "Solde insuffisant": "Not enough coins.",
+  "Support introuvable": "Holding not found.",
+  "Ta nouvelle répartition doit placer exactement 100 %.": "Your new split has to add up to exactly 100%.",
+  "Ta partie est terminée.": "Your game is over.",
+  "Ta partie n'est pas terminée.": "Your game isn't over yet.",
+  "Ta répartition doit placer exactement 100 %.": "Your split has to add up to exactly 100%.",
+  "Ta répartition n'a pas été enregistrée : les parts doivent faire exactement 100 %.": "Your split wasn't saved: the parts have to add up to exactly 100%.",
+  "Tes placements ne sont pas ouverts pour l'instant.": "Your investments aren't open right now.",
+  "Tu as déjà une demande en attente. Un parent va la regarder.": "You already have a request waiting. A parent will look at it.",
+  "Tu as déjà une partie.": "You already have a game.",
+  "Tu n'as pas assez de pièces disponibles pour ce placement.": "You don't have enough coins available for this investment.",
+  "Tu pourras changer ta répartition après ton premier relevé.": "You can change your split after your first statement.",
+  "Un changement de versements est déjà prévu pour le prochain relevé.": "A change to your deposits is already planned for the next statement.",
+  "Un changement est déjà prévu pour le prochain relevé.": "A change is already planned for the next statement.",
+  "Une déclaration est déjà en attente de validation": "This quest is already waiting for approval.",
+  "Univers non activé pour ce foyer": "This world isn't turned on for this household.",
+  "Utilisateur introuvable": "User not found.",
+  "Un parent doit d'abord se connecter sur cet appareil.": "A parent needs to log in on this device first.",
+  "Le site n'est pas encore relié à l'API (variable API_ORIGIN manquante sur Vercel).": "The site isn't connected to the API yet (API_ORIGIN is missing on Vercel).",
+  "L'API ne répond pas pour le moment. Réessaie dans un instant.": "The API isn't responding right now. Try again in a moment.",
+};
+
+const minutesEn = (fr: string) => fr.replace(/(\d+) minutes?/, (_m, n: string) => `${n} minute${n === "1" ? "" : "s"}`);
+
+/** Messages avec des nombres : motif français → phrase anglaise. */
+const PATTERNS: [RegExp, (m: RegExpMatchArray) => string][] = [
+  [/^Il te manque (\d+) pièces sur ton compte pour en mettre (\d+) de côté\.$/, (m) => `You need ${m[1]} more coins in your account to put ${m[2]} aside.`],
+  [/^Ton coffre contient (\d+) pièces\. Tu peux en reprendre jusqu'à (\d+)\.$/, (m) => `Your vault holds ${m[1]} coins. You can take back up to ${m[2]}.`],
+  [/^Trop d'essais pour l'instant\. Tu pourras réessayer dans (.+)\.$/, (m) => `Too many tries for now. You can try again in ${minutesEn(m[1])}.`],
+  [/^Trop de tentatives depuis cet appareil\. Réessayez dans (.+)\.$/, (m) => `Too many attempts from this device. Try again in ${minutesEn(m[1])}.`],
+  [/^Trop de tentatives pour ce compte\. Réessayez dans (.+)\.$/, (m) => `Too many attempts for this account. Try again in ${minutesEn(m[1])}.`],
+  [/^Tu as déjà (\d+) objectifs\. Range-en un pour en créer un nouveau\.$/, (m) => `You already have ${m[1]} goals. Put one away to create a new one.`],
+  [/^Tu as placé les (\d+) unités prévues pour cette partie\. Les versements s'arrêtent\.$/, (m) => `You've invested the ${m[1]} units planned for this game. Deposits stop here.`],
+  [/^Tu as atteint la limite de (\d+) pièces placées pour cette partie\. Les versements s'arrêtent\.$/, (m) => `You've reached the limit of ${m[1]} coins invested in this game. Deposits stop here.`],
+];
+
+export function translateError(message: string): string {
+  const exact = EXACT[message];
+  if (exact) return exact;
+  for (const [pattern, render] of PATTERNS) {
+    const match = message.match(pattern);
+    if (match) return render(match);
+  }
+  return message;
+}

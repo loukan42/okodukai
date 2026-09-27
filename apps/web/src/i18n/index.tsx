@@ -48,9 +48,24 @@ export function intlLocale(locale: Locale = current): string {
 
 export type Copy<T> = { fr: T; en: T };
 
+/** Élargit les littéraux (`"pièce" | "pièces"` → `string`) pour que la version anglaise ait la même forme. */
+type Widen<T> = T extends string
+  ? string
+  : T extends number
+    ? number
+    : T extends boolean
+      ? boolean
+      : T extends (...args: infer A) => infer R
+        ? (...args: A) => Widen<R>
+        : T extends readonly (infer U)[]
+          ? Widen<U>[]
+          : T extends object
+            ? { [K in keyof T]: Widen<T[K]> }
+            : T;
+
 /** Déclare les textes d'un écran : la version anglaise doit avoir exactement la forme de la française. */
-export function defineCopy<T>(copy: { fr: T; en: NoInfer<T> }): Copy<T> {
-  return copy;
+export function defineCopy<T>(copy: { fr: T; en: NoInfer<Widen<T>> }): Copy<Widen<T>> {
+  return copy as Copy<Widen<T>>;
 }
 
 /** Version courante d'un jeu de textes, hors React. */

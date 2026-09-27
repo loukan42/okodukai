@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma.js";
 import { attachSession, requireChild, childSession } from "../middleware/requireAuth.js";
 import { openBooster, generateBoosterSeed, type BoosterSlotConfig } from "../lib/boosters.js";
 import { checkAndAwardBadges } from "../lib/badges.js";
+import { boosterTitle, localizeCard, localizeUniverse } from "../lib/i18n/content.js";
 
 export const collectionRouter = Router();
 collectionRouter.use(attachSession);
@@ -13,7 +14,7 @@ collectionRouter.get("/child/universes", requireChild, async (req, res) => {
     where: { householdId },
     include: { universe: true },
   });
-  res.json({ universes: grants.map((g) => g.universe) });
+  res.json({ universes: grants.map((g) => localizeUniverse(g.universe)) });
 });
 
 collectionRouter.get("/child/collection/:universeId", requireChild, async (req, res) => {
@@ -35,7 +36,7 @@ collectionRouter.get("/child/collection/:universeId", requireChild, async (req, 
 
   res.json({
     cards: cards.map((card) => ({
-      ...card,
+      ...localizeCard(card),
       owned: ownedByCardId.has(card.id),
       quantity: ownedByCardId.get(card.id)?.quantity ?? 0,
       masteryTier: masteryTierFromQuantity(ownedByCardId.get(card.id)?.quantity ?? 0),
@@ -59,19 +60,24 @@ collectionRouter.get("/child/boosters", requireChild, async (req, res) => {
     include: { definition: { include: { universe: true } } },
     orderBy: { grantedAt: "asc" },
   });
-  res.json({ boosters });
+  res.json({
+    boosters: boosters.map((b) => ({
+      ...b,
+      definition: { ...b.definition, title: boosterTitle(b.definition.title, b.definition.universe.title), universe: localizeUniverse(b.definition.universe) },
+    })),
+  });
 });
 
 /**
  * Cartes dans l'ordre du tirage, marquées `isNew` pour la première occurrence d'une carte que
  * l'enfant ne possédait pas avant cette ouverture (décidé par le serveur, jamais par le client).
  */
-function withNewFlags<T extends { id: string }>(cards: T[], isNewCard: (cardId: string) => boolean) {
+function withNewFlags<T extends { id: string; name: string }>(cards: T[], isNewCard: (cardId: string) => boolean) {
   const seen = new Set<string>();
   return cards.map((card) => {
     const isNew = !seen.has(card.id) && isNewCard(card.id);
     seen.add(card.id);
-    return { ...card, isNew };
+    return { ...localizeCard(card), isNew };
   });
 }
 

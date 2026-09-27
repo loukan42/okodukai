@@ -26,6 +26,7 @@ import { grantXp } from "../lib/xp.js";
 import { getBalances, InsufficientFundsError, recordWalletTransaction } from "../lib/ledger.js";
 import { catchUpMoney } from "../lib/moneyCatchUp.js";
 import type { AgeBand, SimMode, SimulationRun } from "@prisma/client";
+import { locale, tr, type Locale } from "../lib/i18n.js";
 
 export const investRouter = Router();
 investRouter.use(attachSession);
@@ -284,11 +285,19 @@ investRouter.put("/household/children/:childId/invest-settings", requireParent, 
 // ---------------------------------------------------------------------------
 
 /** Durée recommandée « dans ce jeu » (E8) : 8-9 en mots, 10-12 en années. */
-const DURATIONS: Record<SupportCode, { young: string; old: string }> = {
-  SECURISE: { young: "un peu", old: "à tout moment" },
-  PRETER: { young: "un peu", old: "2 ans ou plus" },
-  MONDE: { young: "longtemps", old: "5 ans ou plus" },
-  ENTREPRISES: { young: "longtemps", old: "5 ans ou plus" },
+const DURATIONS_BY: Record<Locale, Record<SupportCode, { young: string; old: string }>> = {
+  fr: {
+    SECURISE: { young: "un peu", old: "à tout moment" },
+    PRETER: { young: "un peu", old: "2 ans ou plus" },
+    MONDE: { young: "longtemps", old: "5 ans ou plus" },
+    ENTREPRISES: { young: "longtemps", old: "5 ans ou plus" },
+  },
+  en: {
+    SECURISE: { young: "a little while", old: "any time" },
+    PRETER: { young: "a little while", old: "2 years or more" },
+    MONDE: { young: "a long time", old: "5 years or more" },
+    ENTREPRISES: { young: "a long time", old: "5 years or more" },
+  },
 };
 const SUPPORT_XP = 5;
 
@@ -302,7 +311,7 @@ investRouter.get("/child/invest/supports/:code", requireChild, async (req, res) 
   const young = band === "AGE_8_9";
   // Première ouverture d'une fiche : +5 XP d'exploration, une fois par support (FINANCIAL_EDUCATION §7.1).
   const xp = await prisma.$transaction((tx) => grantXp(tx, { childId, amount: SUPPORT_XP, sourceType: "FINANCE_LEARNING", sourceId: code, idempotencyKey: `fin:explore:${childId}:support:${code}` }));
-  const base = { code, riskLevel: SUPPORTS[code].riskLevel, duration: DURATIONS[code][young ? "young" : "old"], xpAwarded: xp ? SUPPORT_XP : 0 };
+  const base = { code, riskLevel: SUPPORTS[code].riskLevel, duration: DURATIONS_BY[locale()][code][young ? "young" : "old"], xpAwarded: xp ? SUPPORT_XP : 0 };
 
   const run = await activeRun(prisma, childId, modeOf(req.query.mode));
   if (!run) return res.json({ ...base, held: false });
@@ -432,15 +441,15 @@ investRouter.post("/household/children/:childId/invest-pause", requireParent, va
 // ---------------------------------------------------------------------------
 
 /** Les huit phrases du test (FINANCIAL_EDUCATION §2.1) et les notions qui les vérifient. */
-const SENTENCES: { code: string; text: string; notions: string[]; old?: true }[] = [
-  { code: "P1", text: "Mon compte, c'est ce que je peux utiliser.", notions: ["compte"] },
-  { code: "P2", text: "Dans mon coffre, je garde des pièces pour plus tard.", notions: ["transfert"] },
-  { code: "P3", text: "Mes placements peuvent monter ou descendre.", notions: ["unites_ecole", "hausse_baisse"] },
-  { code: "P4", text: "Je peux répartir mon argent.", notions: ["repartition", "pourcentage"] },
-  { code: "P5", text: "Mettre tout au même endroit peut augmenter certains risques.", notions: ["concentration", "diversification"] },
-  { code: "P6", text: "Un placement peut avoir des frais.", notions: ["frais"], old: true },
-  { code: "P7", text: "Les prix peuvent augmenter avec le temps.", notions: ["inflation", "pouvoir_achat"], old: true },
-  { code: "P8", text: "Je n'ai pas besoin de regarder mes placements toutes les cinq minutes.", notions: ["patience"] },
+const SENTENCES: { code: string; text: string; en: string; notions: string[]; old?: true }[] = [
+  { code: "P1", text: "Mon compte, c'est ce que je peux utiliser.", en: "My account is what I can use.", notions: ["compte"] },
+  { code: "P2", text: "Dans mon coffre, je garde des pièces pour plus tard.", en: "In my vault, I keep coins for later.", notions: ["transfert"] },
+  { code: "P3", text: "Mes placements peuvent monter ou descendre.", en: "My investments can go up or down.", notions: ["unites_ecole", "hausse_baisse"] },
+  { code: "P4", text: "Je peux répartir mes pièces.", en: "I can split my coins.", notions: ["repartition", "pourcentage"] },
+  { code: "P5", text: "Mettre tout au même endroit peut augmenter certains risques.", en: "Putting everything in one place can raise some risks.", notions: ["concentration", "diversification"] },
+  { code: "P6", text: "Un placement peut avoir des frais.", en: "An investment can have fees.", notions: ["frais"], old: true },
+  { code: "P7", text: "Les prix peuvent augmenter avec le temps.", en: "Prices can go up over time.", notions: ["inflation", "pouvoir_achat"], old: true },
+  { code: "P8", text: "Je n'ai pas besoin de regarder mes placements toutes les cinq minutes.", en: "I don't need to check my investments every five minutes.", notions: ["patience"] },
 ];
 
 async function understandingFor(childId: string, band: AgeBand) {
@@ -450,7 +459,7 @@ async function understandingFor(childId: string, band: AgeBand) {
     const states = s.notions.map((n) => state.get(n));
     return {
       code: s.code,
-      text: s.text,
+      text: tr(s.text, s.en),
       state: states.includes("VERIFIEE") ? "SAIT_EXPLIQUER" : states.some(Boolean) ? "DECOUVERT" : "PAS_ENCORE",
     };
   });
@@ -459,14 +468,17 @@ async function understandingFor(childId: string, band: AgeBand) {
 /** Une idée de question pour la prochaine discussion, tirée du dernier bilan (jamais un chiffre à juger). */
 function nextTalk(name: string, view: Awaited<ReturnType<typeof runView>> | null) {
   const change = view?.lastStatement?.bySupportChange ?? {};
-  const names: Record<string, string> = { SECURISE: "Sécurisé", PRETER: "Prêter", MONDE: "Panier Monde", ENTREPRISES: "Entreprises" };
+  const en = locale() === "en";
+  const names: Record<string, string> = en
+    ? { SECURISE: "Safe", PRETER: "Lending", MONDE: "World basket", ENTREPRISES: "Companies" }
+    : { SECURISE: "Sécurisé", PRETER: "Prêter", MONDE: "Panier Monde", ENTREPRISES: "Entreprises" };
   const down = Object.entries(change).sort((a, b) => a[1] - b[1]).find(([, d]) => d < -0.005);
   const up = Object.entries(change).sort((a, b) => b[1] - a[1]).find(([, d]) => d > 0.005);
-  if (down && up) return `Demandez à ${name} pourquoi ${names[down[0]]} a baissé alors que ${names[up[0]]} a monté.`;
-  if (view && view.feesPaid > 0) return `Demandez à ${name} ce que les frais ont changé depuis le départ.`;
-  if (down) return `Demandez à ${name} : « Que ferais-tu si tu avais besoin de tes unités l'an prochain ? »`;
-  if (view && view.statements.length > 0) return `Demandez à ${name} ce qui a changé au dernier relevé, et quand aura lieu le prochain.`;
-  return `Demandez à ${name} : « Comment as-tu choisi de répartir tes pièces entre les supports ? »`;
+  if (down && up) return en ? `Ask ${name} why ${names[down[0]]} went down while ${names[up[0]]} went up.` : `Demandez à ${name} pourquoi ${names[down[0]]} a baissé alors que ${names[up[0]]} a monté.`;
+  if (view && view.feesPaid > 0) return en ? `Ask ${name} what the fees have changed since the start.` : `Demandez à ${name} ce que les frais ont changé depuis le départ.`;
+  if (down) return en ? `Ask ${name}: "What would you do if you needed your units next year?"` : `Demandez à ${name} : « Que ferais-tu si tu avais besoin de tes unités l'an prochain ? »`;
+  if (view && view.statements.length > 0) return en ? `Ask ${name} what changed at the last statement, and when the next one is.` : `Demandez à ${name} ce qui a changé au dernier relevé, et quand aura lieu le prochain.`;
+  return en ? `Ask ${name}: "How did you decide to split your coins between the holdings?"` : `Demandez à ${name} : « Comment as-tu choisi de répartir tes pièces entre les supports ? »`;
 }
 
 investRouter.get("/household/children/:childId/invest/overview", requireParent, async (req, res) => {

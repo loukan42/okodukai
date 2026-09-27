@@ -9,11 +9,14 @@ const TABS = [
   { to: "/enfant/argent/historique", key: "history" as const },
 ];
 const copy = defineCopy({
-  fr: { title: "Mon argent", tabs: { account: "Mon compte", vault: "Coffre magique", invest: "Investir", history: "Historique" } },
-  en: { title: "My money", tabs: { account: "My account", vault: "Magic vault", invest: "Invest", history: "History" } },
+  fr: { title: "Mon trésor", tabs: { account: "Mon compte", vault: "Coffre magique", invest: "Investir", history: "Historique" } },
+  en: { title: "My treasure", tabs: { account: "My account", vault: "Magic Vault", invest: "Invest", history: "History" } },
 });
 
-/** L'onglet « Mon argent » : quatre lieux, un seul solde de vérité (le serveur). */
+/**
+ * L'onglet « Mon trésor » (pas « Mon argent » : les pièces sont virtuelles) : quatre lieux, un seul
+ * solde de vérité (le serveur).
+ */
 export function MoneyLayout() {
   const t = useCopy(copy);
   const reduce = useReducedMotion();

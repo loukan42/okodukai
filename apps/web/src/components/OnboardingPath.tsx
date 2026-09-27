@@ -1,13 +1,19 @@
-const STEPS = ["Compte", "Famille", "Enfants"] as const;
+import { defineCopy, useCopy } from "../i18n";
+
+const COPY = defineCopy({
+  fr: { steps: ["Compte", "Famille", "Enfants"], label: "Étapes de l'inscription", done: " (terminé)" },
+  en: { steps: ["Account", "Family", "Children"], label: "Sign-up steps", done: " (done)" },
+});
 
 /**
  * Le chemin d'accueil en trois étapes, visible dès la création du compte pour que le
  * parent sache ce qui l'attend. `current` = index de l'étape en cours (3 = tout est fait).
  */
 export function OnboardingPath({ current }: { current: 0 | 1 | 2 | 3 }) {
+  const t = useCopy(COPY);
   return (
-    <ol className="onboarding-path" aria-label="Étapes de l'inscription">
-      {STEPS.map((label, i) => {
+    <ol className="onboarding-path" aria-label={t.label}>
+      {t.steps.map((label, i) => {
         const state = i < current ? "done" : i === current ? "current" : "todo";
         return (
           <li key={label} className={`onboarding-path-step onboarding-path-step--${state}`} aria-current={state === "current" ? "step" : undefined}>
@@ -22,7 +28,7 @@ export function OnboardingPath({ current }: { current: 0 | 1 | 2 | 3 }) {
             </span>
             <span className="onboarding-path-label">
               {label}
-              {state === "done" && <span className="sr-only"> (terminé)</span>}
+              {state === "done" && <span className="sr-only">{t.done}</span>}
             </span>
           </li>
         );

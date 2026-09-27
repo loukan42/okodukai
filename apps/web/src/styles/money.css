@@ -1,5 +1,5 @@
 /*
- * « Mon argent » : un vrai relevé bancaire, habillé comme le reste du monde.
+ * « Mon trésor » : un vrai relevé bancaire, habillé comme le reste du monde.
  * Signes toujours écrits, rouge réservé aux erreurs (docs/FINANCIAL_EDUCATION.md §11.3).
  */
 
@@ -1868,10 +1868,13 @@
   text-shadow: 0 1px 1px rgba(90, 50, 5, 0.6);
 }
 
+/* Les dates passent sur deux lignes plutôt que de se chevaucher sur un téléphone de 375 px. */
 .vault-prime-when {
   font-size: 11.5px;
   font-weight: 700;
-  white-space: nowrap;
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: anywhere;
   color: var(--ink-faint);
 }
 

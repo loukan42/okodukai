@@ -97,3 +97,36 @@
   .child-profile-balances { width: 100%; }
   .child-profile-balances > div { flex: 1; }
 }
+
+/* Aide des champs de quête et statut lisible (plus jamais de code brut comme EN_ATTENTE_VALIDATION). */
+.field-hint--box { display: flex; gap: 8px; align-items: flex-start; margin: -4px 0 var(--space-4); padding: 10px 12px; border-radius: var(--radius-sm); background: var(--sky-soft); color: var(--ink-soft); font-size: 13px; line-height: 1.45; }
+.field-hint--box svg { flex-shrink: 0; margin-top: 2px; color: var(--sky); }
+.quest-status-pill { display: inline-flex; margin-top: 6px; padding: 3px 9px; border-radius: var(--radius-pill); background: var(--parchment-dim); color: var(--ink-soft); font-size: 12px; font-weight: 700; }
+.quest-status-pill--en_attente_validation, .quest-status-pill--declaree_terminee { background: #f7e3b5; color: #7a4b12; }
+.quest-status-pill--a_refaire { background: var(--coral-soft); color: #8a3527; }
+.quest-status-pill--validee { background: var(--forest-soft); color: #1f4d39; }
+
+/* Réglages d'un enfant en sections repliables : la page reste courte, surtout sur téléphone. */
+.child-settings { display: grid; gap: 8px; margin-top: 4px; }
+.child-settings-section { border: 1px solid var(--parchment-line); border-radius: var(--radius-md); background: var(--surface-raised); }
+.child-settings-section[open] { box-shadow: var(--shadow-sm); }
+.child-settings-section > summary { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 10px 14px; cursor: pointer; list-style: none; border-radius: var(--radius-md); }
+.child-settings-section > summary::-webkit-details-marker { display: none; }
+.child-settings-section > summary:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.child-settings-icon { display: grid; place-items: center; width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px; background: var(--parchment-dim); color: var(--ink-soft); }
+.child-settings-text { display: grid; flex: 1; min-width: 0; }
+.child-settings-text strong { font-size: 15px; color: var(--ink); }
+.child-settings-text small { font-size: 13px; color: var(--ink-faint); }
+.child-settings-chevron { width: 10px; height: 10px; flex-shrink: 0; border-right: 2px solid var(--ink-soft); border-bottom: 2px solid var(--ink-soft); transform: rotate(45deg) translate(-2px, -2px); transition: transform var(--duration-normal) var(--ease-out); }
+.child-settings-section[open] .child-settings-chevron { transform: rotate(225deg) translate(-2px, -2px); }
+.child-settings-body { padding: 0 14px 14px; }
+/* Le titre est déjà dans la ligne repliable : la légende du bloc reste pour les lecteurs d'écran. */
+.child-settings-body .vault-rule { margin: 0; padding: 0; border: 0; }
+.child-settings-body .vault-rule > legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.balance-adjust { display: grid; gap: 8px; }
+.child-add-panel > summary { display: flex; align-items: center; min-height: 48px; cursor: pointer; list-style: none; }
+.child-add-panel > summary::-webkit-details-marker { display: none; }
+.child-add-panel > summary .parent-form-title { margin: 0; }
+.child-add-panel > summary::after { content: "+"; margin-left: auto; font: 700 24px/1 var(--font-interface); color: var(--ink-soft); }
+.child-add-panel[open] > summary::after { content: "−"; }
+@media (prefers-reduced-motion: reduce) { .child-settings-chevron { transition: none; } }

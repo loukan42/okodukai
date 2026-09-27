@@ -1,7 +1,11 @@
+import { localized } from "../../i18n";
 import { useId } from "react";
 
 // Cercle d'invocation : les mots gravés sont les qualités que les quêtes font travailler.
-const RUNE_WORDS = "PATIENCE ✦ COURAGE ✦ CURIOSITÉ ✦ PARTAGE ✦ ÉPARGNE ✦ SAGESSE ✦ ";
+const RUNE_WORDS = localized({
+  fr: { text: "PATIENCE ✦ COURAGE ✦ CURIOSITÉ ✦ PARTAGE ✦ ÉPARGNE ✦ SAGESSE ✦ " },
+  en: { text: "PATIENCE ✦ COURAGE ✦ CURIOSITY ✦ SHARING ✦ SAVING ✦ WISDOM ✦ " },
+});
 
 const C = 200;
 const polar = (r: number, degrees: number) => {
@@ -29,7 +33,7 @@ export function RuneCircle() {
         })}
         <text className="rune-text">
           <textPath href={`#${pathId}`} textLength={1090} lengthAdjust="spacing">
-            {RUNE_WORDS}
+            {RUNE_WORDS.text}
           </textPath>
         </text>
       </g>

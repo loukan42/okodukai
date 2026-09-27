@@ -23,6 +23,7 @@ import { notificationsRouter } from "./routes/notifications.js";
 import { devRouter } from "./routes/dev.js";
 import { jwtSecretMissing } from "./lib/auth.js";
 import { prisma } from "./lib/prisma.js";
+import { localeMiddleware } from "./lib/i18n.js";
 
 export function createApp() {
   const app = express();
@@ -31,8 +32,12 @@ export function createApp() {
     cors({
       origin: process.env.WEB_ORIGIN ?? "http://localhost:5173",
       credentials: true,
+      exposedHeaders: ["Content-Language"],
     })
   );
+  // Langue de la requête (X-Locale envoyé par le site) : textes du serveur et messages d'erreur.
+  // Avant express.json() : un corps illisible reçoit aussi son message dans la bonne langue.
+  app.use(localeMiddleware);
   app.use(express.json());
   app.use(cookieParser());
 

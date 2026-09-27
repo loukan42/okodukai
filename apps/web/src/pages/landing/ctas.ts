@@ -1,4 +1,6 @@
 import { LAST_HOUSEHOLD_KEY } from "../../lib/AuthContext";
+import { pick } from "../../i18n";
+import { LANDING } from "./copy";
 
 export interface Ctas {
   primary: { to: string; label: string };
@@ -14,7 +16,8 @@ export function landingCtas(): Ctas {
   } catch {
     known = false;
   }
+  const t = pick(LANDING).ctas;
   return known
-    ? { primary: { to: "/profils", label: "Choisir mon profil" }, secondary: { to: "/connexion", label: "Espace parent" }, nav: { to: "/profils", label: "Mon profil" } }
-    : { primary: { to: "/inscription", label: "Créer un compte" }, secondary: { to: "/connexion", label: "Connexion" }, nav: { to: "/inscription", label: "Commencer" } };
+    ? { primary: { to: "/profils", label: t.known.primary }, secondary: { to: "/connexion", label: t.known.secondary }, nav: { to: "/profils", label: t.known.nav } }
+    : { primary: { to: "/inscription", label: t.fresh.primary }, secondary: { to: "/connexion", label: t.fresh.secondary }, nav: { to: "/inscription", label: t.fresh.nav } };
 }

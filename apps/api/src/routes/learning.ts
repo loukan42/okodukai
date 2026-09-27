@@ -5,7 +5,22 @@ import { pedagogyBand } from "../lib/pedagogy.js";
 import { validateBody } from "../lib/validation.js";
 import { attachSession, requireChild, childSession } from "../middleware/requireAuth.js";
 import { grantXp } from "../lib/xp.js";
-import { normalizeContent, publicContent } from "../lib/learning.js";
+import { normalizeContent, publicContent, type ModuleContent } from "../lib/learning.js";
+import { moduleText } from "../lib/i18n/content.js";
+
+/** Contenu d'un module dans la langue de la requête (la bonne réponse reste celle du module). */
+function localizedContent(code: string, content: ModuleContent): ModuleContent {
+  const text = moduleText(code);
+  if (!text) return content;
+  return {
+    situation: text.situation,
+    choice: text.choice,
+    consequence: text.consequence,
+    explanation: text.explanation,
+    vocabulary: text.vocabulary,
+    quiz: { ...content.quiz, question: text.quiz.question, options: text.quiz.options, explanation: text.quiz.explanation },
+  };
+}
 
 export const learningRouter = Router();
 learningRouter.use(attachSession);
@@ -24,7 +39,9 @@ learningRouter.get("/child/learning/modules", requireChild, async (req, res) => 
   res.json({
     modules: modules.map((m) => ({
       ...m,
-      content: publicContent(normalizeContent(m.code, m.content)),
+      title: moduleText(m.code)?.title ?? m.title,
+      subtitle: moduleText(m.code)?.subtitle ?? m.subtitle,
+      content: publicContent(localizedContent(m.code, normalizeContent(m.code, m.content))),
       status: progressByModule.get(m.id)?.status ?? "NON_COMMENCE",
     })),
   });
@@ -41,7 +58,7 @@ learningRouter.post(
     const childId = childSession(req).childId;
     const learningModule = await prisma.learningModule.findUnique({ where: { id: req.params.id } });
     if (!learningModule || !learningModule.active) return res.status(404).json({ error: "Module introuvable" });
-    const { quiz } = normalizeContent(learningModule.code, learningModule.content);
+    const { quiz } = localizedContent(learningModule.code, normalizeContent(learningModule.code, learningModule.content));
     const correct = req.body.choice === quiz.answerIndex;
 
     if (!correct) {

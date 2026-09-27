@@ -34,6 +34,7 @@ import {
   type SimOperation,
   type SupportCode,
 } from "./financeSim/index.js";
+import { locale, type Locale } from "./i18n.js";
 
 type Client = Prisma.TransactionClient | typeof prisma;
 
@@ -59,19 +60,31 @@ export const financeXpKey = {
 };
 
 /** Ce que l'enfant apprend à la fin de sa partie (jamais avant). */
-const SCENARIO_LABEL: Record<ScenarioCode, string> = {
-  CROISSANCE_REGULIERE: "une croissance régulière",
-  MARCHE_VOLATIL: "un marché agité",
-  FORTE_BAISSE: "une forte baisse",
-  CRISE_PUIS_REPRISE: "une crise puis une reprise",
-  STAGNATION: "une longue stagnation",
-  INFLATION_IMPORTANTE: "une période de forte inflation",
-  MARCHE_FAVORABLE: "un marché favorable",
-  REALISTE: "un marché réaliste, sans scénario imposé",
+const SCENARIO_LABELS: Record<Locale, Record<ScenarioCode, string>> = {
+  fr: {
+    CROISSANCE_REGULIERE: "une croissance régulière",
+    MARCHE_VOLATIL: "un marché agité",
+    FORTE_BAISSE: "une forte baisse",
+    CRISE_PUIS_REPRISE: "une crise puis une reprise",
+    STAGNATION: "une longue stagnation",
+    INFLATION_IMPORTANTE: "une période de forte inflation",
+    MARCHE_FAVORABLE: "un marché favorable",
+    REALISTE: "un marché réaliste, sans scénario imposé",
+  },
+  en: {
+    CROISSANCE_REGULIERE: "steady growth",
+    MARCHE_VOLATIL: "a bumpy market",
+    FORTE_BAISSE: "a big drop",
+    CRISE_PUIS_REPRISE: "a crisis, then a recovery",
+    STAGNATION: "a long flat spell",
+    INFLATION_IMPORTANTE: "a time of high inflation",
+    MARCHE_FAVORABLE: "a good market",
+    REALISTE: "a realistic market, with no set scenario",
+  },
 };
 
 /** Le nom lisible d'une histoire de marché, pour une partie terminée seulement. */
-export const scenarioLabel = (code: string) => SCENARIO_LABEL[code as ScenarioCode] ?? null;
+export const scenarioLabel = (code: string) => SCENARIO_LABELS[locale()][code as ScenarioCode] ?? null;
 
 export async function investSettingsFor(client: Client, childId: string, ageBand: AgeBand) {
   const stored = await client.investSettings.findUnique({ where: { childId } });
@@ -334,7 +347,7 @@ export async function runView(client: Client, run: SimulationRun, ageBand: AgeBa
       ),
     },
     pendingOperations: operations.filter((o) => o.step > clock.revealedSteps).length,
-    scenarioRevealed: finished ? SCENARIO_LABEL[run.scenario as ScenarioCode] ?? null : null,
+    scenarioRevealed: finished ? scenarioLabel(run.scenario) : null,
     /** XP reçue pour avoir lu le bilan final (0 tant qu'il n'est pas lu). */
     completionXp: completionXp?.amount ?? 0,
     finalReport: finished ? finalReport(run, operations, ageBand) : null,

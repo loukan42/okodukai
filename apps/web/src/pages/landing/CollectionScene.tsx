@@ -3,21 +3,23 @@ import { motion, useMotionValue, useReducedMotion, useScroll, useTransform, type
 import type { CardRarity } from "@okodukai/shared";
 import { RarityBadge } from "../../components/RarityBadge";
 import { BoosterPack } from "../../components/booster/BoosterPack";
+import { LANDING } from "./copy";
+import { useCopy } from "../../i18n";
 
-/** Vraies cartes du contenu Okodukai, avec leur vraie rareté (base de contenu). */
-const CARDS: { title: string; src: string; rarity: CardRarity }[] = [
-  { title: "Dragon", src: "/cards/Créatures fantastiques/Dragon.webp", rarity: "COMMUNE" },
-  { title: "Marco Polo", src: "/cards/Les grands explorateurs/Marco Polo.webp", rarity: "PEU_COMMUNE" },
-  { title: "Neptune", src: "/cards/Les planètes du système solaire/Neptune.webp", rarity: "RARE" },
-  { title: "Le feu", src: "/cards/Les Grandes inventions/Le feu.webp", rarity: "LEGENDAIRE" },
-  { title: "Athéna", src: "/cards/Dieux Grecs/Athéna.webp", rarity: "EPIQUE" },
-  { title: "Golem de pierre", src: "/cards/Créatures fantastiques/Golem de pierre.webp", rarity: "RARE" },
-  { title: "Tokyo", src: "/cards/Les grandes capitales/Tokyo.webp", rarity: "PEU_COMMUNE" },
+/** Vraies cartes du contenu Okodukai, avec leur vraie rareté (base de contenu). Noms dans `copy.ts`. */
+const CARDS: { src: string; rarity: CardRarity }[] = [
+  { src: "/cards/Créatures fantastiques/Dragon.webp", rarity: "COMMUNE" },
+  { src: "/cards/Les grands explorateurs/Marco Polo.webp", rarity: "PEU_COMMUNE" },
+  { src: "/cards/Les planètes du système solaire/Neptune.webp", rarity: "RARE" },
+  { src: "/cards/Les Grandes inventions/Le feu.webp", rarity: "LEGENDAIRE" },
+  { src: "/cards/Dieux Grecs/Athéna.webp", rarity: "EPIQUE" },
+  { src: "/cards/Créatures fantastiques/Golem de pierre.webp", rarity: "RARE" },
+  { src: "/cards/Les grandes capitales/Tokyo.webp", rarity: "PEU_COMMUNE" },
 ];
 
 const MID = (CARDS.length - 1) / 2;
 
-function FanCard({ card, index, open }: { card: (typeof CARDS)[number]; index: number; open: MotionValue<number> }) {
+function FanCard({ card, title, index, open }: { card: (typeof CARDS)[number]; title: string; index: number; open: MotionValue<number> }) {
   const offset = index - MID;
   // Éventail ouvert autour d'un pivot sous le paquet : rotation, arc et profondeur viennent d'un seul angle.
   const rotate = useTransform(open, [0, 1], [offset * 2, offset * 11]);
@@ -35,7 +37,7 @@ function FanCard({ card, index, open }: { card: (typeof CARDS)[number]; index: n
         </span>
       </span>
       <figcaption>
-        <span>{card.title}</span>
+        <span>{title}</span>
         <RarityBadge rarity={card.rarity} />
       </figcaption>
     </motion.figure>
@@ -44,6 +46,7 @@ function FanCard({ card, index, open }: { card: (typeof CARDS)[number]; index: n
 
 /** Rupture de ton, plus « jeu » : la nuit tombe, le booster s'ouvre et les cartes se déploient en éventail. */
 export function CollectionScene() {
+  const t = useCopy(LANDING).collection;
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
@@ -59,19 +62,19 @@ export function CollectionScene() {
       <div className="lp-collection-sticky">
         <div className="lp-collection-copy">
           <h2 id="lp-collection-title" className="lp-h2 lp-h2--light">
-            Les bonnes habitudes méritent aussi <em>leurs trésors.</em>
+            {t.title} <em>{t.titleEm}</em>
           </h2>
-          <p>Les boosters se gagnent avec les quêtes et ne s'achètent jamais. La collection compte 105 cartes réparties en 14 univers, et c'est vous qui choisissez ceux que votre enfant peut ouvrir.</p>
+          <p>{t.text}</p>
         </div>
-        <div className="lp-fan" aria-label="Sept cartes de la collection, de Commune à Légendaire" role="img">
+        <div className="lp-fan" aria-label={t.fan} role="img">
           <motion.div className="lp-fan-glow" style={{ opacity: glow }} aria-hidden="true" />
           <div className="lp-fan-cards" aria-hidden="true">
             {CARDS.map((card, i) => (
-              <FanCard key={card.title} card={card} index={i} open={open} />
+              <FanCard key={card.src} card={card} title={t.cards[i]} index={i} open={open} />
             ))}
           </div>
           <motion.div className="lp-fan-pack" style={{ y: packY, scale: packScale }} aria-hidden="true">
-            <BoosterPack universe="Créatures fantastiques" />
+            <BoosterPack universe={t.pack} />
           </motion.div>
         </div>
       </div>

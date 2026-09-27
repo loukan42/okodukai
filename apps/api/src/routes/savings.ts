@@ -12,6 +12,7 @@ import { syncGoals } from "../lib/goals.js";
 import { catchUpMoney } from "../lib/moneyCatchUp.js";
 import { vaultPrimeRule, vaultPrimeView } from "../lib/vaultPrime.js";
 import { readLedger, weekSummary, allocateGoals, vaultAvailability, activeGoals, monthKeyParis, monthSummary, previousMonthKey, type Place } from "../lib/money.js";
+import { locale } from "../lib/i18n.js";
 
 export const savingsRouter = Router();
 savingsRouter.use(attachSession);
@@ -24,7 +25,7 @@ async function walletOf(childId: string) {
   return prisma.wallet.findUniqueOrThrow({ where: { childId } });
 }
 
-/** Photographie complète de Mon argent : soldes, semaine, objectifs, règle du coffre. */
+/** Photographie complète de Mon trésor : soldes, semaine, objectifs, règle du coffre. */
 async function moneyState(childId: string) {
   await catchUpMoney(childId);
   const wallet = await walletOf(childId);
@@ -504,7 +505,7 @@ savingsRouter.post("/household/children/:childId/gift", requireParent, validateB
 
 // -- Mon mois en pièces ---------------------------------------------------------
 
-const pieces = (n: number) => `${n} ${n > 1 ? "pièces" : "pièce"}`;
+const pieces = (n: number) => (locale() === "en" ? `${n} ${n === 1 ? "coin" : "coins"}` : `${n} ${n > 1 ? "pièces" : "pièce"}`);
 
 /**
  * Le volet « Mon mois en pièces » (INVESTMENT_UX E9) : au premier bilan qui suit un changement de mois
@@ -518,12 +519,15 @@ savingsRouter.get("/child/money/month-summary", requireChild, async (req, res) =
   const state = await moneyState(childId);
   const s = monthSummary(state.ledger.lines, key);
   if (s.entrees + s.sorties + s.misDeCote === 0) return res.json({ summary: null });
-  const month = new Intl.DateTimeFormat("fr-FR", { month: "long", timeZone: "Europe/Paris" }).format(new Date(`${key}-15T12:00:00Z`));
-  const text = `En ${month}, tu as reçu ${pieces(s.entrees)}, dépensé ${pieces(s.sorties)} et mis ${pieces(s.misDeCote)} dans ton coffre.`;
+  const en = locale() === "en";
+  const month = new Intl.DateTimeFormat(en ? "en-GB" : "fr-FR", { month: "long", timeZone: "Europe/Paris" }).format(new Date(`${key}-15T12:00:00Z`));
+  const text = en
+    ? `In ${month}, you received ${pieces(s.entrees)}, spent ${pieces(s.sorties)} and put ${pieces(s.misDeCote)} in your vault.`
+    : `En ${month}, tu as reçu ${pieces(s.entrees)}, dépensé ${pieces(s.sorties)} et mis ${pieces(s.misDeCote)} dans ton coffre.`;
   const goal = state.goals.find((g) => !g.reached) ?? state.goals[0];
-  const goalText = goal ? `${goal.title} : ${goal.present} sur ${goal.targetCoins}.` : null;
+  const goalText = goal ? (en ? `${goal.title}: ${goal.present} of ${goal.targetCoins}.` : `${goal.title} : ${goal.present} sur ${goal.targetCoins}.`) : null;
   await prisma.financeTipLog
-    .create({ data: { childId, tipCode: code, outcome: "vu", title: "Mon mois en pièces", message: text } })
+    .create({ data: { childId, tipCode: code, outcome: "vu", title: en ? "My month in coins" : "Mon mois en pièces", message: text } })
     .catch((err: unknown) => {
       if (!(err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002")) throw err;
     });

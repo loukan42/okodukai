@@ -2,8 +2,11 @@ import { LOCALES, useLocale, type Locale } from "../i18n";
 
 const NAMES: Record<Locale, string> = { fr: "Français", en: "English" };
 
-/** Choix de la langue : deux boutons « FR » et « EN », le choix est mémorisé sur l'appareil. */
-export function LanguageSwitch({ className = "", tone = "light" }: { className?: string; tone?: "light" | "dark" }) {
+/**
+ * Choix de la langue : deux boutons « FR » et « EN », mémorisé sur l'appareil. `onChange` permet de
+ * l'enregistrer aussi pour la famille (en-tête parent). Pas de choix côté enfant : il suit le parent.
+ */
+export function LanguageSwitch({ className = "", tone = "light", onChange }: { className?: string; tone?: "light" | "dark"; onChange?: (locale: Locale) => void }) {
   const { locale, setLocale } = useLocale();
   return (
     <div className={`lang-switch lang-switch--${tone} ${className}`.trim()} role="group" aria-label={locale === "fr" ? "Langue" : "Language"}>
@@ -16,7 +19,11 @@ export function LanguageSwitch({ className = "", tone = "light" }: { className?:
           aria-pressed={locale === code}
           aria-label={NAMES[code]}
           title={NAMES[code]}
-          onClick={() => locale !== code && setLocale(code)}
+          onClick={() => {
+            if (locale === code) return;
+            setLocale(code);
+            onChange?.(code);
+          }}
         >
           {code.toUpperCase()}
         </button>

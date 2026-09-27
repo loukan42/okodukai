@@ -9,10 +9,11 @@ import { Avatar } from "../../components/Avatar";
 import { CoinArt } from "../../art/CoinArt";
 import { BoosterPack } from "../../components/booster/BoosterPack";
 import { ChildCharacter } from "../../components/ChildCharacter";
+import { ExperienceTree } from "../../components/ExperienceTree";
 import { defineCopy, useCopy } from "../../i18n";
+import { EMPTY_LEVEL, XP_COPY, levelTitle, type LevelView } from "../../lib/levels";
 
 interface QuestRow { id: string; title: string; status: string; rewardCoins: number; rewardXp: number }
-interface Level { level: number; xpIntoLevel: number; xpForNextLevel: number }
 
 const places: { key: "quests" | "vault" | "shop" | "collection" | "observatory" | "library"; to: string; icon: GameIconName }[] = [
   { key: "quests", to: "/enfant/quetes", icon: "quest" },
@@ -25,7 +26,7 @@ const places: { key: "quests" | "vault" | "shop" | "collection" | "observatory" 
 
 const copy = defineCopy({
   fr: {
-    welcome: "Bienvenue dans ton monde", experience: "Expérience", account: "Mon compte", coins: "pièces", level: "Niv.",
+    welcome: "Bienvenue dans ton monde", experience: "Expérience", tree: "Mon arbre", account: "Mon compte", coins: "pièces", level: "Niv.",
     village: "La Vallée d'Okodukai", choose: "Choisis un lieu et poursuis ton aventure.", explore: "Explorer la vallée", character: "Mon personnage", seeCharacter: "Voir mon personnage", progress: "Ma progression", happening: "En ce moment dans ton village", statement: "Bilan prêt",
     loading: "Le village se prépare…", failed: "Le village ne s'ouvre pas.", retry: "Réessayer",
     questBoard: "Sur le tableau des quêtes", questSoon: "Une nouvelle quête t'attend bientôt", askParent: "Demande à un parent de t'en proposer une.", afterApproval: (coins: number, xp: number) => `À gagner après validation : ${coins} pièces et ${xp} XP`,
@@ -34,23 +35,24 @@ const copy = defineCopy({
     profileAria: (name: string, level: number) => `Profil de ${name}, niveau ${level}`, accountAria: (count: number) => `Mon compte, ${count} pièces`,
   },
   en: {
-    welcome: "Welcome to your world", experience: "Experience", account: "My money", coins: "coins", level: "Lvl.",
+    welcome: "Welcome to your world", experience: "Experience", tree: "My tree", account: "My account", coins: "coins", level: "Lvl.",
     village: "Okodukai Valley", choose: "Choose a place and continue your adventure.", explore: "Explore the valley", character: "My character", seeCharacter: "See my character", progress: "My progress", happening: "Around your village", statement: "Report ready",
     loading: "Getting the village ready…", failed: "The village couldn't open.", retry: "Try again",
     questBoard: "On the quest board", questSoon: "A new quest will be here soon", askParent: "Ask a parent to add one for you.", afterApproval: (coins: number, xp: number) => `Earn after approval: ${coins} coins and ${xp} XP`,
     gallery: "In your gallery", vaultPath: "On the path to your vault", boosterCount: (count: number) => `${count} booster${count > 1 ? "s" : ""} to open`, openBooster: "Open a booster", discoverCards: "Discover your cards", saved: (current: number, target: number) => `${current} / ${target} coins saved`, seeCollection: "See the collection",
     place: { quests: ["Quests", "Choose a mission"], vault: ["My vault", "Save coins"], shop: ["Shop", "See rewards"], collection: ["Collection", "Open my album"], observatory: ["Observatory", "Explore time"], library: ["Library", "Learn"] },
-    profileAria: (name: string, level: number) => `${name}'s profile, level ${level}`, accountAria: (count: number) => `My money, ${count} coins`,
+    profileAria: (name: string, level: number) => `${name}'s profile, level ${level}`, accountAria: (count: number) => `My account, ${count} coins`,
   },
 });
 
 /** Les destinations du village restent de vrais liens HTML, accessibles au clavier. */
 export function Home() {
   const t = useCopy(copy);
+  const xpCopy = useCopy(XP_COPY);
   const { session } = useAuth();
   const childId = session?.kind === "child" ? session.child.id : null;
   const [money, setMoney] = useState<MoneyOverview | null>(null);
-  const [level, setLevel] = useState<Level>({ level: 1, xpIntoLevel: 0, xpForNextLevel: 100 });
+  const [level, setLevel] = useState<LevelView>(EMPTY_LEVEL);
   const [quests, setQuests] = useState<QuestRow[]>([]);
   const [boosterCount, setBoosterCount] = useState(0);
   const [statementReady, setStatementReady] = useState(false);
@@ -60,7 +62,7 @@ export function Home() {
   async function load() {
     try {
       const [moneyRes, me, questsRes, boostersRes] = await Promise.all([
-        api.get<MoneyOverview>("/child/money"), api.get<{ level: Level }>("/child/me"),
+        api.get<MoneyOverview>("/child/money"), api.get<{ level: LevelView }>("/child/me"),
         api.get<{ quests: QuestRow[] }>("/child/quests"), api.get<{ boosters: { id: string }[] }>("/child/boosters"),
       ]);
       setMoney(moneyRes); setLevel(me.level);
@@ -82,7 +84,7 @@ export function Home() {
   return <main className="village-home" data-world-tier={tier}>
     <div className="village-hud" aria-label={t.progress}>
       <Link className="village-hud-profile" to="/enfant/profil" aria-label={t.profileAria(session.child.displayName, level.level)}><Avatar avatarId={session.child.avatarId}/><span><small>{t.welcome}</small><strong>{session.child.displayName}</strong></span><span className="village-level">{t.level} {level.level}</span></Link>
-      <div className="village-hud-xp"><span>{t.experience}</span><ProgressBar value={level.xpIntoLevel} max={level.xpForNextLevel}/><small>{level.xpIntoLevel} / {level.xpForNextLevel} XP</small></div>
+      <Link className="village-hud-xp" to="/enfant/profil#xp" aria-label={`${t.tree}. ${levelTitle(level) || t.experience}. ${level.xpForNextLevel ? xpCopy.xpLeft(level.xpForNextLevel - level.xpIntoLevel, level.level + 1) : xpCopy.maxed} ${xpCopy.whatTitle}`}><ExperienceTree level={level} childId={session.child.id} compact /><span>{t.tree}</span><ProgressBar value={level.xpIntoLevel} max={level.xpForNextLevel || 1}/><small>{level.xpIntoLevel} / {level.xpForNextLevel} XP{level.xpForNextLevel > 0 && <> · {xpCopy.hudNext(level.xpForNextLevel - level.xpIntoLevel)}</>}</small></Link>
       <Link className="village-hud-coins" to="/enfant/argent" aria-label={t.accountAria(money.balances.available)}><CoinArt size={49}/><span><small>{t.account}</small><strong>{money.balances.available} <em>{t.coins}</em></strong></span></Link>
     </div>
     <section className="village-section" aria-labelledby="village-title">

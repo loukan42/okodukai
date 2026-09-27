@@ -3,6 +3,8 @@
 // réponse et les retours ; le client n'envoie que l'identifiant de l'option choisie.
 import type { Band } from "./notions.js";
 import type { RunFacts } from "./tips.js";
+import { locale } from "../i18n.js";
+import { DONT_KNOW_EN, QUESTIONS_EN } from "./questionsEn.js";
 
 export type QuestionContext = "onboarding" | "vault" | "bilan" | "library";
 
@@ -256,11 +258,17 @@ export function questionById(id: string) {
 
 const bandFits = (q: QuestionDef, band: Band) => q.band === "all" || q.band === band;
 
+/** La question dans la langue de la requête (mêmes options, même bonne réponse). */
+function build(q: QuestionDef, ctx: QuestionCtx): Built | null {
+  const en = locale() === "en" ? QUESTIONS_EN[q.id] : undefined;
+  return en ? en(ctx) : q.build(ctx);
+}
+
 /** Première question à poser dans ce contexte, pour une notion pas encore vérifiée. */
 export function pickQuestion(context: QuestionContext, ctx: QuestionCtx, verified: Set<string>) {
   for (const q of QUESTIONS) {
     if (!q.contexts.includes(context) || !bandFits(q, ctx.band) || verified.has(q.notion)) continue;
-    const built = q.build(ctx);
+    const built = build(q, ctx);
     if (built) return { def: q, built };
   }
   return null;
@@ -272,12 +280,12 @@ export function publicQuestion(def: QuestionDef, built: Built) {
   return {
     id: def.id,
     prompt: built.prompt,
-    options: [...shuffled.map((o) => ({ id: o.id, text: o.text })), { id: DONT_KNOW, text: "Je ne sais pas encore" }],
+    options: [...shuffled.map((o) => ({ id: o.id, text: o.text })), { id: DONT_KNOW, text: locale() === "en" ? DONT_KNOW_EN : "Je ne sais pas encore" }],
   };
 }
 
 export function grade(def: QuestionDef, ctx: QuestionCtx, optionId: string) {
-  const built = def.build(ctx);
+  const built = build(def, ctx);
   if (!built) return null;
   if (optionId === DONT_KNOW) return { correct: false, feedback: built.explain };
   const option = built.options.find((o) => o.id === optionId);

@@ -1,24 +1,22 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { GameIcon, type GameIconName } from "../../components/GameIcon";
+import { LANDING } from "./copy";
+import { useCopy, useLocale } from "../../i18n";
 
-/** Les vrais réglages de l'espace parent, avec leurs vraies options. */
-const CONTROLS: { icon: GameIconName; title: string; value: string }[] = [
-  { icon: "quest", title: "Les quêtes", value: "Vous les créez, vous les validez." },
-  { icon: "shop", title: "La boutique", value: "Vous choisissez les récompenses et leur prix." },
-  { icon: "vault", title: "Retraits du Coffre magique", value: "Libres, soumis à votre accord, possibles après une durée ou une fois l'objectif atteint." },
-  { icon: "coin", title: "Argent de poche", value: "Un montant versé chaque semaine, le jour de votre choix." },
-  { icon: "learn", title: "Placements", value: "Vous les activez ou non, réglez le rythme des relevés et plafonnez les versements." },
-  { icon: "collection", title: "Univers de cartes", value: "Vous choisissez ceux qui sont ouverts." },
-];
+/** Les vrais réglages de l'espace parent, avec leurs vraies options (textes dans `copy.ts`). */
+const ICONS: GameIconName[] = ["quest", "shop", "vault", "coin", "learn", "collection"];
 
 /** Côté parents : plus calme. Le vrai tableau de bord, et les réglages qui restent entre vos mains. */
 export function ParentsScene() {
+  const t = useCopy(LANDING).parents;
+  const { locale } = useLocale();
+  const shot = locale === "en" ? "parent-dashboard-en" : "parent-dashboard";
   const reduce = useReducedMotion();
   return (
     <section id="parents" className="lp-parents" aria-labelledby="lp-parents-title">
       <h2 id="lp-parents-title" className="lp-parents-title">
-        Vous gardez les règles.
-        <em>Il apprend à choisir.</em>
+        {t.title}
+        <em>{t.titleEm}</em>
       </h2>
       <div className="lp-parents-grid">
         <motion.figure
@@ -34,19 +32,19 @@ export function ParentsScene() {
             <span />
           </div>
           <img
-            src="/assets/screens/parent-dashboard-1440.webp"
-            srcSet="/assets/screens/parent-dashboard-960.webp 960w, /assets/screens/parent-dashboard-1440.webp 1440w"
+            src={`/assets/screens/${shot}-1440.webp`}
+            srcSet={`/assets/screens/${shot}-960.webp 960w, /assets/screens/${shot}-1440.webp 1440w`}
             sizes="(max-width: 1023px) 92vw, 760px"
-            alt="L'espace parent : les deux enfants, leurs pièces disponibles et au coffre, et une quête à valider."
+            alt={t.screenAlt}
             width={1440}
             height={960}
             loading="lazy"
             decoding="async"
           />
-          <figcaption>L'espace parent du foyer de démonstration.</figcaption>
+          <figcaption>{t.screenCaption}</figcaption>
         </motion.figure>
         <ul className="lp-controls">
-          {CONTROLS.map((c, i) => (
+          {t.controls.map((c, i) => (
             <motion.li
               key={c.title}
               initial={reduce ? false : { opacity: 0, x: 24 }}
@@ -55,7 +53,7 @@ export function ParentsScene() {
               transition={{ delay: i * 0.06, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
             >
               <span className="lp-control-icon">
-                <GameIcon name={c.icon} size={20} />
+                <GameIcon name={ICONS[i]} size={20} />
               </span>
               <span className="lp-control-text">
                 <strong>{c.title}</strong>
@@ -66,7 +64,7 @@ export function ParentsScene() {
           ))}
         </ul>
       </div>
-      <p className="lp-parents-foot">Vous voyez aussi ce qu'il a compris des placements, avec une idée de sujet pour en parler ensemble.</p>
+      <p className="lp-parents-foot">{t.foot}</p>
     </section>
   );
 }

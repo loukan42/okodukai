@@ -4,19 +4,80 @@ import { api } from "../../lib/api";
 import { SUPPORTS, SUPPORT_ORDER, TREND_GLYPH, signedPercent, signedUnits, trendOf, units, type InvestRun, type SupportCode } from "../../lib/invest";
 import { SupportEmblem } from "./SupportEmblem";
 import { XpEarned } from "./XpEarned";
+import { defineCopy, useCopy } from "../../i18n";
+import { percentText } from "../../i18n/format";
 
 const RISK_ORDER: SupportCode[] = ["SECURISE", "PRETER", "MONDE", "ENTREPRISES"];
 
-function when(step: number) {
-  if (step === 0) return "Au départ";
-  const year = Math.floor((step - 1) / 12) + 1;
-  return `Année ${year}`;
-}
+const COPY = defineCopy({
+  fr: {
+    atStart: "Au départ",
+    year: (n: number) => `Année ${n}`,
+    title: (years: number) => `Ta partie est terminée : ${years} années dans la vallée.`,
+    funded: (n: number) => `Tu avais transféré ${n} pièces depuis ton compte.`,
+    worthNow: (v: string) => `Ton placement vaut maintenant ${v} pièces.`,
+    settled: (n: number) => `${n} pièces sont revenues sur ton compte, avec le gain ou la perte de cette partie.`,
+    startEnd: (a: string, b: string) => `Au départ : ${a} · À la fin : ${b}`,
+    paid: "Versé",
+    final: "Valeur finale",
+    diff: "Différence",
+    perf: "Performance",
+    fees: "Frais payés",
+    marketList: "Liste du marché",
+    decisions: "Mes décisions",
+    first: (mix: string) => `Première répartition : ${mix}`,
+    change: (mix: string) => `Changement de répartition : ${mix}`,
+    planUnits: (n: number | null) => `Versement programmé : ${n} unités par mois simulé`,
+    planCoins: (n: number | null) => `Versement programmé : ${n} pièces par mois simulé`,
+    withdrawal: (n: number | null) => `Retrait de ${n} unités`,
+    scenario: (s: string) => `Ta partie ressemblait à : ${s}.`,
+    otherChoices: "Et avec d'autres choix ?",
+    otherHint: "Mêmes versements aux mêmes dates, mais tout sur un seul support et sans changement.",
+    allOn: (name: string) => `Tout sur ${name}`,
+    mine: "Ta partie",
+    nobody: "Personne ne pouvait savoir à l'avance comment l'histoire allait tourner. Une autre partie aurait pu donner l'inverse.",
+    learned: "Ce que tu as appris",
+    done: "Partie terminée",
+    newGame: "Commencer une nouvelle partie",
+    games: "Mes parties",
+  },
+  en: {
+    atStart: "At the start",
+    year: (n: number) => `Year ${n}`,
+    title: (years: number) => `Your game is over: ${years} years in the valley.`,
+    funded: (n: number) => `You had moved ${n} coins from your account.`,
+    worthNow: (v: string) => `Your investment is now worth ${v} coins.`,
+    settled: (n: number) => `${n} coins went back into your account, with this game's gain or loss.`,
+    startEnd: (a: string, b: string) => `At the start: ${a} · At the end: ${b}`,
+    paid: "Paid in",
+    final: "Final value",
+    diff: "Difference",
+    perf: "Performance",
+    fees: "Fees paid",
+    marketList: "Market list",
+    decisions: "My decisions",
+    first: (mix: string) => `First split: ${mix}`,
+    change: (mix: string) => `New split: ${mix}`,
+    planUnits: (n: number | null) => `Regular deposit: ${n} units per simulated month`,
+    planCoins: (n: number | null) => `Regular deposit: ${n} coins per simulated month`,
+    withdrawal: (n: number | null) => `Took out ${n} units`,
+    scenario: (s: string) => `Your game looked like: ${s}.`,
+    otherChoices: "What about other choices?",
+    otherHint: "Same deposits on the same dates, but everything in one holding with no changes.",
+    allOn: (name: string) => `All on ${name}`,
+    mine: "Your game",
+    nobody: "Nobody could know in advance how the story would turn out. Another game could have gone the other way.",
+    learned: "What you learned",
+    done: "Game finished",
+    newGame: "Start a new game",
+    games: "My games",
+  },
+});
 
 function allocationText(allocation: Record<SupportCode, number> | null, young: boolean) {
   if (!allocation) return "";
   return SUPPORT_ORDER.filter((c) => (allocation[c] ?? 0) > 0)
-    .map((c) => `${SUPPORTS[c].name} ${allocation[c]}${young ? "" : " %"}`)
+    .map((c) => `${SUPPORTS[c].name} ${young ? allocation[c] : percentText(String(allocation[c]))}`)
     .join(" · ");
 }
 
@@ -26,6 +87,7 @@ function allocationText(allocation: Record<SupportCode, number> | null, young: b
  * `archived` : consulté depuis « Mes parties » (pas de bouton de nouvelle partie).
  */
 export function GameEnd({ run, young, onNewGame, archived = false }: { run: InvestRun; young: boolean; onNewGame?: () => void; archived?: boolean }) {
+  const t = useCopy(COPY);
   const report = run.finalReport;
   const [words, setWords] = useState<string[]>([]);
 
@@ -37,6 +99,7 @@ export function GameEnd({ run, young, onNewGame, archived = false }: { run: Inve
   }, []);
 
   if (!report) return null;
+  const when = (step: number) => (step === 0 ? t.atStart : t.year(Math.floor((step - 1) / 12) + 1));
   const funded = run.fundedAmount !== null;
   const start = run.series[0]?.value ?? 100;
   const trend = trendOf(run.value - run.contributed, run.contributed, young);
@@ -45,52 +108,55 @@ export function GameEnd({ run, young, onNewGame, archived = false }: { run: Inve
 
   return (
     <section className="statement game-end" aria-labelledby="game-end-title">
-      <h2 id="game-end-title">
-        Ta partie est terminée : {report.years} années dans la vallée.
-      </h2>
-      {funded && <p className="money-hint">Tu avais transféré {run.fundedAmount} pièces depuis ton compte. {run.settledAmount === null ? `Ton placement vaut maintenant ${units(run.value, false)} pièces.` : `${run.settledAmount} pièces sont revenues sur ton compte, avec le gain ou la perte de cette partie.`}</p>}
+      <h2 id="game-end-title">{t.title(report.years)}</h2>
+      {funded && (
+        <p className="money-hint">
+          {t.funded(run.fundedAmount!)} {run.settledAmount === null ? t.worthNow(units(run.value, false)) : t.settled(run.settledAmount)}
+        </p>
+      )}
+
       {young ? (
         <p className="statement-main">
-          <span aria-hidden="true">{TREND_GLYPH[trend]}</span> Au départ : {units(start, true)} · À la fin : {units(run.value, true)}
+          <span aria-hidden="true">{TREND_GLYPH[trend]}</span> {t.startEnd(units(start, true), units(run.value, true))}
         </p>
       ) : (
         <dl className="game-end-figures">
-          <div><dt>Versé</dt><dd>{units(run.contributed, false)}</dd></div>
-          <div><dt>Valeur finale</dt><dd>{units(run.value, false)}</dd></div>
-          <div><dt>Différence</dt><dd>{signedUnits(run.value - run.contributed, false)}</dd></div>
-          <div><dt>Performance</dt><dd>{signedPercent(run.performance)}</dd></div>
-          <div><dt>Frais payés</dt><dd>{units(run.feesPaid, false)}</dd></div>
-          <div><dt>Liste du marché</dt><dd>100 → {units(report.marketListEnd, false)}</dd></div>
+          <div><dt>{t.paid}</dt><dd>{units(run.contributed, false)}</dd></div>
+          <div><dt>{t.final}</dt><dd>{units(run.value, false)}</dd></div>
+          <div><dt>{t.diff}</dt><dd>{signedUnits(run.value - run.contributed, false)}</dd></div>
+          <div><dt>{t.perf}</dt><dd>{signedPercent(run.performance)}</dd></div>
+          <div><dt>{t.fees}</dt><dd>{units(run.feesPaid, false)}</dd></div>
+          <div><dt>{t.marketList}</dt><dd>100 → {units(report.marketListEnd, false)}</dd></div>
         </dl>
       )}
 
-      <h3>Mes décisions</h3>
+      <h3>{t.decisions}</h3>
       <ol className="game-timeline">
         {decisions.map((d, i) => (
           <li key={`${d.step}-${i}`}>
             <span className="game-timeline-when">{when(d.step)}</span>
             <span>
-              {d.type === "VERSEMENT" && `Première répartition : ${allocationText(d.allocation, young)}`}
-              {d.type === "ARBITRAGE" && `Changement de répartition : ${allocationText(d.allocation, young)}`}
-              {d.type === "VERSEMENTS_PROGRAMMES" && `Versement programmé : ${d.amountPerMonth} unités par mois simulé`}
-              {d.type === "WALLET_PLAN" && `Versement programmé : ${d.amountPerMonth} pièces par mois simulé`}
-              {d.type === "RETRAIT" && `Retrait de ${d.amount} unités`}
+              {d.type === "VERSEMENT" && t.first(allocationText(d.allocation, young))}
+              {d.type === "ARBITRAGE" && t.change(allocationText(d.allocation, young))}
+              {d.type === "VERSEMENTS_PROGRAMMES" && t.planUnits(d.amountPerMonth)}
+              {d.type === "WALLET_PLAN" && t.planCoins(d.amountPerMonth)}
+              {d.type === "RETRAIT" && t.withdrawal(d.amount)}
             </span>
           </li>
         ))}
       </ol>
 
-      {run.scenarioRevealed && <p>Ta partie ressemblait à : {run.scenarioRevealed}.</p>}
+      {run.scenarioRevealed && <p>{t.scenario(run.scenarioRevealed)}</p>}
 
       {!young && report.alternatives && (
         <>
-          <h3>Et avec d'autres choix ?</h3>
-          <p className="money-hint">Mêmes versements aux mêmes dates, mais tout sur un seul support et sans changement.</p>
+          <h3>{t.otherChoices}</h3>
+          <p className="money-hint">{t.otherHint}</p>
           <ul className="game-alternatives">
             {RISK_ORDER.map((c) => (
               <li key={c}>
                 <span className="game-alternatives-name">
-                  <SupportEmblem code={c} size={18} /> Tout sur {SUPPORTS[c].name}
+                  <SupportEmblem code={c} size={18} /> {t.allOn(SUPPORTS[c].name)}
                 </span>
                 <span className="game-alternatives-bar" aria-hidden="true">
                   <i style={{ width: `${(report.alternatives![c] / scale) * 100}%` }} />
@@ -99,7 +165,7 @@ export function GameEnd({ run, young, onNewGame, archived = false }: { run: Inve
               </li>
             ))}
             <li className="game-alternatives-mine">
-              <span className="game-alternatives-name">Ta partie</span>
+              <span className="game-alternatives-name">{t.mine}</span>
               <span className="game-alternatives-bar" aria-hidden="true">
                 <i style={{ width: `${(run.value / scale) * 100}%` }} />
               </span>
@@ -107,14 +173,14 @@ export function GameEnd({ run, young, onNewGame, archived = false }: { run: Inve
             </li>
           </ul>
           <p className="library-note" role="note">
-            Personne ne pouvait savoir à l'avance comment l'histoire allait tourner. Une autre partie aurait pu donner l'inverse.
+            {t.nobody}
           </p>
         </>
       )}
 
       {words.length > 0 && (
         <>
-          <h3>Ce que tu as appris</h3>
+          <h3>{t.learned}</h3>
           <ul className="carnet-words">
             {words.map((w) => (
               <li key={w} className="is-verified">
@@ -125,15 +191,16 @@ export function GameEnd({ run, young, onNewGame, archived = false }: { run: Inve
         </>
       )}
 
-      <XpEarned amount={run.completionXp} reason="Partie terminée" />
+      <XpEarned amount={run.completionXp} reason={t.done} />
+
       <div className="game-end-actions">
         {!archived && onNewGame && (
           <button className="btn btn-quest" onClick={onNewGame}>
-            Commencer une nouvelle partie
+            {t.newGame}
           </button>
         )}
         <Link to="/enfant/argent/investir/parties" className="btn btn-ghost">
-          Mes parties
+          {t.games}
         </Link>
       </div>
     </section>

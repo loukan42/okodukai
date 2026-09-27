@@ -757,3 +757,23 @@
     min-height: 40px;
   }
 }
+
+/* En-tête parent sur téléphone : un seul bouton de langue (celle proposée), comme sur la landing. */
+@media (max-width: 640px) {
+  .parent-lang {
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .parent-lang .lang-switch-option[aria-pressed="true"] {
+    display: none;
+  }
+
+  .parent-lang .lang-switch-option {
+    min-width: 38px;
+    min-height: 38px;
+    padding: 0 6px;
+    box-shadow: inset 0 0 0 1px rgba(255, 250, 240, 0.3);
+  }
+}

@@ -22,6 +22,7 @@ import {
   tooManyPinAttempts,
 } from "../lib/throttle.js";
 import { attachSession } from "../middleware/requireAuth.js";
+import { locale, tr } from "../lib/i18n.js";
 
 export const authRouter = Router();
 authRouter.use(attachSession);
@@ -96,7 +97,8 @@ authRouter.post("/continue", validateBody(continueSchema), async (req, res) => {
 
   const created = await prisma
     .$transaction(async (tx) => {
-      const household = await tx.household.create({ data: { name: "Ma famille" } });
+      // La langue choisie sur l'écran de création du compte devient celle de la famille.
+      const household = await tx.household.create({ data: { name: tr("Ma famille", "My family"), locale: locale() } });
       const user = await tx.user.create({ data: { email, passwordHash, displayName } });
       await tx.householdMembership.create({
         data: { householdId: household.id, userId: user.id, role: "PARENT_ADMIN" },
@@ -155,18 +157,20 @@ authRouter.get("/me", async (req, res) => {
       kind: "parent",
       user: { id: user.id, email: user.email, displayName: user.displayName },
       householdId: req.session.householdId,
-      household: { name: household.name, onboardingCompleted: Boolean(household.onboardingCompletedAt) },
+      household: { name: household.name, onboardingCompleted: Boolean(household.onboardingCompletedAt), locale: household.locale },
       role: req.session.role,
       hasParentPin: Boolean(user.parentPinHash),
     });
   }
 
-  const child = await prisma.childProfile.findUnique({ where: { id: req.session.childId } });
+  const child = await prisma.childProfile.findUnique({ where: { id: req.session.childId }, include: { household: { select: { locale: true } } } });
   if (!child) return res.status(401).json({ error: "Non authentifié" });
   return res.json({
     kind: "child",
     child: { id: child.id, displayName: child.displayName, avatarId: child.avatarId, ageBand: pedagogyBand(child) },
     householdId: req.session.householdId,
+    // L'espace enfant suit la langue choisie par le parent (pas de choix de langue côté enfant).
+    locale: child.household.locale,
   });
 });
 

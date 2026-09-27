@@ -3,6 +3,7 @@
 import type { AgeBand, Prisma } from "@prisma/client";
 import { prisma } from "../prisma.js";
 import { grantXp } from "../xp.js";
+import { locale } from "../i18n.js";
 
 type Client = Prisma.TransactionClient | typeof prisma;
 
@@ -62,6 +63,72 @@ export const CHAPTERS: Record<number, string> = {
   7: "Décider dans la durée",
   8: "Le verger du temps long",
 };
+
+/** Mots du carnet en anglais (même clé que `NOTIONS`). */
+const WORDS_EN: Record<string, string> = {
+  compte: "My account",
+  solde: "balance",
+  entree: "money in",
+  sortie: "money out",
+  historique: "history",
+  transfert: "transfer",
+  epargne: "savings",
+  objectif: "goal",
+  unites_ecole: "practice units",
+  placement: "investment",
+  support: "holding",
+  repartition: "split",
+  releve: "statement",
+  hausse_baisse: "up, down",
+  risque: "risk",
+  concentration: "all in one place",
+  patience: "patience",
+  temps_long: "waiting a long time",
+  pourcentage: "per cent",
+  rendement: "return",
+  volatilite: "volatility",
+  obligation: "bond",
+  action: "share",
+  fonds: "fund",
+  diversification: "diversification",
+  allocation: "allocation",
+  latent: "gain, loss",
+  patrimoine: "wealth",
+  interets: "interest",
+  capitalisation: "compounding",
+  frais: "management fees",
+  inflation: "inflation",
+  pouvoir_achat: "buying power",
+  arbitrage: "switching",
+  reequilibrage: "rebalancing",
+  versement_regulier: "regular deposit",
+  verse_vs_valeur: "paid in and value",
+  horizon: "time horizon",
+  assurance_vie: "life insurance",
+};
+
+const CHAPTERS_EN: Record<number, string> = {
+  1: "My account",
+  2: "Magic Vault",
+  3: "The observatory",
+  4: "Time",
+  5: "The real words",
+  6: "What eats away, what helps it grow",
+  7: "Deciding over time",
+  8: "The long-term orchard",
+};
+
+/** Mot d'une notion dans la langue de la requête. */
+export function notionWord(code: string): string | null {
+  const notion = NOTIONS[code];
+  if (!notion) return null;
+  return locale() === "en" ? WORDS_EN[code] ?? notion.word : notion.word;
+}
+
+/** Titre d'un chapitre du carnet dans la langue de la requête. */
+export function chapterTitle(chapter: number): string {
+  return locale() === "en" ? CHAPTERS_EN[chapter] ?? CHAPTERS[chapter] : CHAPTERS[chapter];
+}
 
 /** Notions montrées à cette tranche (les mots 10-12 ne s'affichent pas en Découverte). */
 export const notionsFor = (band: Band) => Object.entries(NOTIONS).filter(([, n]) => band === "old" || !n.old);

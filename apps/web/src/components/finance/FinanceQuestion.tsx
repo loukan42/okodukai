@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { XpEarned } from "../invest/XpEarned";
+import { defineCopy, useCopy } from "../../i18n";
+
+const COPY = defineCopy({
+  fr: { kicker: "Petite vérification", newWord: (word: string) => `Nouveau mot dans ton carnet : ${word}.`, checked: "Notion vérifiée", next: "Continuer" },
+  en: { kicker: "Quick check", newWord: (word: string) => `New word in your notebook: ${word}.`, checked: "Idea checked", next: "Continue" },
+});
 
 type Context = "onboarding" | "vault" | "bilan" | "library";
 interface Question {
@@ -21,6 +27,7 @@ interface Result {
  * `onAnswered` : appelé après la réponse (l'onboarding attend la réponse pour continuer).
  */
 export function FinanceQuestion({ context, mode, onAnswered, onEmpty }: { context: Context; mode?: "MIROIR" | "ASSURANCE_VIE"; onAnswered?: () => void; onEmpty?: () => void }) {
+  const t = useCopy(COPY);
   const [question, setQuestion] = useState<Question | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [sending, setSending] = useState(false);
@@ -57,7 +64,7 @@ export function FinanceQuestion({ context, mode, onAnswered, onEmpty }: { contex
 
   return (
     <section className="finance-question" aria-labelledby={`question-${question.id}`}>
-      <p className="finance-question-kicker">Petite vérification</p>
+      <p className="finance-question-kicker">{t.kicker}</p>
       <h3 id={`question-${question.id}`}>{question.prompt}</h3>
       {!result ? (
         <div className="finance-question-options">
@@ -70,11 +77,11 @@ export function FinanceQuestion({ context, mode, onAnswered, onEmpty }: { contex
       ) : (
         <div className="finance-question-result" role="status">
           <p>{result.feedback}</p>
-          {result.correct && result.word && <p className="finance-question-word">Nouveau mot dans ton carnet : {result.word}.</p>}
-          <XpEarned amount={result.xpAwarded} reason="Notion vérifiée" />
+          {result.correct && result.word && <p className="finance-question-word">{t.newWord(result.word)}</p>}
+          <XpEarned amount={result.xpAwarded} reason={t.checked} />
           {context !== "onboarding" && (
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => setDismissed(true)}>
-              Continuer
+              {t.next}
             </button>
           )}
         </div>

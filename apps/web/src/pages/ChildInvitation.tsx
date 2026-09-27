@@ -43,7 +43,7 @@ export function ChildInvitation() {
     } finally { setBusy(false); }
   }
 
-  return <WorldShell>
+  return <WorldShell showLanguage={false}>
     {loading ? <p role="status">{t.loading}</p> : child ? <div className="child-invitation"><Avatar avatarId={child.avatarId} size="lg" /><h1 className="world-title">{t.welcome(child.childName)}</h1><p className="world-lead">{t.pin}</p><PinPad onSubmit={(pin) => void enter(pin)} submitting={busy} error={error}/><p className="world-footnote">{t.pinHelp}</p></div> : <div className="child-invitation"><h1 className="world-title">{t.invalidTitle}</h1><p>{error ?? t.requestNew}</p><Link className="btn btn-primary" to="/connexion">{t.parentLogin}</Link></div>}
   </WorldShell>;
 }

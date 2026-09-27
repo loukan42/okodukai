@@ -12,6 +12,8 @@ import { CollectionScene } from "./landing/CollectionScene";
 import { ParentsScene } from "./landing/ParentsScene";
 import { Finale, Trust } from "./landing/Finale";
 import { landingCtas } from "./landing/ctas";
+import { LANDING } from "./landing/copy";
+import { useCopy } from "../i18n";
 import "./landing/landing.css";
 
 /**
@@ -36,6 +38,7 @@ function useGlassHighlight() {
 
 export function Landing() {
   const { session } = useAuth();
+  const t = useCopy(LANDING);
   useGlassHighlight();
   if (session?.kind === "parent") return <Navigate to="/parent" replace />;
   if (session?.kind === "child") return <Navigate to="/enfant" replace />;
@@ -44,7 +47,7 @@ export function Landing() {
   return (
     <div className="lp">
       <a className="lp-skip" href="#lp-main">
-        Aller au contenu
+        {t.skip}
       </a>
       <LandingNav ctas={ctas} />
       <main id="lp-main">

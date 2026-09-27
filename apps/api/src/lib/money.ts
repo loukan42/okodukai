@@ -1,7 +1,8 @@
-// « Mon argent » : lecture du ledger comme un relevé bancaire (lignes signées par lieu,
+// « Mon trésor » : lecture du ledger comme un relevé bancaire (lignes signées par lieu,
 // soldes après chaque mouvement, résumé de la semaine), remplissage des objectifs et
 // règles de retrait de Mon coffre. Tout est calculé côté serveur à partir des
 // transactions immuables ; voir docs/FINANCIAL_EDUCATION.md §11.
+import { locale, pick } from "./i18n.js";
 import type { Prisma, VaultRuleMode, WalletTransaction } from "@prisma/client";
 import { prisma } from "./prisma.js";
 
@@ -50,44 +51,97 @@ async function loadSources(client: Client, txns: WalletTransaction[]): Promise<S
   };
 }
 
+/** Libellés du relevé, dans la langue de la requête. */
+const LABELS = {
+  fr: {
+    quest: (title?: string) => (title ? `Quête « ${title} »` : "Quête"),
+    bonus: (who?: string) => (who ? `Bonus de ${who}` : "Bonus"),
+    correction: (who?: string) => (who ? `Correction de ${who}` : "Correction"),
+    reward: (title?: string) => (title ? `Récompense « ${title} »` : "Récompense"),
+    refund: (title?: string) => (title ? `Remboursement « ${title} »` : "Remboursement"),
+    toVault: "Vers le Coffre magique",
+    fromAccount: "Depuis ton compte",
+    toAccount: "Vers ton compte",
+    fromVault: "Depuis le Coffre magique",
+    allowance: (who?: string) => (who ? `Argent de poche de ${who}` : "Argent de poche"),
+    gift: (reason?: string | null) => (reason ? `Cadeau : ${reason}` : "Cadeau"),
+    savingsBonus: (who?: string) => (who ? `Bonus d'épargne de ${who}` : "Bonus d'épargne"),
+    prime: "Prime du coffre",
+    toInvest: "Vers les placements",
+    fromInvest: "Depuis les placements",
+    you: "Toi",
+  },
+  en: {
+    quest: (title?: string) => (title ? `Quest "${title}"` : "Quest"),
+    bonus: (who?: string) => (who ? `Bonus from ${who}` : "Bonus"),
+    correction: (who?: string) => (who ? `Correction by ${who}` : "Correction"),
+    reward: (title?: string) => (title ? `Reward "${title}"` : "Reward"),
+    refund: (title?: string) => (title ? `Refund "${title}"` : "Refund"),
+    toVault: "To the Magic Vault",
+    fromAccount: "From your account",
+    toAccount: "To your account",
+    fromVault: "From the Magic Vault",
+    allowance: (who?: string) => (who ? `Pocket money from ${who}` : "Pocket money"),
+    gift: (reason?: string | null) => (reason ? `Gift: ${reason}` : "Gift"),
+    savingsBonus: (who?: string) => (who ? `Savings bonus from ${who}` : "Savings bonus"),
+    prime: "Vault bonus",
+    toInvest: "To investments",
+    fromInvest: "From investments",
+    you: "You",
+  },
+};
+
+/**
+ * Raison enregistrée par le serveur (en français) redite dans la langue de la requête ; une raison
+ * écrite par un parent reste telle quelle.
+ */
+function displayReason(t: WalletTransaction): string | null {
+  if (!t.reason || locale() === "fr") return t.reason;
+  const prime = t.reason.match(/^1 pièce pour (\d+) pièces gardées toute la semaine$/);
+  if (prime) return `1 coin for every ${prime[1]} coins kept all week`;
+  if (t.reason === "Bonus d'épargne") return "Savings bonus";
+  return t.reason;
+}
+
 /** Effets d'une transaction : (lieu, montant signé, nature, libellé) pour chaque lieu touché. */
 function effects(t: WalletTransaction, s: Sources): { place: Place; amount: number; kind: LineKind; label: string; pending?: boolean }[] {
+  const L = pick(LABELS);
   const parent = s.people.get(t.actorId);
   const quest = t.sourceId ? s.quests.get(t.sourceId) : undefined;
   const reward = t.sourceId ? s.rewards.get(t.sourceId) : undefined;
   switch (t.type) {
     case "QUEST_REWARD":
-      return [{ place: "account", amount: t.amount, kind: "entree", label: quest ? `Quête « ${quest} »` : "Quête" }];
+      return [{ place: "account", amount: t.amount, kind: "entree", label: L.quest(quest) }];
     case "PARENT_BONUS":
-      return [{ place: "account", amount: t.amount, kind: "entree", label: parent ? `Bonus de ${parent}` : "Bonus" }];
+      return [{ place: "account", amount: t.amount, kind: "entree", label: L.bonus(parent) }];
     case "PARENT_ADJUSTMENT":
-      return [{ place: "account", amount: t.direction === "debit" ? -t.amount : t.amount, kind: "correction", label: parent ? `Correction de ${parent}` : "Correction" }];
+      return [{ place: "account", amount: t.direction === "debit" ? -t.amount : t.amount, kind: "correction", label: L.correction(parent) }];
     case "REWARD_PURCHASE":
-      return [{ place: "account", amount: -t.amount, kind: "sortie", label: reward ? `Récompense « ${reward.title} »` : "Récompense", pending: reward?.status === "DEMANDEE" }];
+      return [{ place: "account", amount: -t.amount, kind: "sortie", label: L.reward(reward?.title), pending: reward?.status === "DEMANDEE" }];
     case "REWARD_REFUND":
-      return [{ place: "account", amount: t.amount, kind: "remboursement", label: reward ? `Remboursement « ${reward.title} »` : "Remboursement" }];
+      return [{ place: "account", amount: t.amount, kind: "remboursement", label: L.refund(reward?.title) }];
     case "SAVINGS_LOCK":
       return [
-        { place: "account", amount: -t.amount, kind: "transfert", label: "Vers le Coffre magique" },
-        { place: "vault", amount: t.amount, kind: "transfert", label: "Depuis ton compte" },
+        { place: "account", amount: -t.amount, kind: "transfert", label: L.toVault },
+        { place: "vault", amount: t.amount, kind: "transfert", label: L.fromAccount },
       ];
     case "SAVINGS_UNLOCK":
       return [
-        { place: "vault", amount: -t.amount, kind: "transfert", label: "Vers ton compte" },
-        { place: "account", amount: t.amount, kind: "transfert", label: "Depuis le Coffre magique" },
+        { place: "vault", amount: -t.amount, kind: "transfert", label: L.toAccount },
+        { place: "account", amount: t.amount, kind: "transfert", label: L.fromVault },
       ];
     case "ALLOWANCE":
-      return [{ place: "account", amount: t.amount, kind: "entree", label: parent ? `Argent de poche de ${parent}` : "Argent de poche" }];
+      return [{ place: "account", amount: t.amount, kind: "entree", label: L.allowance(parent) }];
     case "GIFT":
-      return [{ place: "account", amount: t.amount, kind: "entree", label: t.reason ? `Cadeau : ${t.reason}` : "Cadeau" }];
+      return [{ place: "account", amount: t.amount, kind: "entree", label: L.gift(t.reason) }];
     case "SAVINGS_BONUS":
-      return [{ place: "vault", amount: t.amount, kind: "bonus_epargne", label: parent ? `Bonus d'épargne de ${parent}` : "Bonus d'épargne" }];
+      return [{ place: "vault", amount: t.amount, kind: "bonus_epargne", label: L.savingsBonus(parent) }];
     case "VAULT_PRIME":
-      return [{ place: "vault", amount: t.amount, kind: "prime_coffre", label: "Prime du coffre" }];
+      return [{ place: "vault", amount: t.amount, kind: "prime_coffre", label: L.prime }];
     case "INVEST_LOCK":
-      return [{ place: "account", amount: -t.amount, kind: "transfert", label: "Vers les placements" }];
+      return [{ place: "account", amount: -t.amount, kind: "transfert", label: L.toInvest }];
     case "INVEST_RETURN":
-      return [{ place: "account", amount: t.amount, kind: "transfert", label: "Depuis les placements" }];
+      return [{ place: "account", amount: t.amount, kind: "transfert", label: L.fromInvest }];
   }
 }
 
@@ -117,8 +171,8 @@ export async function readLedger(client: Client, walletId: string): Promise<Ledg
         balanceBefore: before,
         balanceAfter: running[e.place],
         createdAt: t.createdAt.toISOString(),
-        reason: t.reason,
-        author: sources.people.get(t.actorId) ?? "Toi",
+        reason: displayReason(t),
+        author: sources.people.get(t.actorId) ?? pick(LABELS).you,
         pending: Boolean(e.pending),
       });
     }

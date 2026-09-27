@@ -3,6 +3,11 @@ import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { Logo } from "../art/Logo";
 import { ValleyBackdrop, type ValleyMood } from "../art/ValleyBackdrop";
+import { LanguageSwitch } from "./LanguageSwitch";
+import { defineCopy, pick } from "../i18n";
+import { useFamilyLocaleSaver } from "../lib/familyLocale";
+
+const BRAND = defineCopy({ fr: { home: "Okodukai, retour à l'accueil" }, en: { home: "Okodukai, back to the home page" } });
 
 interface WorldShellProps {
   children: ReactNode;
@@ -10,21 +15,25 @@ interface WorldShellProps {
   emblem?: ReactNode;
   mood?: ValleyMood;
   wide?: boolean;
+  /** Choix de la langue dans l'en-tête (masqué sur les écrans enfant : ils suivent la langue de la famille). */
+  showLanguage?: boolean;
 }
 
 /**
  * Coquille des écrans d'entrée (compte, accueil) : la vallée en fond, le logo qui
  * ramène à l'accueil, et un panneau clair qui porte le formulaire.
  */
-export function WorldShell({ children, emblem, mood = "golden", wide = false }: WorldShellProps) {
+export function WorldShell({ children, emblem, mood = "golden", wide = false, showLanguage = true }: WorldShellProps) {
   const reduce = useReducedMotion();
+  const saveFamilyLocale = useFamilyLocaleSaver();
   return (
     <div className={`world world--${mood}`}>
       <ValleyBackdrop mood={mood} className="world-backdrop" />
       <header className="world-header">
-        <Link to="/" className="world-brand" aria-label="Okodukai, retour à l'accueil">
+        <Link to="/" className="world-brand" aria-label={pick(BRAND).home}>
           <Logo sizes="(max-width: 600px) 132px, 168px" alt="" />
         </Link>
+        {showLanguage && <LanguageSwitch className="world-lang" onChange={saveFamilyLocale} />}
       </header>
       <main className="world-main">
         <motion.div

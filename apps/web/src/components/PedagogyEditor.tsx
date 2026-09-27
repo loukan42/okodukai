@@ -1,19 +1,44 @@
 import { useState } from "react";
 import { api, ApiError } from "../lib/api";
+import { defineCopy, useCopy } from "../i18n";
 
 export type PedagogyLevel = "AUTO" | "DECOUVERTE" | "APPROFONDI";
 
-const LEVELS: { value: PedagogyLevel; label: string; help: string }[] = [
-  { value: "AUTO", label: "Automatique selon l'âge", help: "Découverte pour moins de 9 ans ; Approfondi dès 9 ans." },
-  { value: "DECOUVERTE", label: "Découverte", help: "L'enfant répartit des jetons avec des mots simples. Les pourcentages, les frais et le verger du temps long sont masqués." },
-  { value: "APPROFONDI", label: "Approfondi", help: "L'enfant voit les pourcentages, les frais et le rendement. Il peut découvrir le verger du temps long et les versements programmés si vous les autorisez." },
-];
+const ORDER: PedagogyLevel[] = ["AUTO", "DECOUVERTE", "APPROFONDI"];
+
+const COPY = defineCopy({
+  fr: {
+    levels: {
+      AUTO: ["Automatique selon l'âge", "Découverte pour moins de 9 ans ; Approfondi dès 9 ans."],
+      DECOUVERTE: ["Découverte", "L'enfant répartit des jetons avec des mots simples. Les pourcentages, les frais et le verger du temps long sont masqués."],
+      APPROFONDI: ["Approfondi", "L'enfant voit les pourcentages, les frais et le rendement. Il peut découvrir le verger du temps long et les versements programmés si vous les autorisez."],
+    } as Record<PedagogyLevel, string[]>,
+    saved: "Niveau enregistré. Il s'applique dès la prochaine ouverture.",
+    notSaved: "Le niveau n'a pas été enregistré.",
+    legend: "Niveau pédagogique",
+    hint: (young: boolean) =>
+      `Ce réglage change les mots et les activités de placement proposés à l'enfant. Il ne change ni son solde ni ses pièces gagnées. Âge du profil : ${young ? "moins de 9 ans" : "9 ans ou plus"}. Vous pouvez ajuster le niveau à son rythme.`,
+  },
+  en: {
+    levels: {
+      AUTO: ["Automatic, based on age", "Discovery under 9; In depth from 9."],
+      DECOUVERTE: ["Discovery", "Your child shares out tokens using simple words. Percentages, fees and the long-term orchard stay hidden."],
+      APPROFONDI: ["In depth", "Your child sees percentages, fees and returns. They can try the long-term orchard and regular deposits if you allow them."],
+    },
+    saved: "Level saved. It applies the next time the app is opened.",
+    notSaved: "The level wasn't saved.",
+    legend: "Learning level",
+    hint: (young: boolean) =>
+      `This setting changes the words and investing activities your child sees. It doesn't change their balance or the coins they've earned. Profile age: ${young ? "under 9" : "9 or over"}. You can adjust the level to suit them.`,
+  },
+});
 
 /**
  * Niveau pédagogique (docs/FINANCIAL_EDUCATION.md §4.1) : prioritaire sur l'âge. Le portefeuille
  * continue sans rupture ; seuls les mots et les fonctionnalités montrées changent.
  */
 export function PedagogyEditor({ childId, initial, ageBand }: { childId: string; initial: PedagogyLevel; ageBand: string }) {
+  const t = useCopy(COPY);
   const [level, setLevel] = useState<PedagogyLevel>(initial);
   const [status, setStatus] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
 
@@ -23,24 +48,24 @@ export function PedagogyEditor({ childId, initial, ageBand }: { childId: string;
     setStatus(null);
     try {
       await api.put(`/household/children/${childId}/pedagogy`, { level: next });
-      setStatus({ tone: "ok", text: "Niveau enregistré. Il s'applique dès la prochaine ouverture." });
+      setStatus({ tone: "ok", text: t.saved });
     } catch (err) {
       setLevel(previous);
-      setStatus({ tone: "error", text: err instanceof ApiError && err.status !== 0 ? err.message : "Le niveau n'a pas été enregistré." });
+      setStatus({ tone: "error", text: err instanceof ApiError && err.status !== 0 ? err.message : t.notSaved });
     }
   }
 
   return (
     <fieldset className="vault-rule">
-      <legend>Niveau pédagogique</legend>
-      <p className="money-hint">Ce réglage change les mots et les activités de placement proposés à l'enfant. Il ne change ni son solde ni ses pièces gagnées. Âge du profil : {ageBand === "AGE_8_9" ? "moins de 9 ans" : "9 ans ou plus"}. Vous pouvez ajuster le niveau à son rythme.</p>
-      <div className="vault-rule-options" role="radiogroup" aria-label="Niveau pédagogique">
-        {LEVELS.map((l) => (
-          <label key={l.value} className={`vault-rule-option${level === l.value ? " vault-rule-option--on" : ""}`}>
-            <input type="radio" name={`pedagogy-${childId}`} checked={level === l.value} onChange={() => void choose(l.value)} />
+      <legend>{t.legend}</legend>
+      <p className="money-hint">{t.hint(ageBand === "AGE_8_9")}</p>
+      <div className="vault-rule-options" role="radiogroup" aria-label={t.legend}>
+        {ORDER.map((value) => (
+          <label key={value} className={`vault-rule-option${level === value ? " vault-rule-option--on" : ""}`}>
+            <input type="radio" name={`pedagogy-${childId}`} checked={level === value} onChange={() => void choose(value)} />
             <span>
-              <strong>{l.label}</strong>
-              <small>{l.help}</small>
+              <strong>{t.levels[value][0]}</strong>
+              <small>{t.levels[value][1]}</small>
             </span>
           </label>
         ))}

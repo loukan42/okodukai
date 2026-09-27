@@ -332,9 +332,14 @@ body { background: var(--parchment); color: var(--ink); }
 .learn-complete-icon { display:inline-grid; place-items:center; width:64px; height:64px; border:2px solid #519465; border-radius:50%; background:#ddf0df; color:#286841; }
 
 /* Réglage des univers (parent) : la case reste à droite, même avec un titre long. */
-.universe-toggle { flex-wrap: nowrap; gap: 14px; }
+.universe-toggle { flex-wrap: nowrap; gap: 14px; cursor: pointer; min-height: 56px; }
 .universe-toggle > div { flex: 1; min-width: 0; }
-.universe-toggle input { flex-shrink: 0; accent-color: var(--forest); }
+.universe-toggle input { flex-shrink: 0; width: 22px; height: 22px; accent-color: var(--forest); cursor: pointer; }
+.universe-toggle input:disabled { cursor: progress; }
+.universe-toggle-title { font-weight: 700; margin: 0; }
+.universe-toggle-text { margin: 0; }
+.universe-toggle--all { background: var(--forest-soft); box-shadow: inset 0 0 0 1px rgba(45, 114, 84, 0.22); }
+.universe-notice { margin: 0; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--sky-soft); color: var(--ink); }
 
 /* Tableau de bord parent : la vallée en bandeau discret, sous un voile sobre (pas de chrome de jeu). */
 .parent-dashboard-header {

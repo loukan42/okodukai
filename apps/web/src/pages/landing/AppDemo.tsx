@@ -1,6 +1,6 @@
 // Écrans de démonstration de l'app enfant, dessinés à la taille d'un téléphone (390 px) avec les
 // vrais composants visuels du produit (pièce, coffre, lignes de relevé, barres de progression,
-// icônes). Les données sont celles du foyer de démonstration : Emma, 9 ans.
+// icônes). Les données sont celles du foyer de démonstration : Emma, 9 ans. Textes : `copy.ts`.
 import type { ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Logo } from "../../art/Logo";
@@ -11,21 +11,24 @@ import { ProgressBar } from "../../components/ProgressBar";
 import { CoinPill } from "../../components/CoinPill";
 import { MoneyLineRow } from "../../components/money/MoneyLineRow";
 import type { MoneyLine } from "../../lib/money";
+import { useCopy } from "../../i18n";
+import { LANDING } from "./copy";
 
 type Tab = "home" | "money" | "quests" | "shop" | "collection";
 
-const NAV: { tab: Tab; label: string; icon: GameIconName }[] = [
-  { tab: "home", label: "Accueil", icon: "home" },
-  { tab: "money", label: "Mon argent", icon: "coin" },
-  { tab: "quests", label: "Quêtes", icon: "quest" },
-  { tab: "shop", label: "Boutique", icon: "shop" },
-  { tab: "collection", label: "Collection", icon: "collection" },
+const NAV: { tab: Tab; icon: GameIconName }[] = [
+  { tab: "home", icon: "home" },
+  { tab: "money", icon: "coin" },
+  { tab: "quests", icon: "quest" },
+  { tab: "shop", icon: "shop" },
+  { tab: "collection", icon: "collection" },
 ];
 
-const MONEY_TABS = ["Mon compte", "Coffre magique", "Investir", "Historique"];
+const useDemo = () => useCopy(LANDING).demo;
 
 /** L'habillage de l'app enfant : en-tête (logo, profil, accès parent) et barre d'onglets. */
 export function AppChrome({ tab, children }: { tab: Tab; children: ReactNode }) {
+  const t = useDemo();
   return (
     <div className="lpa">
       <header className="lpa-header">
@@ -36,15 +39,15 @@ export function AppChrome({ tab, children }: { tab: Tab; children: ReactNode }) 
         </span>
         <span className="lpa-parent">
           <GameIcon name="lock" size={15} />
-          Parent
+          {t.parent}
         </span>
       </header>
       <div className="lpa-body">{children}</div>
       <nav className="lpa-nav">
-        {NAV.map((item) => (
+        {NAV.map((item, i) => (
           <span key={item.tab} className={item.tab === tab ? "is-on" : undefined}>
             <GameIcon name={item.icon} size={22} />
-            {item.label}
+            {t.nav[i]}
           </span>
         ))}
       </nav>
@@ -53,11 +56,12 @@ export function AppChrome({ tab, children }: { tab: Tab; children: ReactNode }) 
 }
 
 function MoneyTabs({ on }: { on: number }) {
+  const t = useDemo();
   return (
     <div className="lpa-money-tabs">
-      {MONEY_TABS.map((t, i) => (
-        <span key={t} className={i === on ? "is-on" : undefined}>
-          {t}
+      {t.moneyTabs.map((label, i) => (
+        <span key={label} className={i === on ? "is-on" : undefined}>
+          {label}
         </span>
       ))}
     </div>
@@ -73,14 +77,15 @@ function line(id: string, kind: MoneyLine["kind"], label: string, amount: number
 
 /** Accueil : le premier écran d'Emma (le téléphone du hero). */
 export function HomeScreen() {
+  const t = useDemo();
   return (
     <AppChrome tab="home">
       <section className="lpa-banner">
         <img src="/assets/avatars/aventurier-06-192.webp" alt="" width={64} height={64} />
         <div>
-          <h1>Bonjour Emma</h1>
+          <h1>{t.hello}</h1>
           <div className="lpa-level">
-            <span>Niv. 2</span>
+            <span>{t.level}</span>
             <ProgressBar value={80} max={125} />
           </div>
         </div>
@@ -88,31 +93,31 @@ export function HomeScreen() {
       <section className="lpa-card lpa-card--account">
         <CoinArt size={78} />
         <div>
-          <span>Mon compte</span>
+          <span>{t.account}</span>
           <strong>
-            32 <small>pièces</small>
+            32 <small>{t.coins}</small>
           </strong>
           <em>
-            Voir mon argent <GameIcon name="arrow" size={14} />
+            {t.seeMoney} <GameIcon name="arrow" size={14} />
           </em>
         </div>
       </section>
       <section className="lpa-card lpa-card--vault">
         <ChestArt state="full" size={96} />
         <div>
-          <span>Coffre magique</span>
+          <span>{t.vault}</span>
           <strong>
-            70 <small>pièces</small>
+            70 <small>{t.coins}</small>
           </strong>
-          <p>Glace en famille : il te manque 30 pièces</p>
+          <p>{t.vaultGoal}</p>
           <ProgressBar value={70} max={100} />
         </div>
       </section>
       <section className="lpa-quest-teaser">
         <img src="/assets/quests/quest-board-180.webp" alt="" width={52} height={52} />
         <div>
-          <strong>Vider le lave-vaisselle</strong>
-          <span>À faire aujourd'hui</span>
+          <strong>{t.dishwasher}</strong>
+          <span>{t.today}</span>
         </div>
         <CoinPill amount={10} />
       </section>
@@ -125,33 +130,34 @@ export function HomeScreen() {
 // ---------------------------------------------------------------------------
 
 function QuestStep() {
+  const t = useDemo();
   return (
     <AppChrome tab="quests">
       <div className="lpa-page-title">
         <img src="/assets/quests/quest-board-180.webp" alt="" width={76} height={76} />
         <div>
-          <small>À faire et à gagner</small>
-          <h1>Journal de quêtes</h1>
+          <small>{t.questsKicker}</small>
+          <h1>{t.questsTitle}</h1>
         </div>
       </div>
       <article className="lpa-quest lpa-quest--done">
         <div className="lpa-quest-head">
-          <h2>Ranger sa chambre</h2>
-          <span className="lpa-status lpa-status--ok">Validée</span>
+          <h2>{t.room}</h2>
+          <span className="lpa-status lpa-status--ok">{t.approved}</span>
         </div>
-        <p>Lit fait, jouets rangés, bureau dégagé.</p>
+        <p>{t.roomDetail}</p>
         <div className="lpa-rewards">
           <CoinPill amount={10} />
           <span className="lpa-xp">
             <GameIcon name="xp" size={16} /> 15 XP
           </span>
         </div>
-        <span className="lpa-stamp">Validée par Papa</span>
+        <span className="lpa-stamp">{t.approvedBy}</span>
       </article>
       <article className="lpa-quest">
         <div className="lpa-quest-head">
-          <h2>Mettre la table</h2>
-          <span className="lpa-status">Disponible</span>
+          <h2>{t.table}</h2>
+          <span className="lpa-status">{t.available}</span>
         </div>
         <div className="lpa-rewards">
           <CoinPill amount={5} />
@@ -163,7 +169,7 @@ function QuestStep() {
       <div className="lpa-toast">
         <CoinArt size={34} />
         <span>
-          <strong>+10 pièces</strong> sur ton compte
+          <strong>{t.toast}</strong> {t.toastEnd}
         </span>
       </div>
     </AppChrome>
@@ -171,60 +177,62 @@ function QuestStep() {
 }
 
 function AccountStep() {
+  const t = useDemo();
   return (
     <AppChrome tab="money">
       <MoneyTabs on={0} />
       <section className="lpa-passbook">
         <div className="lpa-passbook-head">
-          <span>Mon compte</span>
+          <span>{t.account}</span>
           <CoinArt size={48} />
         </div>
         <p className="lpa-passbook-balance">
-          J'ai <strong>42</strong> pièces
+          {t.balanceStart} <strong>42</strong> {t.coins}
         </p>
         <p className="lpa-passbook-week">
-          Cette semaine : <b>+22</b> gagnées, <b>−10</b> dépensées
+          {t.week} <b>+22</b> {t.earned}, <b>−10</b> {t.spent}
         </p>
       </section>
-      <h2 className="lpa-heading">Derniers mouvements</h2>
+      <h2 className="lpa-heading">{t.latest}</h2>
       <div className="money-lines lpa-lines">
         <div className="lpa-line-new">
-          <MoneyLineRow line={line("q1", "entree", "Quête « Ranger sa chambre »", 10, today())} when="day" />
+          <MoneyLineRow line={line("q1", "entree", t.lines[0], 10, today())} when="day" />
         </div>
-        <MoneyLineRow line={line("r1", "sortie", "Récompense « Choisir le dessert »", -10, today())} when="day" />
-        <MoneyLineRow line={line("q2", "entree", "Quête « Vider le lave-vaisselle »", 10, yesterday())} when="day" />
-        <MoneyLineRow line={line("a1", "entree", "Argent de poche de Sophie", 2, yesterday())} when="day" />
+        <MoneyLineRow line={line("r1", "sortie", t.lines[1], -10, today())} when="day" />
+        <MoneyLineRow line={line("q2", "entree", t.lines[2], 10, yesterday())} when="day" />
+        <MoneyLineRow line={line("a1", "entree", t.lines[3], 2, yesterday())} when="day" />
       </div>
     </AppChrome>
   );
 }
 
 function VaultStep() {
+  const t = useDemo();
   return (
     <AppChrome tab="money">
       <MoneyTabs on={1} />
       <section className="lpa-vault">
         <ChestArt state="full" size={170} />
-        <h1>Coffre magique</h1>
+        <h1>{t.vault}</h1>
         <p className="lpa-vault-balance">
-          <strong>90</strong> pièces
+          <strong>90</strong> {t.coins}
         </p>
       </section>
       <div className="lpa-transfer">
         <div>
-          <span>Mon compte</span>
+          <span>{t.account}</span>
           <strong>42 → 22</strong>
         </div>
         <div>
-          <span>Coffre magique</span>
+          <span>{t.vault}</span>
           <strong>70 → 90</strong>
         </div>
       </div>
       <div className="lpa-prime">
         <img src="/assets/objects/coin-sprout-128.webp" alt="" width={48} height={48} />
         <span>
-          <small>Ma prime de lundi</small>
-          <strong>+7 pièces</strong>
+          <small>{t.mondayBonus}</small>
+          <strong>{t.bonus}</strong>
         </span>
       </div>
     </AppChrome>
@@ -232,27 +240,28 @@ function VaultStep() {
 }
 
 function GoalStep() {
+  const t = useDemo();
   return (
     <AppChrome tab="money">
       <MoneyTabs on={1} />
-      <h2 className="lpa-heading">Mes objectifs</h2>
+      <h2 className="lpa-heading">{t.goals}</h2>
       <article className="lpa-goal lpa-goal--main">
         <div className="lpa-goal-head">
           <strong>
-            Glace en famille <span>Boutique</span>
+            {t.iceCream} <span>{t.shop}</span>
           </strong>
-          <span>90 sur 100</span>
+          <span>{t.of(90, 100)}</span>
         </div>
         <ProgressBar value={90} max={100} />
-        <p>Il te manque 10 pièces.</p>
+        <p>{t.missing}</p>
       </article>
       <article className="lpa-goal">
         <div className="lpa-goal-head">
-          <strong>Livre au choix</strong>
-          <span>0 sur 50</span>
+          <strong>{t.book}</strong>
+          <span>{t.of(0, 50)}</span>
         </div>
         <ProgressBar value={0} max={50} />
-        <p>Le Coffre magique le remplira ensuite.</p>
+        <p>{t.next}</p>
       </article>
       <div className="lpa-goal-chest">
         <ChestArt state="almost" size={150} />
@@ -265,41 +274,42 @@ function GoalStep() {
 const CURVE = "M8 92 C 40 88, 58 70, 84 74 S 128 96, 150 80 S 190 40, 214 52 S 252 70, 272 44 S 310 20, 332 28";
 
 function InvestStep() {
+  const t = useDemo();
   return (
     <AppChrome tab="money">
       <MoneyTabs on={2} />
       <section className="lpa-observatory">
         <img src="/assets/objects/telescope-256.webp" alt="" width={92} height={92} />
         <div>
-          <small>L'observatoire</small>
-          <h1>Mes placements</h1>
-          <p>Année 4 sur 10. Prochain relevé ce soir à 17 h.</p>
+          <small>{t.observatory}</small>
+          <h1>{t.investments}</h1>
+          <p>{t.year}</p>
         </div>
       </section>
       <section className="lpa-chart">
         <div className="lpa-chart-head">
-          <span>Ma partie</span>
+          <span>{t.game}</span>
           <strong>
-            23 <small>pièces placées : 20</small>
+            23 <small>{t.placed}</small>
           </strong>
         </div>
         <svg viewBox="0 0 340 110" aria-hidden="true">
           <path d={CURVE} className="lpa-chart-line" />
         </svg>
-        <span className="lpa-sim">Simulation</span>
+        <span className="lpa-sim">{t.simulation}</span>
       </section>
       <ul className="lpa-supports">
         <li>
-          <span>Sécurisé</span>
-          <b>presque pas bougé</b>
+          <span>{t.safe}</span>
+          <b>{t.barely}</b>
         </li>
         <li>
-          <span>Entreprises</span>
-          <b className="is-up">▲ 3 de plus</b>
+          <span>{t.companies}</span>
+          <b className="is-up">{t.more}</b>
         </li>
         <li>
-          <span>Panier Monde</span>
-          <b className="is-down">▼ 1 de moins</b>
+          <span>{t.world}</span>
+          <b className="is-down">{t.less}</b>
         </li>
       </ul>
     </AppChrome>

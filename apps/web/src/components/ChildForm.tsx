@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { ApiError } from "../lib/api";
-import { Avatar, AVAILABLE_AVATARS, AVATAR_LABELS } from "./Avatar";
+import { Avatar, AVAILABLE_AVATARS, AVATAR_LABELS, AVATAR_LABELS_EN } from "./Avatar";
+import { defineCopy, useCopy, useLocale } from "../i18n";
 
 export interface ChildFormValues {
   displayName: string;
@@ -17,13 +18,46 @@ interface ChildFormProps {
   idPrefix?: string;
 }
 
-const AGE_BANDS = [
-  { value: "AGE_8_9", label: "Moins de 9 ans" },
-  { value: "AGE_10_12", label: "9 ans ou plus" },
-] as const;
+const AGE_BANDS = ["AGE_8_9", "AGE_10_12"] as const;
+
+const COPY = defineCopy({
+  fr: {
+    ages: { AGE_8_9: "Moins de 9 ans", AGE_10_12: "9 ans ou plus" },
+    create: "Créer le profil",
+    creating: "Création…",
+    noName: "Indiquez le prénom de l'enfant.",
+    badPin: "Le code doit comporter 4 chiffres.",
+    failed: "Le profil n'a pas pu être créé. Réessayez dans un instant.",
+    name: "Prénom",
+    age: "Âge",
+    ageHint: "Ce choix adapte les explications à l'enfant. Vous pourrez changer son niveau pédagogique ensuite.",
+    avatar: "Choisir un avatar",
+    avatarHint: "Ce portrait apparaîtra sur le profil de votre enfant.",
+    pin: "Code à 4 chiffres",
+    pinHint: "L'enfant le tape pour entrer dans son espace.",
+  },
+  en: {
+    ages: { AGE_8_9: "Under 9", AGE_10_12: "9 or over" },
+    create: "Create the profile",
+    creating: "Creating…",
+    noName: "Enter your child's first name.",
+    badPin: "The code needs 4 digits.",
+    failed: "The profile couldn't be created. Try again in a moment.",
+    name: "First name",
+    age: "Age",
+    ageHint: "This adapts the explanations to your child. You can change their learning level later.",
+    avatar: "Choose an avatar",
+    avatarHint: "This portrait will appear on your child's profile.",
+    pin: "4-digit code",
+    pinHint: "Your child types it to open their space.",
+  },
+});
 
 /** Formulaire d'ajout d'un profil enfant, partagé entre l'accueil et la gestion des enfants. */
-export function ChildForm({ onSubmit, submitting = false, submitLabel = "Créer le profil", idPrefix = "child" }: ChildFormProps) {
+export function ChildForm({ onSubmit, submitting = false, submitLabel, idPrefix = "child" }: ChildFormProps) {
+  const t = useCopy(COPY);
+  const { locale } = useLocale();
+  const avatarLabels = locale === "fr" ? AVATAR_LABELS : AVATAR_LABELS_EN;
   const [displayName, setDisplayName] = useState("");
   const [ageBand, setAgeBand] = useState<ChildFormValues["ageBand"]>("AGE_8_9");
   const [avatarId, setAvatarId] = useState(AVAILABLE_AVATARS[0]);
@@ -33,8 +67,8 @@ export function ChildForm({ onSubmit, submitting = false, submitLabel = "Créer 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!displayName.trim()) return setError("Indiquez le prénom de l'enfant.");
-    if (pin.length !== 4) return setError("Le code doit comporter 4 chiffres.");
+    if (!displayName.trim()) return setError(t.noName);
+    if (pin.length !== 4) return setError(t.badPin);
     try {
       await onSubmit({ displayName: displayName.trim(), ageBand, avatarId, pin });
       setDisplayName("");
@@ -42,7 +76,7 @@ export function ChildForm({ onSubmit, submitting = false, submitLabel = "Créer 
       setAvatarId(AVAILABLE_AVATARS[0]);
       setPin("");
     } catch (err) {
-      setError(err instanceof ApiError && err.status !== 0 ? err.message : "Le profil n'a pas pu être créé. Réessayez dans un instant.");
+      setError(err instanceof ApiError && err.status !== 0 ? err.message : t.failed);
     }
   }
 
@@ -54,30 +88,30 @@ export function ChildForm({ onSubmit, submitting = false, submitLabel = "Créer 
         </div>
       )}
       <div className="field">
-        <label htmlFor={`${idPrefix}-name`}>Prénom</label>
+        <label htmlFor={`${idPrefix}-name`}>{t.name}</label>
         <input id={`${idPrefix}-name`} value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={30} autoComplete="off" required />
       </div>
 
       <fieldset className="field choice-field">
-        <legend>Âge</legend>
+        <legend>{t.age}</legend>
         <div className="segmented">
           {AGE_BANDS.map((band) => (
-            <label key={band.value} className={`segmented-option${ageBand === band.value ? " segmented-option--on" : ""}`}>
-              <input type="radio" name={`${idPrefix}-age`} value={band.value} checked={ageBand === band.value} onChange={() => setAgeBand(band.value)} />
-              {band.label}
+            <label key={band} className={`segmented-option${ageBand === band ? " segmented-option--on" : ""}`}>
+              <input type="radio" name={`${idPrefix}-age`} value={band} checked={ageBand === band} onChange={() => setAgeBand(band)} />
+              {t.ages[band]}
             </label>
           ))}
         </div>
-        <p className="field-hint">Ce choix adapte les explications à l'enfant. Vous pourrez changer son niveau pédagogique ensuite.</p>
+        <p className="field-hint">{t.ageHint}</p>
       </fieldset>
 
       <fieldset className="field choice-field">
-        <legend>Choisir un avatar</legend>
-        <p className="field-hint">Ce portrait apparaîtra sur le profil de votre enfant.</p>
+        <legend>{t.avatar}</legend>
+        <p className="field-hint">{t.avatarHint}</p>
         <div className="avatar-grid">
           {AVAILABLE_AVATARS.map((id, i) => (
             <label key={id} className={`avatar-pick${id === avatarId ? " avatar-pick--selected" : ""}`}>
-              <input type="radio" name={`${idPrefix}-avatar`} value={id} checked={id === avatarId} onChange={() => setAvatarId(id)} aria-label={AVATAR_LABELS[i]} />
+              <input type="radio" name={`${idPrefix}-avatar`} value={id} checked={id === avatarId} onChange={() => setAvatarId(id)} aria-label={avatarLabels[i]} />
               <Avatar avatarId={id} />
             </label>
           ))}
@@ -85,7 +119,7 @@ export function ChildForm({ onSubmit, submitting = false, submitLabel = "Créer 
       </fieldset>
 
       <div className="field">
-        <label htmlFor={`${idPrefix}-pin`}>Code à 4 chiffres</label>
+        <label htmlFor={`${idPrefix}-pin`}>{t.pin}</label>
         <input
           id={`${idPrefix}-pin`}
           className="pin-input"
@@ -97,11 +131,12 @@ export function ChildForm({ onSubmit, submitting = false, submitLabel = "Créer 
           required
         />
         <p id={`${idPrefix}-pin-hint`} className="field-hint">
-          L'enfant le tape pour entrer dans son espace.
+          {t.pinHint}
         </p>
       </div>
+
       <button type="submit" className="btn btn-primary btn-block" disabled={submitting}>
-        {submitting ? "Création…" : submitLabel}
+        {submitting ? t.creating : submitLabel ?? t.create}
       </button>
     </form>
   );

@@ -6,6 +6,36 @@ import { Lessons } from "../../components/invest/Lessons";
 import { Carnet } from "../../components/finance/Carnet";
 import { ObjectArt } from "../../art/ObjectArt";
 import { useAuth } from "../../lib/AuthContext";
+import { defineCopy, useCopy } from "../../i18n";
+
+const COPY = defineCopy({
+  fr: {
+    next: "Continuer",
+    notQuite: "Pas tout à fait.",
+    tryAgain: "Tu peux choisir une autre réponse.",
+    welldone: (xp: number) => (xp > 0 ? `Bien joué ! +${xp} XP` : "Bien joué ! Tu avais déjà terminé ce module."),
+    back: "Retour",
+    emptyTitle: "Pas encore de module",
+    emptyHint: "Reviens bientôt pour apprendre de nouvelles choses.",
+    kicker: "La bibliothèque de l'observatoire",
+    title: "Apprendre",
+    lead: "Comprends l'argent à ton rythme. Chaque leçon terminée te donne de l'XP.",
+    done: "✓ Fait",
+  },
+  en: {
+    next: "Continue",
+    notQuite: "Not quite.",
+    tryAgain: "You can pick another answer.",
+    welldone: (xp: number) => (xp > 0 ? `Well done! +${xp} XP` : "Well done! You'd already finished this lesson."),
+    back: "Back",
+    emptyTitle: "No lessons yet",
+    emptyHint: "Come back soon to learn something new.",
+    kicker: "The observatory library",
+    title: "Learn",
+    lead: "Get to know money at your own pace. Every lesson you finish gives you XP.",
+    done: "✓ Done",
+  },
+});
 
 interface ModuleContent {
   situation: string;
@@ -19,6 +49,7 @@ interface ModuleContent {
 
 interface ModuleRow {
   id: string;
+  code?: string;
   title: string;
   subtitle: string;
   status: string;
@@ -28,19 +59,21 @@ interface ModuleRow {
 
 type Step = "situation" | "consequence" | "quiz" | "done";
 
-function sceneFor(subtitle: string) {
-  if (/inflation/i.test(subtitle)) return "inflation";
-  if (/épargne|epargne/i.test(subtitle)) return "compound";
-  if (/risque/i.test(subtitle)) return "risk";
+/** Illustration d'un module : d'après son code (stable dans toutes les langues), sinon son sous-titre. */
+function sceneFor(code: string | undefined, subtitle: string) {
+  if (code === "inflation" || /inflation/i.test(subtitle)) return "inflation";
+  if (code === "epargne" || /épargne|epargne|saving/i.test(subtitle)) return "compound";
+  if (code === "risque" || /risque|risk/i.test(subtitle)) return "risk";
   return "diversification";
 }
 
-function LearningScene({ subtitle, className = "" }: { subtitle: string; className?: string }) {
-  const scene = sceneFor(subtitle);
+function LearningScene({ code, subtitle, className = "" }: { code?: string; subtitle: string; className?: string }) {
+  const scene = sceneFor(code, subtitle);
   return <img className={className} src={`/assets/learning/learning-${scene}-320.webp`} srcSet={`/assets/learning/learning-${scene}-320.webp 320w, /assets/learning/learning-${scene}-640.webp 640w`} sizes={className === "learning-detail-scene" ? "(max-width: 640px) 100vw, 640px" : "(max-width: 640px) 90px, 136px"} alt="" loading="lazy" decoding="async" />;
 }
 
 export function Learn() {
+  const t = useCopy(COPY);
   const { session } = useAuth();
   const older = session?.kind === "child" && session.child.ageBand === "AGE_10_12";
   const [modules, setModules] = useState<ModuleRow[]>([]);
@@ -78,7 +111,7 @@ export function Learn() {
   if (active) {
     return (
       <div className="stack learning-detail">
-        <LearningScene subtitle={active.subtitle} className="learning-detail-scene" />
+        <LearningScene code={active.code} subtitle={active.subtitle} className="learning-detail-scene" />
         <div className="card">
           <p className="text-sm text-faint">{active.subtitle}</p>
           <h1 className="font-display" style={{ fontSize: 22, marginBottom: 16 }}>
@@ -109,7 +142,7 @@ export function Learn() {
                 <GameIcon name="learn" size={19}/> {active.content.vocabulary}
               </p>
               <button className="btn btn-primary btn-block" style={{ marginTop: 16 }} onClick={() => setStep("quiz")}>
-                Continuer
+                {t.next}
               </button>
             </>
           )}
@@ -126,9 +159,9 @@ export function Learn() {
               </div>
               {feedback && !feedback.correct && (
                 <div className="learn-feedback" role="status">
-                  <strong>Pas tout à fait.</strong>
+                  <strong>{t.notQuite}</strong>
                   <p>{feedback.explanation}</p>
-                  <p>Tu peux choisir une autre réponse.</p>
+                  <p>{t.tryAgain}</p>
                 </div>
               )}
             </>
@@ -137,7 +170,7 @@ export function Learn() {
           {step === "done" && (
             <div className="text-center">
               <span className="learn-complete-icon"><GameIcon name="check" size={32}/></span>
-              <p style={{ fontWeight: 700 }}>{xpAwarded > 0 ? `Bien joué ! +${xpAwarded} XP` : "Bien joué ! Tu avais déjà terminé ce module."}</p>
+              <p style={{ fontWeight: 700 }}>{t.welldone(xpAwarded)}</p>
               {feedback?.explanation && <p className="text-faint">{feedback.explanation}</p>}
               <button
                 className="btn btn-primary btn-block"
@@ -147,7 +180,7 @@ export function Learn() {
                   api.get<{ modules: ModuleRow[] }>("/child/learning/modules").then((res) => setModules(res.modules));
                 }}
               >
-                Retour
+                {t.back}
               </button>
             </div>
           )}
@@ -157,12 +190,12 @@ export function Learn() {
   }
 
   if (modules.length === 0) {
-    return <EmptyState art="coin-sprout" title="Pas encore de module" subtitle="Reviens bientôt pour apprendre de nouvelles choses." />;
+    return <EmptyState art="coin-sprout" title={t.emptyTitle} subtitle={t.emptyHint} />;
   }
 
   return (
     <div className="stack learn-page">
-      <header className="page-scene-title page-scene-title--art"><ObjectArt name="bookshelf" size={132} /><div><p className="scene-kicker">La bibliothèque de l'observatoire</p><h1>Apprendre</h1><p>Comprends l'argent à ton rythme.</p></div></header>
+      <header className="page-scene-title page-scene-title--art"><ObjectArt name="bookshelf" size={132} /><div><p className="scene-kicker">{t.kicker}</p><h1>{t.title}</h1><p>{t.lead}</p></div></header>
       {older && <Lessons />}
       {modules.map((m) => (
         <button
@@ -171,13 +204,13 @@ export function Learn() {
           style={{ cursor: "pointer", width: "100%", textAlign: "left" }}
           onClick={() => open(m)}
         >
-          <LearningScene subtitle={m.subtitle} className="learning-module-art" />
+          <LearningScene code={m.code} subtitle={m.subtitle} className="learning-module-art" />
           <div className="learning-module-copy">
             <strong>{m.title}</strong>
             <small>{m.subtitle}</small>
           </div>
           <span className="pill" style={{ background: m.status === "TERMINE" ? "var(--forest-soft)" : "var(--parchment-dim)" }}>
-            {m.status === "TERMINE" ? "✓ Fait" : `+${m.rewardXp} XP`}
+            {m.status === "TERMINE" ? t.done : `+${m.rewardXp} XP`}
           </span>
         </button>
       ))}

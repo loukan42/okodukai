@@ -2,18 +2,21 @@ import { useRef } from "react";
 import { motion, useMotionValue, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { GameIcon } from "../../components/GameIcon";
 import { CoinPill } from "../../components/CoinPill";
+import { LANDING } from "./copy";
+import { useCopy } from "../../i18n";
 
 const EASE = [0.23, 1, 0.32, 1] as const;
 
 /** Trois fiches épinglées : la même quête vue à trois moments (proposée, déclarée, validée). */
 const SHEETS = [
-  { title: "Lire 15 minutes", status: "Disponible", note: "Proposée par Sophie", coins: 5, xp: 15, tone: "open" },
-  { title: "Vider le lave-vaisselle", status: "En attente du parent", note: "Emma a prévenu : c'est fait", coins: 10, xp: 15, tone: "waiting" },
-  { title: "Ranger sa chambre", status: "Validée", note: "Validée par Papa", coins: 10, xp: 20, tone: "done", booster: true },
+  { coins: 5, xp: 15, tone: "open" },
+  { coins: 10, xp: 15, tone: "waiting" },
+  { coins: 10, xp: 20, tone: "done", booster: true },
 ] as const;
 
 /** Chez Okodukai, l'argent commence par une action : le tableau d'aventurier et le chemin d'une quête. */
 export function QuestsScene() {
+  const t = useCopy(LANDING).quests;
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
@@ -26,10 +29,10 @@ export function QuestsScene() {
     <section id="quetes" className="lp-quests" ref={ref} aria-labelledby="lp-quests-title">
       <div className="lp-quests-copy">
         <h2 id="lp-quests-title" className="lp-h2">
-          Chez Okodukai, l'argent commence par <em>une action.</em>
+          {t.title} <em>{t.titleEm}</em>
         </h2>
-        <p>Vous proposez les quêtes : ranger sa chambre, lire, nourrir le chat. Quand il a fini, il vous prévient. Les pièces et l'XP n'arrivent qu'une fois la quête validée par vous.</p>
-        <p className="lp-quests-aside">Certaines quêtes rapportent aussi un booster de cartes.</p>
+        <p>{t.text}</p>
+        <p className="lp-quests-aside">{t.aside}</p>
       </div>
 
       <div className="lp-quests-stage">
@@ -45,10 +48,10 @@ export function QuestsScene() {
           loading="lazy"
           decoding="async"
         />
-        <ol className="lp-quests-sheets" aria-label="Le chemin d'une quête, en démonstration">
+        <ol className="lp-quests-sheets" aria-label={t.sheetsLabel}>
           {SHEETS.map((s, i) => (
             <motion.li
-              key={s.title}
+              key={t.sheets[i].title}
               className={`lp-sheet lp-sheet--${s.tone}`}
               initial={reduce ? false : { opacity: 0, y: 50, rotate: i % 2 ? 4 : -4 }}
               whileInView={{ opacity: 1, y: 0, rotate: [-2.5, 1.5, -1][i] }}
@@ -57,12 +60,12 @@ export function QuestsScene() {
             >
               <span className="lp-sheet-pin" aria-hidden="true" />
               <div className="lp-sheet-head">
-                <h3>{s.title}</h3>
-                <span className="lp-sheet-status">{s.status}</span>
+                <h3>{t.sheets[i].title}</h3>
+                <span className="lp-sheet-status">{t.sheets[i].status}</span>
               </div>
               <p className="lp-sheet-note">
                 {s.tone === "waiting" && <GameIcon name="lock" size={15} />}
-                {s.note}
+                {t.sheets[i].note}
               </p>
               <div className="lp-sheet-rewards">
                 <CoinPill amount={s.coins} />
@@ -86,7 +89,7 @@ export function QuestsScene() {
                   transition={{ delay: 0.75, type: "spring", stiffness: 260, damping: 16 }}
                 >
                   <GameIcon name="check" size={20} />
-                  Validé
+                  {t.stamp}
                 </motion.span>
               )}
             </motion.li>

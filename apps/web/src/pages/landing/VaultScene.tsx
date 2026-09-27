@@ -3,20 +3,15 @@ import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScro
 import { ChestArt } from "../../art/ChestArt";
 import { ProgressBar } from "../../components/ProgressBar";
 import { VAULT_STAGES } from "./AppDemo";
-
-const CAPTIONS = [
-  "Le coffre est fermé. Tout est encore sur son compte.",
-  "Il range 20 pièces. Elles ne partiront pas à la boutique par erreur.",
-  "Chaque lundi, le coffre lui donne une petite prime : 1 pièce pour 10 gardées toute la semaine.",
-  "Il lui manque 10 pièces pour « Glace en famille ».",
-  "Objectif atteint. Samedi, c'est glace en famille.",
-];
+import { LANDING } from "./copy";
+import { useCopy } from "../../i18n";
 
 /**
  * Mon coffre, en plus calme : un seul objet au centre. Le défilement ouvre le coffre et
  * fait monter les pièces, étape par étape (les cinq rendus du studio, du coffre fermé à l'objectif atteint).
  */
 export function VaultScene() {
+  const t = useCopy(LANDING).vault;
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const [stage, setStage] = useState(0);
@@ -31,8 +26,8 @@ export function VaultScene() {
     <section id="coffre" className="lp-vault" ref={ref} aria-labelledby="lp-vault-title">
       <div className="lp-vault-sticky">
         <h2 id="lp-vault-title" className="lp-vault-title">
-          <span>Tout dépenser maintenant ?</span>
-          <em>Ou garder pour plus tard ?</em>
+          <span>{t.title}</span>
+          <em>{t.titleEm}</em>
         </h2>
 
         <div className="lp-vault-stage">
@@ -46,17 +41,17 @@ export function VaultScene() {
 
         <div className="lp-vault-ledger">
           <p className="lp-vault-balance">
-            <span>Coffre magique</span>
-            <strong>{current.balance}</strong> pièces
+            <span>{t.name}</span>
+            <strong>{current.balance}</strong> {t.coins}
           </p>
           <div className="lp-vault-goal">
-            <span>Objectif : Glace en famille</span>
+            <span>{t.goal}</span>
             <ProgressBar value={current.balance} max={100} />
           </div>
           <div className="lp-vault-caption" aria-live="polite">
             <AnimatePresence mode="wait" initial={false}>
               <motion.p key={stage} initial={reduce ? { opacity: 0 } : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: reduce ? 0.01 : 0.35 }}>
-                {CAPTIONS[stage]}
+                {t.captions[stage]}
               </motion.p>
             </AnimatePresence>
           </div>

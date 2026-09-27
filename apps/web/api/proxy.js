@@ -17,6 +17,20 @@ const CLIENT_IP_SIG = "x-okodukai-client-ip-sig";
 const DROP_REQUEST = new Set(["host", "connection", "keep-alive", "content-length", "transfer-encoding", "upgrade", "te", "trailer", "proxy-authorization", "proxy-authenticate"]);
 const DROP_RESPONSE = new Set(["content-encoding", "content-length", "transfer-encoding", "connection", "keep-alive", "set-cookie"]);
 
+/** Le relais répond lui-même dans deux cas : message dans la langue demandée par le site. */
+const MESSAGES = {
+  notLinked: {
+    fr: "Le site n'est pas encore relié à l'API (variable API_ORIGIN manquante sur Vercel).",
+    en: "The site isn't connected to the API yet (API_ORIGIN is missing on Vercel).",
+  },
+  down: {
+    fr: "L'API ne répond pas pour le moment. Réessaie dans un instant.",
+    en: "The API isn't responding right now. Try again in a moment.",
+  },
+};
+
+const langOf = (req) => (String(req.headers["x-locale"] ?? "").toLowerCase().startsWith("en") ? "en" : "fr");
+
 function json(res, status, payload) {
   res.statusCode = status;
   res.setHeader("content-type", "application/json; charset=utf-8");
@@ -38,7 +52,7 @@ async function readBody(req) {
 export default async function handler(req, res) {
   const origin = (process.env.API_ORIGIN || process.env.VITE_API_URL || "").trim().replace(/\/+$/, "");
   if (!/^https?:\/\//.test(origin)) {
-    return json(res, 503, { error: "Le site n'est pas encore relié à l'API (variable API_ORIGIN manquante sur Vercel)." });
+    return json(res, 503, { error: MESSAGES.notLinked[langOf(req)] });
   }
 
   const url = new URL(req.url, "http://proxy.local");
@@ -66,7 +80,7 @@ export default async function handler(req, res) {
   try {
     upstream = await fetch(target, { method: req.method, headers, body: await readBody(req), redirect: "manual" });
   } catch {
-    return json(res, 502, { error: "L'API ne répond pas pour le moment. Réessaie dans un instant." });
+    return json(res, 502, { error: MESSAGES.down[langOf(req)] });
   }
 
   res.statusCode = upstream.status;

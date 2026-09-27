@@ -32,11 +32,15 @@ import { GameArchive, GamesArchive } from "./pages/child/money/GamesArchive";
 import { Orchard } from "./pages/child/money/Orchard";
 import { Learn } from "./pages/child/Learn";
 import { DevBar } from "./components/DevBar";
+import { defineCopy, useCopy } from "./i18n";
+
+const LOADING = defineCopy({ fr: { text: "Chargement…" }, en: { text: "Loading…" } });
 
 function FullScreenLoader() {
+  const t = useCopy(LOADING);
   return (
     <div className="centered-auth">
-      <p className="text-faint">Chargement…</p>
+      <p className="text-faint">{t.text}</p>
     </div>
   );
 }

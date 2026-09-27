@@ -59,6 +59,9 @@
 .carnet-words li { padding: 5px 10px; border-radius: 999px; font-size: 13px; font-weight: 700; color: var(--ink-faint); background: #f1ead7; }
 .carnet-words li.is-explained { color: #274a60; background: var(--sky-soft); }
 .carnet-words li.is-verified { color: #1f5c40; background: var(--forest-soft); }
+/* Mot pas encore rencontré : un cadenas dans une pastille en pointillés, jamais « … » qui fait bug. */
+.carnet-words li.is-hidden { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; background: transparent; border: 1.5px dashed #cdbd97; color: #9a8a66; }
+.carnet-hint { margin: -4px 0 10px; }
 .carnet-leaves { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .carnet-leaves li { padding: 10px 14px; border-left: 3px solid #4a7895; border-radius: 10px; background: var(--sky-soft); color: #274a60; line-height: 1.45; }
 .carnet-leaves strong { display: block; color: #1d3a50; }

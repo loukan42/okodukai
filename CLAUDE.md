@@ -74,8 +74,12 @@ par la matière/texture, pas seulement la couleur.
 
 Monorepo npm workspaces :
 - `apps/api` — Node/TypeScript/Express/Prisma/PostgreSQL (docker-compose fournit `db`).
-- `apps/web` — React/TypeScript/Vite, PWA mobile-first, français (i18n dès le départ, ne pas
-  hardcoder les strings dans les composants).
+- `apps/web` — React/TypeScript/Vite, PWA mobile-first, français et anglais. Aucun texte en dur dans
+  les composants : objets `defineCopy({ fr, en })` à côté de l'écran (`src/i18n`), formats par
+  `src/i18n/format.ts`. L'API suit l'en-tête `X-Locale` (`apps/api/src/lib/i18n.ts`) ; tout nouveau
+  message d'erreur a sa traduction dans `lib/i18n/errors.ts`. La langue est un réglage de la famille
+  choisi par le parent (en-tête parent et écrans de création du compte) ; jamais de choix de langue
+  côté enfant. L'onglet enfant s'appelle « Mon trésor », pas « Mon argent » : pas d'argent réel.
 - `packages/shared` — types/contrats partagés front/back.
 
 Racine : `npm run db:up` (postgres via docker), `npm run db:migrate`, `npm run db:seed`,

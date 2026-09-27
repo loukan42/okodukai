@@ -5,6 +5,7 @@ import { validateBody } from "../lib/validation.js";
 import { attachSession, requireAnySession, requireChild, childSession } from "../middleware/requireAuth.js";
 import { vapidPublicKey } from "../lib/push.js";
 import { notifyReadyStatements } from "../lib/statementNotifier.js";
+import { locale } from "../lib/i18n.js";
 
 export const pushRouter = Router();
 pushRouter.use(attachSession);
@@ -17,12 +18,15 @@ pushRouter.get("/push/public-key", requireAnySession, (_req, res) => {
 const subscriptionSchema = z.object({
   endpoint: z.string().url().max(1000),
   keys: z.object({ p256dh: z.string().min(1).max(200), auth: z.string().min(1).max(100) }),
+  /** Langue de l'appareil, pour écrire la notification ; à défaut celle de la requête. */
+  locale: z.enum(["fr", "en"]).optional(),
 });
 
 pushRouter.post("/child/push/subscribe", requireChild, validateBody(subscriptionSchema), async (req, res) => {
   const { childId } = childSession(req);
   const data = { childId, p256dh: req.body.keys.p256dh, auth: req.body.keys.auth };
-  await prisma.pushSubscription.upsert({ where: { endpoint: req.body.endpoint }, create: { endpoint: req.body.endpoint, ...data }, update: data });
+  const deviceLocale = req.body.locale ?? locale();
+  await prisma.pushSubscription.upsert({ where: { endpoint: req.body.endpoint }, create: { endpoint: req.body.endpoint, ...data, locale: deviceLocale }, update: { ...data, locale: deviceLocale } });
   res.status(201).json({ ok: true });
 });
 

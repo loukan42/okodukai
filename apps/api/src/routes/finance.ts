@@ -6,8 +6,8 @@ import { validateBody } from "../lib/validation.js";
 import { attachSession, requireChild, childSession } from "../middleware/requireAuth.js";
 import { pedagogyBand } from "../lib/pedagogy.js";
 import { activeRun, runView } from "../lib/invest.js";
-import { CHAPTERS, NOTIONS, bandOf, encounter, explain, notionsFor, verify, type Band } from "../lib/finance/notions.js";
-import { loadTipContext, nextTip, renderTip, tipByCode, type RunFacts, type TipScreen } from "../lib/finance/tips.js";
+import { bandOf, chapterTitle, encounter, explain, notionWord, notionsFor, verify, type Band } from "../lib/finance/notions.js";
+import { loadTipContext, nextTip, renderTip, replayTip, tipByCode, type RunFacts, type TipScreen } from "../lib/finance/tips.js";
 import { grade, pickQuestion, publicQuestion, questionById, type QuestionContext, type QuestionCtx } from "../lib/finance/questions.js";
 
 // Pédagogie contextuelle et vérifications (docs/FINANCIAL_EDUCATION.md §5 et §9). Tout est décidé ici :
@@ -103,11 +103,11 @@ financeRouter.get("/child/finance/journal", requireChild, async (req, res) => {
     prisma.financeNotionProgress.findMany({ where: { childId } }),
   ]);
   const state = new Map(progress.map((p) => [p.notionCode, p.state]));
-  const notions = notionsFor(band).map(([code, n]) => ({ code, word: n.word, chapter: n.chapter, state: state.get(code) ?? "INCONNUE" }));
-  const chapters = [...new Set(notions.map((n) => n.chapter))].map((c) => ({ chapter: c, title: CHAPTERS[c], notions: notions.filter((n) => n.chapter === c) }));
+  const notions = notionsFor(band).map(([code, n]) => ({ code, word: notionWord(code) ?? n.word, chapter: n.chapter, state: state.get(code) ?? "INCONNUE" }));
+  const chapters = [...new Set(notions.map((n) => n.chapter))].map((c) => ({ chapter: c, title: chapterTitle(c), notions: notions.filter((n) => n.chapter === c) }));
   // Les volets « Mon mois en pièces » partagent le journal (vus une fois) mais ne sont pas des feuillets.
   const leaves = tips.filter((t) => !t.tipCode.startsWith("MOIS:"));
-  res.json({ tips: leaves.map((t) => ({ code: t.tipCode, title: t.title, message: t.message, shownAt: t.shownAt })), chapters });
+  res.json({ tips: leaves.map((t) => ({ code: t.tipCode, ...replayTip(t.tipCode, band, { title: t.title, message: t.message }), shownAt: t.shownAt })), chapters });
 });
 
 const questionQuery = z.object({ context: z.enum(["onboarding", "vault", "bilan", "library"]), mode: z.enum(["MIROIR", "ASSURANCE_VIE"]).optional() });
@@ -144,5 +144,5 @@ financeRouter.post("/child/finance/questions/:id/answer", requireChild, validate
   if (!result) return res.status(400).json({ error: "Réponse invalide" });
   await encounter(prisma, childId, [def.notion]);
   const xpAwarded = result.correct ? await prisma.$transaction((tx) => verify(tx, childId, def.notion)) : 0;
-  res.json({ correct: result.correct, feedback: result.feedback, xpAwarded, word: NOTIONS[def.notion]?.word ?? null });
+  res.json({ correct: result.correct, feedback: result.feedback, xpAwarded, word: notionWord(def.notion) });
 });

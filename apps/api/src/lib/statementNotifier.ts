@@ -18,6 +18,7 @@ export const isQuietHour = (now: Date) => {
 };
 
 export const STATEMENT_READY = "Ton relevé est prêt.";
+export const STATEMENT_READY_EN = "Your statement is ready.";
 
 export async function notifyReadyStatements(now = new Date()) {
   if (isQuietHour(now)) return { notified: 0, quiet: true };
@@ -37,7 +38,7 @@ export async function notifyReadyStatements(now = new Date()) {
       prisma.notification.create({ data: { householdId: child.householdId, audience: "CHILD", childId: child.id, type: "releve_pret", payload: { text: STATEMENT_READY }, createdAt: now } }),
       prisma.simulationSnapshot.updateMany({ where: { id: { in: pending.map((p) => p.id) } }, data: { notifiedAt: now } }),
     ]);
-    await pushToChild(child.id, { title: "Okodukai", body: STATEMENT_READY, url: "/enfant/argent/investir" });
+    await pushToChild(child.id, { title: "Okodukai", body: { fr: STATEMENT_READY, en: STATEMENT_READY_EN }, url: "/enfant/argent/investir" });
     notified++;
   }
   return { notified, quiet: false };

@@ -13,6 +13,7 @@ const images = [
   { name: "adventurer-lucas-idle", folder: "characters", sizes: [256, 512, 768] },
   { name: "adventurer-lucas-victory", folder: "characters", sizes: [256, 512, 768] },
   ...["cinema", "icecream", "bicycle", "family-game"].map((name) => ({ name: `reward-${name}`, folder: "rewards", sizes: [256, 512] })),
+  ...["sprout", "sapling", "young", "flowering", "mature"].map((name) => ({ name: `xp-tree-${name}`, folder: "experience", sizes: [256, 512] })),
 ];
 
 for (const [shape, widths] of [["wide", [1280, 1920]], ["tall", [720, 1080]]]) {

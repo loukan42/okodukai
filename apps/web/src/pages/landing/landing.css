@@ -257,6 +257,7 @@
   font-weight: 700;
   font-size: 15px;
   text-decoration: none;
+  white-space: nowrap;
   transition: background-color 200ms;
 }
 
@@ -2296,14 +2297,15 @@
   letter-spacing: -0.03em;
 }
 
+/* Une ligne sur deux en or plutôt qu'en gris : tout reste lisible sur le fond de nuit. */
 .lp-trust-not li:nth-child(even) {
-  color: rgba(255, 250, 240, 0.55);
+  color: var(--gold-soft);
 }
 
 .lp-trust-yes {
   max-width: var(--lp-max);
   margin: 28px auto 0;
-  color: rgba(255, 250, 240, 0.72);
+  color: rgba(255, 250, 240, 0.86);
   font-size: 1.12rem;
   line-height: 1.6;
 }
@@ -2581,10 +2583,12 @@
     padding: 4vh 0 30vh;
   }
 
+  /* Un seul chapitre tient sous le téléphone : il reste lisible, jamais grisé. */
   .lp-chapter {
-    min-height: 58vh;
+    min-height: 42svh;
     justify-content: flex-start;
-    padding-top: 6vh;
+    padding-top: 3svh;
+    opacity: 1;
   }
 
   .lp-quests {
@@ -2659,15 +2663,10 @@
     font-size: clamp(2rem, 9vw, 2.8rem);
   }
 
+  /* Le texte reste entier : la phrase coupée (« le montant… ») cachait l'essentiel. */
   .lp-invest-copy p {
-    font-size: 1rem;
-  }
-
-  .lp-invest-copy p:not(.lp-invest-note) {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 5;
+    font-size: 0.97rem;
+    line-height: 1.5;
   }
 
   .lp-invest-panel {
@@ -2752,5 +2751,38 @@
     background: var(--lp-paper);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+  }
+}
+
+/* Langue dans la barre : sur téléphone, un seul bouton (la langue proposée) pour tenir sur une ligne. */
+.lp-nav-lang {
+  background: rgba(23, 41, 65, 0.06);
+}
+
+.lp-footer-lang {
+  margin-top: 18px;
+}
+
+@media (max-width: 767px) {
+  .lp-nav-lang {
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .lp-nav-lang .lang-switch-option[aria-pressed="true"] {
+    display: none;
+  }
+
+  .lp-nav-lang .lang-switch-option {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0 8px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgba(23, 41, 65, 0.16);
+  }
+
+  .lp-nav-actions {
+    gap: 6px;
   }
 }

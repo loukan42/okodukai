@@ -8,6 +8,7 @@ import { getBalances, recordWalletTransaction, InsufficientFundsError } from "..
 import { levelFromTotalXp } from "../lib/levels.js";
 import { newIdempotencyKey } from "../lib/boosters.js";
 import { catchUpMoney } from "../lib/moneyCatchUp.js";
+import { localizeUniverse } from "../lib/i18n/content.js";
 
 export const householdRouter = Router();
 householdRouter.use(attachSession, requireParent);
@@ -122,7 +123,14 @@ householdRouter.get("/dashboard", async (req, res) => {
   res.json({ pendingCompletions, pendingRedemptions, recentAudit });
 });
 
+/** Langue de l'application pour toute la famille (en-tête de l'espace parent). */
+householdRouter.put("/locale", validateBody(z.object({ locale: z.enum(["fr", "en"]) })), async (req, res) => {
+  const household = await prisma.household.update({ where: { id: req.session!.householdId }, data: { locale: req.body.locale }, select: { locale: true } });
+  res.json(household);
+});
+
 const universeToggleSchema = z.object({ enabled: z.boolean() });
+const universeSetSchema = z.object({ enabledIds: z.array(z.string().min(1)).min(1).max(200) });
 
 householdRouter.get("/universes", async (req, res) => {
   const householdId = req.session!.householdId;
@@ -132,8 +140,24 @@ householdRouter.get("/universes", async (req, res) => {
     include: { householdGrants: { where: { householdId } } },
   });
   res.json({
-    universes: universes.map((u) => ({ ...u, householdGrants: undefined, enabled: u.householdGrants.length > 0 })),
+    universes: universes.map((u) => ({ ...localizeUniverse(u), householdGrants: undefined, enabled: u.householdGrants.length > 0 })),
   });
+});
+
+/** Remplace d'un coup la liste des univers activés (« Tout sélectionner »). Au moins un reste actif. */
+householdRouter.put("/universes", validateBody(universeSetSchema), async (req, res) => {
+  const householdId = req.session!.householdId;
+  const wanted = [...new Set<string>(req.body.enabledIds)];
+  const universes = await prisma.universe.findMany({ where: { id: { in: wanted }, active: true }, select: { id: true } });
+  if (universes.length === 0) {
+    return res.status(409).json({ error: "Gardez au moins un univers actif pour les boosters gagnés après chaque quête." });
+  }
+  const ids = universes.map((u) => u.id);
+  await prisma.$transaction([
+    prisma.householdUniverse.deleteMany({ where: { householdId, universeId: { notIn: ids } } }),
+    prisma.householdUniverse.createMany({ data: ids.map((universeId) => ({ householdId, universeId })), skipDuplicates: true }),
+  ]);
+  res.json({ ok: true, enabledIds: ids });
 });
 
 householdRouter.put("/universes/:universeId", validateBody(universeToggleSchema), async (req, res) => {
@@ -164,6 +188,8 @@ const adjustmentSchema = z.object({
   amount: z.number().int().positive(),
   direction: z.enum(["credit", "debit"]),
   reason: z.string().min(1).max(200),
+  /** Clé d'intention du client : un double appui ne crée pas deux corrections. */
+  idempotencyKey: z.string().min(8).max(100).optional(),
 });
 
 householdRouter.post("/children/:childId/wallet/adjust", validateBody(adjustmentSchema), async (req, res) => {
@@ -183,7 +209,7 @@ householdRouter.post("/children/:childId/wallet/adjust", validateBody(adjustment
         type: "PARENT_ADJUSTMENT",
         direction: req.body.direction,
         actorId: req.session!.kind === "parent" ? req.session!.userId : "",
-        idempotencyKey: newIdempotencyKey(),
+        idempotencyKey: req.body.idempotencyKey ? `adjust:${childId}:${req.body.idempotencyKey}` : newIdempotencyKey(),
         reason: req.body.reason,
       });
       await tx.auditLog.create({
