@@ -79,7 +79,12 @@ export function createApp() {
   }
 
   app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-    console.error(err);
+    // Les exceptions de Prisma peuvent inclure des valeurs de requête : ne jamais
+    // imprimer leur message ou leur pile dans les journaux de déploiement.
+    const failure = err instanceof Prisma.PrismaClientKnownRequestError ? `database_${err.code}`
+      : err instanceof Prisma.PrismaClientInitializationError ? "database_unavailable"
+      : err instanceof SyntaxError && "body" in err ? "invalid_json" : "unexpected";
+    console.error(`Erreur API (${failure}).`);
     if (err instanceof SyntaxError && "body" in err) {
       return res.status(400).json({ error: "Requête invalide" });
     }

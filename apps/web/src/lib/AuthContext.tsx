@@ -72,6 +72,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refresh();
   }, [refresh]);
 
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === "visible") void refresh(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [refresh]);
+
   return (
     <AuthContext.Provider value={{ session, loading, refresh, setSession }}>{children}</AuthContext.Provider>
   );

@@ -231,6 +231,7 @@ authRouter.post("/logout", (_req, res) => {
 });
 
 authRouter.get("/me", async (req, res) => {
+  res.set("Cache-Control", "private, no-store");
   if (!req.session) return res.status(401).json({ error: "Non authentifié" });
 
   if (req.session.kind === "parent") {

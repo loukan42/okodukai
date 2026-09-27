@@ -6,24 +6,30 @@ import argon2 from "argon2";
 import { prisma } from "../lib/prisma.js";
 
 const PASSWORD_FILE = fileURLToPath(new URL("../../.env.local", import.meta.url));
+class AdminSetupError extends Error {}
 
 async function main() {
   const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) throw new Error("Configuration incomplète : variable d'environnement manquante.");
-  const host = new URL(databaseUrl).hostname.toLowerCase();
+  if (!databaseUrl) throw new AdminSetupError("Connexion à la base locale non configurée.");
+  let host: string;
+  try { host = new URL(databaseUrl).hostname.toLowerCase(); }
+  catch { throw new AdminSetupError("Configuration de la base locale invalide."); }
   if (!["localhost", "127.0.0.1", "[::1]"].includes(host)) {
-    throw new Error("Initialisation refusée : cette commande est réservée à la base locale.");
+    throw new AdminSetupError("Initialisation refusée : la base configurée n'est pas locale.");
   }
   const adminEmail = process.env.PLATFORM_ADMIN_EMAIL?.trim().toLowerCase();
-  if (!adminEmail) throw new Error("Configuration incomplète : variable d'environnement manquante.");
+  if (!adminEmail) throw new AdminSetupError("Adresse du compte administrateur non configurée.");
 
   const existing = await prisma.user.findFirst({ where: { email: { equals: adminEmail, mode: "insensitive" } }, select: { id: true } });
-  if (existing) throw new Error("Ce compte existe déjà dans la base locale. Aucun mot de passe n'a été modifié.");
+  if (existing) throw new AdminSetupError("Ce compte existe déjà dans la base locale. Son mot de passe n'a pas été modifié.");
 
   const password = randomBytes(24).toString("base64url");
   const passwordHash = await argon2.hash(password);
   // Un fichier exclu par .gitignore, créé sans écraser un éventuel secret existant.
-  const file = await open(PASSWORD_FILE, "wx", 0o600);
+  const file = await open(PASSWORD_FILE, "wx", 0o600).catch((error: NodeJS.ErrnoException) => {
+    if (error.code === "EEXIST") throw new AdminSetupError("Un mot de passe local est déjà enregistré. Aucun compte n'a été créé.");
+    throw error;
+  });
   let saved = false;
   try {
     await file.writeFile(`OKODUKAI_LOCAL_ADMIN_PASSWORD=${password}\n`);
@@ -57,4 +63,10 @@ async function main() {
   console.log("Compte créé dans la base locale avec accès admin. Mot de passe enregistré dans apps/api/.env.local (ignoré par Git).");
 }
 
-main().catch((error: unknown) => { console.error(error); process.exitCode = 1; }).finally(() => prisma.$disconnect());
+main().catch((error: unknown) => {
+  console.error(error instanceof AdminSetupError ? error.message : "Initialisation du compte administrateur impossible. Vérifiez la base locale et réessayez.");
+  process.exitCode = 1;
+}).finally(() => prisma.$disconnect().catch(() => {
+  console.error("Fermeture de la connexion à la base impossible.");
+  process.exitCode = 1;
+}));

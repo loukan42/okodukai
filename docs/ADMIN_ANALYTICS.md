@@ -6,13 +6,15 @@ Cette page est réservée au compte du propriétaire de l’application. Le rôl
 
 ### Base locale
 
-`npm run admin:bootstrap-local --workspace apps/api` crée une seule fois le compte parent `loucore@gmail.com`, son foyer local et son droit d'administration. La commande refuse une base distante et n'écrase jamais un compte existant. Son mot de passe aléatoire est enregistré dans `apps/api/.env.local`, qui est ignoré par Git. Cette base locale n'est pas copiée lors d'un push Git.
+Définir `PLATFORM_ADMIN_EMAIL` dans la configuration locale de l'API, puis lancer `npm run admin:bootstrap-local --workspace apps/api`. Cette commande crée une seule fois le compte parent, son foyer local et son droit d'administration. Elle refuse une base distante et n'écrase jamais un compte existant. Le mot de passe aléatoire est enregistré dans `apps/api/.env.local`, ignoré par Git. La base locale n'est pas copiée lors d'un push Git.
 
 ### Autres bases
 
 1. Appliquer la migration `20260927150000_platform_admin` sur la base concernée.
-2. Vérifier que le compte parent `loucore@gmail.com` existe déjà. Avec Google associé, lancer `npm run admin:grant --workspace apps/api -- loucore@gmail.com` avec la `DATABASE_URL` de cette base. Si ce compte a été créé par mot de passe et que son propriétaire a été vérifié par un autre moyen, ajouter `--allow-password-account` à la commande : la création par mot de passe ne vérifie pas encore l’e-mail. Le script refuse toute autre adresse et retire le droit à tout ancien administrateur global avant de l’attribuer au compte choisi. Il ne modifie jamais le mot de passe.
-3. Se déconnecter puis se reconnecter, ou rafraîchir l’application. L’onglet **Administration** apparaît dans l’espace parent.
+2. Vérifier l'identité du propriétaire du compte déjà créé et définir son adresse dans `PLATFORM_ADMIN_EMAIL` sur l'API. La création par mot de passe ne vérifie pas encore l'e-mail. Depuis un environnement relié à cette base, lancer `npm run admin:grant --workspace apps/api -- --allow-password-account` pour un compte créé par mot de passe ; omettre l'option si Google est associé. Le script retire le droit à tout ancien administrateur global avant de l'attribuer à ce compte. Il ne modifie pas le mot de passe.
+3. Recharger l'application ou se reconnecter. Le lien **Administration** apparaît en premier dans la navigation parent ; sur téléphone, il est libellé **Admin**.
+
+L'attribution est ponctuelle : les builds suivants ne changent pas les droits administrateur.
 
 La page affiche les nombres globaux de parents, de profils enfant, de familles, de quêtes créées et de validations. Elle permet aussi de voir les créations et actions des 7, 30 ou 90 derniers jours. Chaque validation d’une quête récurrente est comptée séparément. Les périodes sont des fenêtres glissantes, calculées à l’heure de la requête.
 

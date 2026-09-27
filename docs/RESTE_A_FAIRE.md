@@ -1,5 +1,12 @@
 # Reste à faire : passation (26 septembre 2026)
 
+## Point d'étape du 27 septembre 2026 : administration et accès visible
+
+- Le compte administrateur local existe ; l'attribution du droit au compte de production existant a été observée dans les journaux de build Vercel. Le script retire ce droit aux autres comptes lors de l'attribution. Le build API n'attribue plus de droit admin automatiquement lors des déploiements suivants.
+- Le lien **Administration** est le premier onglet de la navigation parent pour ce compte, libellé **Admin** sur mobile. La session est relue quand l'application redevient visible. Vérification dans Chrome avec le compte local à 375 et 1280 px : lien visible, actif et accessible au clavier.
+- Les scripts d'administration et le gestionnaire d'erreurs API affichent des messages génériques sans e-mail personnel, commande à exécuter ni détail de base de données. Les réponses de session et de statistiques interdisent le cache. `docs/ADMIN_ANALYTICS.md` décrit la configuration actuelle sans adresse personnelle.
+- Builds API et web verts ; 81 tests API verts. Google et les notifications push restent à reprendre séparément selon la décision du propriétaire.
+
 ## Point d'étape du 27 septembre 2026 (soir) : téléphones de démo lisibles sur mobile
 
 - **Écrans de téléphone illisibles dans la landing** (dernier point de l'audit) : plutôt qu'un recadrage

@@ -20,6 +20,7 @@
 .admin-analytics-privacy { padding: 16px; border-left: 3px solid var(--forest); background: var(--forest-soft); color: var(--ink); }
 @media (max-width: 540px) { .admin-analytics { gap: 20px; } .admin-analytics-header { padding: 20px; } .admin-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .admin-metrics > div { padding: 14px; min-height: 116px; } }
 .parent-nav-short { display: none; }
+.parent-nav a:focus-visible { outline: 2px solid var(--forest); outline-offset: -3px; }
 @media (max-width: 600px) { .parent-nav-full { display: none; } .parent-nav-short { display: inline; } }
 .parent-account { display: grid; gap: 16px; }
 .parent-account .card h2 { margin: 0 0 8px; font: 700 22px var(--font-display); }

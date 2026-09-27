@@ -8,8 +8,8 @@ import { defineCopy, useCopy } from "../../i18n";
 import { useFamilyLocaleSaver } from "../../lib/familyLocale";
 
 const COPY = defineCopy({
-  fr: { logout: "Déconnexion", nav: "Espace parent", overview: "Vue d'ensemble", quests: "Quêtes", shop: "Boutique", children: "Enfants", worlds: "Univers", account: "Compte", statistics: "Administration", statisticsShort: "Stats" },
-  en: { logout: "Log out", nav: "Parent area", overview: "Overview", quests: "Quests", shop: "Shop", children: "Children", worlds: "Card worlds", account: "Account", statistics: "Administration", statisticsShort: "Stats" },
+  fr: { logout: "Déconnexion", nav: "Espace parent", overview: "Vue d'ensemble", quests: "Quêtes", shop: "Boutique", children: "Enfants", worlds: "Univers", account: "Compte", statistics: "Administration", statisticsShort: "Admin" },
+  en: { logout: "Log out", nav: "Parent area", overview: "Overview", quests: "Quests", shop: "Shop", children: "Children", worlds: "Card worlds", account: "Account", statistics: "Administration", statisticsShort: "Admin" },
 });
 
 export function ParentLayout() {
@@ -46,6 +46,9 @@ export function ParentLayout() {
         </div>
       </div>
       <nav className={`parent-nav${session.isPlatformAdmin ? " parent-nav--admin" : ""}`} aria-label={t.nav}>
+        {session.isPlatformAdmin && <NavLink to="/parent/statistiques" className={link} aria-label={t.statistics}>
+          <span className="parent-nav-full">{t.statistics}</span><span className="parent-nav-short">{t.statisticsShort}</span>
+        </NavLink>}
         <NavLink to="/parent" end className={link}>
           {t.overview}
         </NavLink>
@@ -62,9 +65,6 @@ export function ParentLayout() {
           {t.worlds}
         </NavLink>
         <NavLink to="/parent/compte" className={link}>{t.account}</NavLink>
-        {session.isPlatformAdmin && <NavLink to="/parent/statistiques" className={link}>
-          <span className="parent-nav-full">{t.statistics}</span><span className="parent-nav-short">{t.statisticsShort}</span>
-        </NavLink>}
       </nav>
       <div className="screen-content screen-content--wide">
         <Outlet />
