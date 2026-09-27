@@ -4,7 +4,7 @@ import { CoinFlight, type Flight } from "../../../art/CoinFlight";
 import { api, ApiError } from "../../../lib/api";
 import { chestStateFor, intentKey, pieces, type MoneyOverview } from "../../../lib/money";
 import { ChestArt } from "../../../art/ChestArt";
-import { ProgressBar } from "../../../components/ProgressBar";
+import { GoalJourney } from "../../../components/GoalJourney";
 import { MoneyLoadError, useMoneyOverview } from "./MoneyAccount";
 import { FinanceTip } from "../../../components/finance/FinanceTip";
 import { FinanceQuestion } from "../../../components/finance/FinanceQuestion";
@@ -414,7 +414,7 @@ export function MoneyVault() {
                 </strong>
                 <span>{t.of(goal.present, goal.targetCoins)}</span>
               </div>
-              <ProgressBar value={goal.present} max={goal.targetCoins} />
+              <GoalJourney title={goal.title} present={goal.present} target={goal.targetCoins} />
               <p>{goal.reached ? (goal.rewardId ? t.reachedShop(goal.title) : t.reached) : t.missing(pieces(goal.missing))}</p>
               {data.goals.length > 1 && (
                 <div className="money-goal-order">

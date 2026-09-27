@@ -1,0 +1,12 @@
+.goal-journey { position: relative; min-height: 132px; overflow: hidden; border: 1px solid #b7ae81; border-radius: 13px; background: radial-gradient(ellipse at 29% 98%, #b4c898 0 21%, transparent 50%), linear-gradient(180deg, #dce8db, #c6d5b1 72%, #a5be8f); }
+.goal-journey-path { position: absolute; left: 22px; right: 123px; bottom: 31px; height: 20px; border-bottom: 6px dashed #8a704b; transform: rotate(-2deg); }
+.goal-journey-walked { position: absolute; left: 0; bottom: -6px; height: 6px; border-radius: 6px; background: #d4a34a; transition: width 360ms ease-out; }
+.goal-journey-walked img { position: absolute; right: -18px; bottom: -13px; width: 38px; height: 38px; filter: drop-shadow(0 4px 3px rgba(57, 49, 28, .25)); }
+.goal-journey-destination { position: absolute; right: 10px; bottom: 5px; width: 115px; height: 115px; object-fit: contain; filter: drop-shadow(0 8px 5px rgba(40, 63, 42, .24)); }
+.money-goal--reached .goal-journey { background: radial-gradient(ellipse at 29% 98%, #c6d6a9 0 21%, transparent 50%), linear-gradient(180deg, #f4ebcc, #d8e4c6 72%, #b5c998); }
+@media (max-width: 600px) {
+  .goal-journey { min-height: 112px; }
+  .goal-journey-path { left: 16px; right: 98px; bottom: 27px; }
+  .goal-journey-destination { width: 94px; height: 94px; right: 4px; bottom: 5px; }
+}
+@media (prefers-reduced-motion: reduce) { .goal-journey-walked { transition: none; } }

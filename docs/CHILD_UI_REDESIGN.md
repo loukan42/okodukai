@@ -18,7 +18,7 @@ L'accueil est une scène navigable. Chaque destination est un lien HTML nommé e
 
 Les pièces et XP demeurent des valeurs serveur. Une quête en attente n'affiche pas son gain comme acquis. Le compte garde un relevé lisible ; les placements restent une simulation pédagogique. Les cartes et l'ouverture de booster existantes sont réemployées.
 
-L'XP fait aussi pousser un arbre personnel, visible dans le HUD et sur le profil. Cinq illustrations de la même espèce correspondent aux niveaux 1, 5, 10, 20 et 30. La taille varie légèrement entre ces seuils selon l'XP du niveau courant ; le prochain seuil est indiqué en texte. Un gain détecté depuis la dernière visite sur l'appareil déclenche une réaction courte, jamais un gain simulé. Ce compagnon visuel est purement cosmétique ; les nombres et les récompenses restent ceux du serveur. Le registre de compte possède maintenant sa propre scène intérieure, avec le solde sur une surface sombre lisible.
+L'XP fait aussi pousser un arbre personnel, visible dans le HUD et sur le profil. Cinq illustrations de la même espèce correspondent aux niveaux 1, 5, 10, 20 et 30. La taille varie légèrement entre ces seuils selon l'XP du niveau courant ; le prochain seuil est indiqué en texte. Un gain détecté depuis la dernière visite sur l'appareil déclenche une réaction courte, jamais un gain simulé. Ce compagnon visuel est purement cosmétique ; les nombres et les récompenses restent ceux du serveur. Le registre de compte possède maintenant sa propre scène intérieure, avec le solde sur une surface sombre lisible. Chaque objectif du coffre est une destination au bout d'un chemin : la pièce avance selon le montant du serveur, les quatre récompenses illustrées connues montrent leur objet, et les titres libres utilisent un poteau sans texte peint.
 
 ## Deux appareils, un foyer
 
@@ -30,7 +30,7 @@ Depuis l'espace parent, **Espace enfant** ouvre le choix d'un profil. Pour prêt
 - À 768 px, le panorama montre les six bâtiments et les panneaux de contenu restent limités en largeur.
 - À 1280 px, le monde remplit une grande scène sans étirer les fiches de lecture. La navigation flotte au bas de la fenêtre, sans couvrir les plaques du village.
 - Les actions ont au moins 44 px ; le focus est visible. Les animations s'arrêtent avec `prefers-reduced-motion`.
-- L'arbre, le profil et le registre de compte ont été capturés aux trois largeurs dans `docs/screenshots/child-experience-*` ; la capture est régénérable par `node apps/web/scripts/capture-child-experience.mjs` avec Chrome local.
+- L'arbre, le profil, le registre et un objectif du coffre ont été capturés aux trois largeurs dans `docs/screenshots/child-experience-*` ; la capture est régénérable par `node apps/web/scripts/capture-child-experience.mjs` avec Chrome local.
 
 ## Langue et contenu
 

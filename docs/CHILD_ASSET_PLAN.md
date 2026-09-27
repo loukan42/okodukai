@@ -24,5 +24,6 @@ Le registre des fichiers livrés et de leur provenance est `ASSET_REGISTRY.md`. 
 | `child-registry-interior-{1280,1920}.webp` | Registre de compte enfant | WebP panoramique | Comptoir de bois, registre ouvert, vallée par la fenêtre ; zone calme à gauche pour les chiffres | P1 | Livré |
 | `hub-tier-{5,10,20,30}.webp` | Progression du village | WebP transparent, calques 1280/720 | Même caméra que les fonds | P2 | Prévu dans l’architecture |
 | `xp-tree-{sprout,sapling,young,flowering,mature}-{256,512}.webp` | HUD et profil, croissance avec l'XP | WebP transparent, deux tailles | Trois-quarts, arbre courbe à fleurs ivoire, base moussue et lumière de la vallée | P1 | Livré, cinq formes |
+| `goal-waypost-{128,256,512}.webp` | Destination des objectifs libres | WebP transparent, trois tailles | Poteau en bois, carte sans texte, médaillon vide ; trois-quarts | P1 | Livré |
 
 Les sources de la nouvelle série sont dans `apps/web/art/source/child/`. `node apps/web/scripts/optimize-child-art.mjs` régénère les WebP. Les images des cartes et le sachet de booster sont déjà intégrés. Leur changement demande une revue d’ensemble, car ils constituent un système de collection existant.

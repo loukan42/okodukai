@@ -13,13 +13,14 @@
 | Accès enfant | Profil parent sans passage clair | Choix même téléphone avec PIN parent, ou invitation unique pour un appareil distinct |
 | XP | Barre abstraite | Arbre personnel en cinq formes, croissance graduelle et profil explicatif |
 | Mon compte | Aplat bleu et solde | Registre intérieur illustré, solde sur contraste sombre, historique conservé lisible |
+| Objectifs | Barre seule | Chemin parcouru par la pièce, destination illustrée, montant écrit et progression accessible |
 
 ## Captures contrôlées
 
 - 375 px : `screenshots/child-home-mobile-375.png`, `child-quests-mobile-375.png`, `child-vault-mobile-375.png`, `child-shop-mobile-375.png`, `child-profile-mobile-375.png`.
 - 768 px : `screenshots/child-home-tablet-768.png`, `child-gallery-tablet-768.png`.
 - 1280 px : `screenshots/child-home-desktop-1280.png`, `child-observatory-desktop-1280.png`.
-- 375, 768 et 1280 px : `screenshots/child-experience-{home,profile,account}-*.png`, régénérables par `node apps/web/scripts/capture-child-experience.mjs`.
+- 375, 768 et 1280 px : `screenshots/child-experience-{home,profile,account,goal}-*.png`, régénérables par `node apps/web/scripts/capture-child-experience.mjs`.
 
 Les captures viennent du foyer local de démonstration ; le bouton « Démo » n'apparaît pas en production. Le contrôle a aussi porté sur le dialogue PIN à 375 px, sa fermeture par Échap et l'absence de débordement horizontal sur les principaux écrans.
 

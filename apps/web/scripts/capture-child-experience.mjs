@@ -17,20 +17,22 @@ try {
     const accountsResponse = await page.request.get(`${base}/api/dev/accounts`);
     if (!accountsResponse.ok()) throw new Error(`Demo accounts: HTTP ${accountsResponse.status()}`);
     const accounts = await accountsResponse.json();
-    const childId = accounts.households[0]?.children[0]?.childId;
+    const children = accounts.households[0]?.children ?? [];
+    const childId = (children.find((child) => child.displayName === "Emma") ?? children[0])?.childId;
     if (!childId) throw new Error("The local demo has no child profile");
     const loginResponse = await page.request.post(`${base}/api/dev/login-as-child`, { data: { childId } });
     if (!loginResponse.ok()) throw new Error(`Demo login: HTTP ${loginResponse.status()}`);
     await page.addInitScript(() => localStorage.setItem("okodukai:locale", "fr"));
-    for (const [screen, route, ready] of [["home", "/enfant", ".experience-tree img"], ["profile", "/enfant/profil#xp", ".experience-tree img"], ["account", "/enfant/argent", ".money-passbook"]]) {
+    for (const [screen, route, ready] of [["home", "/enfant", ".experience-tree img"], ["profile", "/enfant/profil#xp", ".experience-tree img"], ["account", "/enfant/argent", ".money-passbook"], ["goal", "/enfant/argent/coffre", ".money-goal"]]) {
       await page.goto(base + route, { waitUntil: "networkidle" });
       await page.locator(ready).first().waitFor({ state: "visible" });
-      if (screen !== "account") await page.locator(ready).first().evaluate((image) => image.decode());
+      if (screen === "home" || screen === "profile") await page.locator(ready).first().evaluate((image) => image.decode());
       await page.addStyleTag({ content: ".dev-launcher, [data-dev-tools] { display: none !important; }" });
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       if (overflow > 1) throw new Error(`${screen} ${width}px: horizontal overflow ${overflow}px`);
       const file = `${out}/child-experience-${screen}-${width}.png`;
-      await page.screenshot({ path: file, fullPage: true });
+      if (screen === "goal") await page.locator(".money-goal").first().screenshot({ path: file });
+      else await page.screenshot({ path: file, fullPage: true });
       console.log(file);
     }
     await context.close();
