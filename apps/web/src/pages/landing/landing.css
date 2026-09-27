@@ -2476,8 +2476,8 @@
   .lp-hero-product {
     right: 22px;
     bottom: 44px;
-    width: 38vw;
-    max-width: 170px;
+    width: 44vw;
+    max-width: 195px;
   }
 
   .lp-hero-coin {
@@ -2548,7 +2548,7 @@
     position: sticky;
     top: var(--lp-nav-h);
     z-index: 2;
-    height: 54svh;
+    height: 64svh;
     background: var(--lp-parchment);
   }
 
@@ -2571,7 +2571,7 @@
 
   .lp-story-phone {
     width: auto;
-    height: 92%;
+    height: 97%;
     aspect-ratio: 390 / 844;
   }
 

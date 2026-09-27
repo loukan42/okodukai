@@ -1,5 +1,17 @@
 # Reste à faire : passation (26 septembre 2026)
 
+## Point d'étape du 27 septembre 2026 (soir) : téléphones de démo lisibles sur mobile
+
+- **Écrans de téléphone illisibles dans la landing** (dernier point de l'audit) : plutôt qu'un recadrage
+  par chapitre (coûteux à vérifier à l'aveugle), le mockup lui-même est agrandi sur téléphone — hero
+  (`.lp-hero-product`, 38vw/170px max → 44vw/195px max) et « Son premier compte » (`.lp-story-stage`
+  54svh → 64svh, `.lp-story-phone` 92% → 97% de hauteur). Contrôlé à 375 px sur plusieurs chapitres
+  (quêtes, coffre, observatoire) : texte net, pas de débordement. Build web vert.
+- Ajout d'une règle dans `CLAUDE.md` : toute session doit surveiller son quota et ne jamais laisser le
+  dépôt dans un état à moitié fini (tests/build non vérifiés, travail non poussé, passation pas à jour).
+- `.claude/launch.json` ajouté (api : `npm run dev:api` port 4000, web : `npm run dev:web` port 5173)
+  pour prévisualiser directement avec le navigateur intégré.
+
 ## Point d'étape du 27 septembre 2026 (fin d'après-midi) : dernières décisions de l'audit
 
 Décisions du propriétaire (QCM) : moyenne du foyer pour le repère de prix, clore et archiver les
