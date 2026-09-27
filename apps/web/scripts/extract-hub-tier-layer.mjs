@@ -3,6 +3,7 @@
 // Lit art/source/child/hub-{forme}.png et hub-tier-{palier}-{forme}-full.png, écrit hub-tier-{palier}-{forme}.png.
 // Seules les zones nettement modifiées sont gardées ; le bruit de ré-interprétation du générateur est retiré.
 import sharp from "sharp";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -82,6 +83,10 @@ for (let p = 0; p < pixels; p++) {
   if (mask[p] > 0) covered++;
 }
 await sharp(layer, { raw: { width, height, channels: 4 } }).png().toFile(target);
+// Aperçu hors du dépôt : le calque posé sur le fond, tel que l'enfant le verra.
+const preview = join(tmpdir(), `hub-tier-${tier}-${shape}-preview.png`);
+await sharp(basePath).composite([{ input: target }]).png().toFile(preview);
 const share = (covered / pixels) * 100;
 console.log(`${target} : ${share.toFixed(1)} % de la scène`);
+console.log(`Aperçu sur le fond : ${preview}`);
 if (share > 35) console.warn("Plus d'un tiers de la scène a changé : le générateur a sans doute repeint le décor. Vérifier le calque avant de l'utiliser.");

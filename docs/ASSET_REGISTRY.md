@@ -51,7 +51,7 @@ Les lignes « génération d'images » correspondent à des créations produites
   illustrés. Choix retenu : un calque transparent complet par palier (le palier 20 contient aussi les ajouts des
   paliers 5 et 10), posé sur `child-hub-*` ; jamais plusieurs calques empilés. Même pipeline « génération
   d'images » que le village enfant, par édition du fond puis extraction du calque
-  (`scripts/extract-hub-tier-layer.mjs`) ; zones et consigne dans `CHILD_ASSET_PLAN.md`. Ajouter une ligne au
+  (`scripts/extract-hub-tier-layer.mjs`) ; zones et consignes dans `BRIEF_CODEX_VALLEE_PALIERS.md`. Ajouter une ligne au
   tableau à la livraison.
 - `apps/web/public/cards/**` et `apps/web/public/avatars/*.png` : images de *Héros de la classe* copiées localement,
   gitignorées (voir `CLAUDE.md`). Les anciens identifiants d'avatars restent lisibles : `Avatar.tsx` retombe sur un
