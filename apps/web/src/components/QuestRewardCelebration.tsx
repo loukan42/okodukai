@@ -6,7 +6,7 @@ import { useDialogFocus } from "../lib/useDialogFocus";
 import { CoinFlight, type Flight } from "../art/CoinFlight";
 import { BoosterPack } from "./booster/BoosterPack";
 import { GameIcon } from "./GameIcon";
-import { ChildCharacter } from "./ChildCharacter";
+import { ChildCharacter, hasFullBodyCharacter } from "./ChildCharacter";
 import { useAuth } from "../lib/AuthContext";
 import { defineCopy, useCopy } from "../i18n";
 import { LEVEL_TITLE } from "../lib/levels";
@@ -141,7 +141,7 @@ export function QuestRewardCelebration() {
     <div className="celebration-backdrop">
       <div ref={dialogRef} className="celebration" role="dialog" aria-modal="true" aria-labelledby="celebration-title">
         <span className="celebration-rays" aria-hidden="true" />
-        {session?.kind === "child" && ["aventurier-05", "aventurier-06"].includes(session.child.avatarId) ? <ChildCharacter avatarId={session.child.avatarId} pose="victory" className="celebration-character" /> : <ObjectBadge />}
+        {session?.kind === "child" && hasFullBodyCharacter(session.child.avatarId) ? <ChildCharacter avatarId={session.child.avatarId} pose="victory" className="celebration-character" /> : <ObjectBadge />}
         <h2 id="celebration-title" className="celebration-title">
           {heading}
         </h2>

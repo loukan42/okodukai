@@ -1,5 +1,12 @@
 # Reste à faire : passation (26 septembre 2026)
 
+## Point d'étape du 27 septembre 2026 : quatre personnages du roster en pied
+
+- Les portraits 01–04 ont chacun une illustration en pied fidèle au visage, à la coiffure et aux vêtements du portrait, dans la lumière de la vallée. Les quatre PNG sources et les WebP 256/512/768 sont versionnés ; les générer à nouveau avec `node apps/web/scripts/optimize-child-art.mjs`.
+- Le personnage sélectionné apparaît sur la place, le profil, les leçons et lors de la récompense. Emma et Lucas gardent leurs six poses ; les quatre nouveaux personnages utilisent la pose repos sur ces écrans.
+- Contrôlés dans le navigateur à 375, 768 et 1280 px pour les portraits 01 et 04 sur la place et le profil, avec `apps/web/scripts/capture-child-characters.mjs`. Captures dans `docs/screenshots/child-character-*`. Aucun débordement horizontal ; build web vert.
+- Restent dix portraits (07–16) à illustrer en pied pour compléter le roster. Les autres limites de la refonte sont décrites dans `CHILD_ASSET_PLAN.md` et `CHILD_UI_REDESIGN.md` ; les variantes de décor par palier restent reportées par décision du propriétaire.
+
 ## Point d'étape du 27 septembre 2026 : administration et accès visible
 
 - Le compte administrateur local existe ; l'attribution du droit au compte de production existant a été observée dans les journaux de build Vercel. Le script retire ce droit aux autres comptes lors de l'attribution. Le build API n'attribue plus de droit admin automatiquement lors des déploiements suivants.

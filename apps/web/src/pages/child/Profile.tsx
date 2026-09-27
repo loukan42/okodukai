@@ -4,7 +4,7 @@ import { useAuth } from "../../lib/AuthContext";
 import { Avatar, AVAILABLE_AVATARS, AVATAR_LABELS, AVATAR_LABELS_EN } from "../../components/Avatar";
 import { XpGuide } from "../../components/XpGuide";
 import { levelTitle, type LevelView } from "../../lib/levels";
-import { ChildCharacter } from "../../components/ChildCharacter";
+import { ChildCharacter, hasFullBodyCharacter } from "../../components/ChildCharacter";
 import { defineCopy, useCopy, useLocale } from "../../i18n";
 
 const copy = defineCopy({
@@ -32,7 +32,7 @@ export function Profile() {
   }
 
   return <div className="child-profile-page">
-    <header className="character-scene"><div className={session.child.avatarId === "aventurier-06" || session.child.avatarId === "aventurier-05" ? "character-portrait character-portrait--figure" : "character-portrait"}><ChildCharacter avatarId={session.child.avatarId} pose="proud" className="character-figure-art"/></div><div><p className="scene-kicker">{t.kicker}</p><h1>{session.child.displayName}</h1><p>{t.intro}</p>{level && <p className="character-level-line"><strong>{t.level} {level.level}</strong>{levelTitle(level) && <span> · {levelTitle(level)}</span>}</p>}</div></header>
+    <header className="character-scene"><div className={hasFullBodyCharacter(session.child.avatarId) ? "character-portrait character-portrait--figure" : "character-portrait"}><ChildCharacter avatarId={session.child.avatarId} pose="proud" className="character-figure-art"/></div><div><p className="scene-kicker">{t.kicker}</p><h1>{session.child.displayName}</h1><p>{t.intro}</p>{level && <p className="character-level-line"><strong>{t.level} {level.level}</strong>{levelTitle(level) && <span> · {levelTitle(level)}</span>}</p>}</div></header>
     {level && <div id="xp" className="character-xp"><XpGuide level={level} /></div>}
     <section className="character-wardrobe" aria-labelledby="wardrobe-title"><div className="section-heading"><h2 id="wardrobe-title">{t.choose}</h2></div><p>{t.help}</p>{error && <p className="form-error" role="alert">{error}</p>}<div className="character-roster">{AVAILABLE_AVATARS.map((avatarId, index) => <button className={session.child.avatarId === avatarId ? "character-choice character-choice--selected" : "character-choice"} type="button" key={avatarId} disabled={saving} onClick={() => void choose(avatarId)} aria-label={avatarLabels[index]} aria-pressed={session.child.avatarId === avatarId}><Avatar avatarId={avatarId} /><span>{avatarLabels[index]}</span></button>)}</div></section>
   </div>;
