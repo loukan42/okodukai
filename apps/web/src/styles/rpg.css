@@ -314,7 +314,7 @@ body { background: var(--parchment); color: var(--ink); }
 .parent-quick-actions a { min-height:48px; display:inline-flex; align-items:center; gap:8px; border:1px solid #d1b988; border-radius:11px; padding:9px 14px; background:#f8ebcd; color:var(--ink); text-decoration:none; font-size:14px; font-weight:800; }
 .parent-quick-actions a:hover { background:#efdbb3; }
 @media (max-width:600px) { .parent-dashboard-header { padding:18px; } .parent-dashboard-pending { min-width:70px; } .parent-dashboard-header p:last-child { font-size:13px; } .approval-actions { width:100%; } .approval-actions .btn { flex:1; } }
-@media (max-width:600px) { .parent-nav { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0; padding:0 8px; overflow:visible; } .parent-nav a { text-align:center; padding:10px 3px; font-size:12px; white-space:normal; border-bottom-width:2px; } }
+@media (max-width:600px) { .parent-nav { display:flex; gap:2px; padding:0 8px; overflow-x:auto; scrollbar-width:none; } .parent-nav::-webkit-scrollbar { display:none; } .parent-nav a { flex:0 0 auto; display:flex; align-items:center; min-height:44px; text-align:center; padding:10px 12px; font-size:12px; white-space:nowrap; border-bottom-width:2px; } }
 
 /* Public entry */
 
