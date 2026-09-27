@@ -1,5 +1,21 @@
 # Reste à faire : passation (26 septembre 2026)
 
+## Point d'étape du 27 septembre 2026 : domaine okodukai.fr configuré
+
+- Le domaine acheté sur OVH est relié au projet Vercel `okodukai` : `okodukai.fr` et `www.okodukai.fr`
+  affichent tous deux « Valid Configuration » côté Vercel et servent directement l'environnement Production
+  (plus de redirection croisée entre les deux). Certificat SSL généré.
+- Trois erreurs de configuration ont été corrigées côté OVH/Vercel : un enregistrement AAAA résiduel sur
+  `okodukai.fr` qui bloquait la validation Vercel, `okodukai.fr` configuré par erreur en redirection 308 vers
+  `www.okodukai.fr` (inversé : c'est `www` qui doit être secondaire), et une faute de frappe dans la cible du
+  CNAME de `www.okodukai.fr` (`vercel-dns-07.com` au lieu de `vercel-dns-017.com`).
+- Vérifié par `curl` (résolution DNS système), par Cloudflare/Google DNS publics, et par le propriétaire en
+  navigation privée : les deux domaines renvoient le site réel. Un navigateur déjà ouvert avant la correction
+  peut garder une ancienne résolution DNS en cache ; un redémarrage du navigateur suffit à la purger.
+- Reste à faire par le propriétaire, hors code : mettre à jour les balises sociales (Open Graph/Twitter) et
+  toute URL codée en dur vers `okodukai-gold.vercel.app` pour utiliser `https://okodukai.fr` maintenant que le
+  domaine propre fonctionne (voir la note plus bas sur `images/metadescription.png`).
+
 ## Bilan du 27 septembre 2026 : refonte enfant livrée
 
 - La barre « Démo » permet de choisir un niveau de 1 à 30 pour l'enfant connecté, ou de revenir au niveau réel. Cet aperçu reste dans l'onglet : la vallée, l'arbre et le profil suivent le niveau choisi ; l'XP, les boosters et les cadres enregistrés ne changent pas. Le calcul de l'aperçu vient de l'API de développement. Le sélecteur n'est pas livré dans le build de production.
