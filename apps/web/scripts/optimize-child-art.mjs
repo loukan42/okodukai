@@ -8,7 +8,7 @@ const source = join(webRoot, "art", "source", "child");
 const output = join(webRoot, "public", "assets");
 
 const images = [
-  ...["01", "02", "03", "04", "07", "08", "09", "10"].map((id) => ({ name: `adventurer-${id}-idle`, folder: "characters", sizes: [256, 512, 768] })),
+  ...["01", "02", "03", "04", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16"].map((id) => ({ name: `adventurer-${id}-idle`, folder: "characters", sizes: [256, 512, 768] })),
   { name: "adventurer-emma-idle", folder: "characters", sizes: [256, 512, 768] },
   { name: "adventurer-emma-victory", folder: "characters", sizes: [256, 512, 768] },
   { name: "adventurer-lucas-idle", folder: "characters", sizes: [256, 512, 768] },

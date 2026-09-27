@@ -16,7 +16,7 @@ Le registre des fichiers livrés et de leur provenance est `ASSET_REGISTRY.md`. 
 | `adventurer-{emma,lucas}-idle-{256,512,768}.webp` | Place, profil | WebP transparent | Personnages du roster en pied | P1 | Livré |
 | `adventurer-{emma,lucas}-victory-{256,512,768}.webp` | Validation de quête | WebP transparent | Même personnage et caméra | P1 | Livré |
 | `adventurer-{emma,lucas}-{happy,proud,thinking,discovery}-{256,512,768}.webp` | Place, profil et leçons | WebP transparent, trois tailles | Même personnage, tenue et caméra que les poses existantes | P1 | Livré |
-| Personnages en pied pour les 14 autres portraits | Profil et moments de jeu | WebP transparent 256/512/768 | Fidèles au portrait choisi | P1 | Portraits 01–04 et 07–10 livrés en pose repos ; 11–16 à produire |
+| Personnages en pied pour les 14 autres portraits | Profil et moments de jeu | WebP transparent 256/512/768 | Fidèles au portrait choisi | P1 | Livré : les 16 portraits ont une figure en pied ; Emma et Lucas ont six poses, les 14 autres la pose repos |
 | `reward-{cinema,icecream,bicycle,family-game}-{256,512}.webp` | Boutique, récompenses familiales | WebP transparent | Objets trois-quarts, palette du monde | P1 | Livré |
 | `reward-{dessert,music,friend,figurine,book}-{256,512}.webp` | Boutique, récompenses courantes du foyer | WebP transparent | Objets distincts, détails fonctionnels et sans inscriptions | P1 | Livré, contrôlé à 375/768/1280 px |
 | `quest-{habit,mission,major,booster}.webp` | Journal, type de quête | WebP transparent 256 | Objet sobre, sans texte | P1 | Variantes visuelles par objets existants livrées ; assets dédiés à produire |

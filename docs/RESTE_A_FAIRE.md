@@ -6,12 +6,12 @@
 - L'écran de connexion informe les parents que l'administrateur peut consulter leur e-mail pour gérer les comptes. Tableau vérifié dans Chrome avec un admin local à 375 et 1280 px, sans débordement horizontal. Builds API/web et test d'accès admin verts.
 - À compléter pour la conformité RGPD : notice de confidentialité publique, base juridique des finalités, durées de conservation et modalités d'exercice des droits. Ces choix demandent les informations du responsable de traitement ; voir `docs/ADMIN_ANALYTICS.md`.
 
-## Point d'étape du 27 septembre 2026 : quatre personnages du roster en pied
+## Point d'étape du 27 septembre 2026 : roster complet de personnages en pied
 
-- Les portraits 01–04 ont chacun une illustration en pied fidèle au visage, à la coiffure et aux vêtements du portrait, dans la lumière de la vallée. Les quatre PNG sources et les WebP 256/512/768 sont versionnés ; les générer à nouveau avec `node apps/web/scripts/optimize-child-art.mjs`.
-- Le personnage sélectionné apparaît sur la place, le profil, les leçons et lors de la récompense. Emma et Lucas gardent leurs six poses ; les quatre nouveaux personnages utilisent la pose repos sur ces écrans.
-- Contrôlés dans le navigateur à 375, 768 et 1280 px pour les portraits 01 et 04 sur la place et le profil, avec `apps/web/scripts/capture-child-characters.mjs`. Captures dans `docs/screenshots/child-character-*`. Aucun débordement horizontal ; build web vert.
-- Restent dix portraits (07–16) à illustrer en pied pour compléter le roster. Les autres limites de la refonte sont décrites dans `CHILD_ASSET_PLAN.md` et `CHILD_UI_REDESIGN.md` ; les variantes de décor par palier restent reportées par décision du propriétaire.
+- Les 14 portraits autres qu'Emma et Lucas ont chacun une illustration en pied fidèle au visage, à la coiffure et aux vêtements du portrait, dans la lumière de la vallée. Leurs PNG sources et les WebP 256/512/768 sont versionnés ; les régénérer avec `node apps/web/scripts/optimize-child-art.mjs`. Une première composition horizontale du portrait 16 a été rejetée avant intégration.
+- Le personnage sélectionné apparaît sur la place, le profil, les leçons et lors de la récompense. Emma et Lucas gardent leurs six poses ; les 14 autres personnages utilisent la pose repos sur ces écrans.
+- Contrôlés dans le navigateur à 375, 768 et 1280 px pour les portraits 01, 04, 07, 10, 11, 12 et 16 sur la place et le profil, avec `apps/web/scripts/capture-child-characters.mjs`. Captures dans `docs/screenshots/child-character-*`. Les images verticales qui débordaient du profil sur tablette sont recadrées par le conteneur de figure ; aucun débordement horizontal.
+- Le roster en pied est complet. Les autres limites de la refonte sont décrites dans `CHILD_ASSET_PLAN.md` et `CHILD_UI_REDESIGN.md` ; les variantes de décor par palier restent reportées par décision du propriétaire.
 
 ## Point d'étape du 27 septembre 2026 : administration et accès visible
 
