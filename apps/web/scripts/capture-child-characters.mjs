@@ -41,6 +41,14 @@ try {
           }
           const imageName = await character.getAttribute("src");
           if (!imageName?.includes(`adventurer-${id}-idle-`)) throw new Error(`${screen} ${width}px: expected full-body avatar ${id}, got ${imageName}`);
+          if (screen === "profile") {
+            const fit = await page.evaluate(() => {
+              const scene = document.querySelector(".character-scene")?.getBoundingClientRect();
+              const figure = document.querySelector(".character-figure-art")?.getBoundingClientRect();
+              return Boolean(scene && figure && figure.top >= scene.top && figure.bottom <= scene.bottom);
+            });
+            if (!fit) throw new Error(`Profile ${width}px: avatar ${id} escapes the scene`);
+          }
           await page.addStyleTag({ content: ".dev-bar { display: none !important; }" });
           const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
           if (overflow > 1) throw new Error(`${screen} ${width}px: horizontal overflow ${overflow}px`);

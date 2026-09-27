@@ -3,7 +3,7 @@ import { Avatar } from "./Avatar";
 /** Emma and Lucas have expressive poses; the other illustrated explorers keep their idle pose. */
 export type CharacterPose = "idle" | "happy" | "proud" | "thinking" | "victory" | "discovery";
 
-const illustratedAvatars = new Set(["aventurier-01", "aventurier-02", "aventurier-03", "aventurier-04", "aventurier-05", "aventurier-06"]);
+const illustratedAvatars = new Set(["aventurier-01", "aventurier-02", "aventurier-03", "aventurier-04", "aventurier-05", "aventurier-06", "aventurier-07", "aventurier-08", "aventurier-09", "aventurier-10"]);
 export function hasFullBodyCharacter(avatarId: string) { return illustratedAvatars.has(avatarId); }
 
 export function ChildCharacter({ avatarId, pose = "idle", className = "" }: { avatarId: string; pose?: CharacterPose; className?: string }) {
