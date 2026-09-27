@@ -7,13 +7,23 @@ import { useAuth } from "../../lib/AuthContext";
 import { ObjectArt } from "../../art/ObjectArt";
 import { defineCopy, useCopy } from "../../i18n";
 
-interface QuestRow { id: string; title: string; description: string | null; status: string; rewardCoins: number; rewardXp: number; difficulty: "FACILE" | "MOYENNE" | "IMPORTANTE" | "EXCEPTIONNELLE"; recurrence: "UNIQUE" | "QUOTIDIENNE" | "HEBDOMADAIRE" }
+type QuestCategory = "MAISON" | "AUTONOMIE" | "APPRENTISSAGE" | "ENTRAIDE" | "CREATIVITE" | "ECOLE" | "JARDIN" | "ANIMAUX";
+interface QuestRow { id: string; title: string; description: string | null; status: string; category: QuestCategory; rewardCoins: number; rewardXp: number; difficulty: "FACILE" | "MOYENNE" | "IMPORTANTE" | "EXCEPTIONNELLE"; recurrence: "UNIQUE" | "QUOTIDIENNE" | "HEBDOMADAIRE" }
 const copy = defineCopy({
-  fr: { status: { DISPONIBLE:"Disponible", ACCEPTEE:"Acceptée", EN_COURS:"En cours", EN_ATTENTE_VALIDATION:"En attente du parent", VALIDEE:"Validée", A_REFAIRE:"À refaire", REFUSEE:"Refusée" }, kind: { habit: "Habitude", major: "Grande quête", mission: "Mission" }, loadError: "Impossible de charger les quêtes. Réessaie dans un instant.", actionError: "L'action n'a pas été enregistrée. Réessaie.", kicker: "À faire et à gagner", title: "Journal de quêtes", intro: "Choisis une quête, puis préviens un parent quand elle est terminée.", loading: "Chargement des quêtes…", empty: "Pas encore de quête", emptyHelp: "Demande à un parent de t'en proposer une.", reward: "Récompense après validation", start: "Commencer", complete: "J'ai terminé", waiting: "En attente de validation" },
-  en: { status: { DISPONIBLE:"Available", ACCEPTEE:"Accepted", EN_COURS:"In progress", EN_ATTENTE_VALIDATION:"Waiting for a parent", VALIDEE:"Approved", A_REFAIRE:"Try again", REFUSEE:"Declined" }, kind: { habit: "Habit", major: "Major quest", mission: "Mission" }, loadError: "Could not load quests. Try again shortly.", actionError: "The action was not saved. Try again.", kicker: "To do and earn", title: "Quest journal", intro: "Choose a quest, then tell a parent when it is done.", loading: "Loading quests…", empty: "No quests yet", emptyHelp: "Ask a parent to add one for you.", reward: "Reward after approval", start: "Start", complete: "I'm done", waiting: "Waiting for approval" },
+  fr: { status: { DISPONIBLE:"Disponible", ACCEPTEE:"Acceptée", EN_COURS:"En cours", EN_ATTENTE_VALIDATION:"En attente du parent", VALIDEE:"Validée", A_REFAIRE:"À refaire", REFUSEE:"Refusée" }, kind: { habit: "Habitude", major: "Grande quête", mission: "Mission" }, category: { MAISON: "Maison", AUTONOMIE: "Autonomie", APPRENTISSAGE: "Apprentissage", ENTRAIDE: "Entraide", CREATIVITE: "Créativité", ECOLE: "École", JARDIN: "Jardin", ANIMAUX: "Animaux" }, loadError: "Impossible de charger les quêtes. Réessaie dans un instant.", actionError: "L'action n'a pas été enregistrée. Réessaie.", kicker: "À faire et à gagner", title: "Journal de quêtes", intro: "Choisis une quête, puis préviens un parent quand elle est terminée.", loading: "Chargement des quêtes…", empty: "Pas encore de quête", emptyHelp: "Demande à un parent de t'en proposer une.", reward: "Récompense après validation", start: "Commencer", complete: "J'ai terminé", waiting: "En attente de validation" },
+  en: { status: { DISPONIBLE:"Available", ACCEPTEE:"Accepted", EN_COURS:"In progress", EN_ATTENTE_VALIDATION:"Waiting for a parent", VALIDEE:"Approved", A_REFAIRE:"Try again", REFUSEE:"Declined" }, kind: { habit: "Habit", major: "Major quest", mission: "Mission" }, category: { MAISON: "Home", AUTONOMIE: "Independence", APPRENTISSAGE: "Learning", ENTRAIDE: "Helping out", CREATIVITE: "Creativity", ECOLE: "School", JARDIN: "Garden", ANIMAUX: "Pets" }, loadError: "Could not load quests. Try again shortly.", actionError: "The action was not saved. Try again.", kicker: "To do and earn", title: "Quest journal", intro: "Choose a quest, then tell a parent when it is done.", loading: "Loading quests…", empty: "No quests yet", emptyHelp: "Ask a parent to add one for you.", reward: "Reward after approval", start: "Start", complete: "I'm done", waiting: "Waiting for approval" },
 });
 const questKind = (quest: QuestRow, kind: (typeof copy)["fr"]["kind"]) => quest.recurrence !== "UNIQUE" ? kind.habit : quest.difficulty === "IMPORTANTE" || quest.difficulty === "EXCEPTIONNELLE" ? kind.major : kind.mission;
-const questObject = (quest: QuestRow) => quest.recurrence !== "UNIQUE" ? "coin-sprout" : quest.difficulty === "IMPORTANTE" || quest.difficulty === "EXCEPTIONNELLE" ? "hourglass" : "quest-scroll";
+const questArt: Record<QuestCategory, { name: string; folder: "quests" | "objects" }> = {
+  MAISON: { name: "quest-home", folder: "quests" },
+  AUTONOMIE: { name: "quest-autonomy", folder: "quests" },
+  APPRENTISSAGE: { name: "quest-learning", folder: "quests" },
+  ENTRAIDE: { name: "quest-help", folder: "quests" },
+  CREATIVITE: { name: "quest-scroll", folder: "objects" },
+  ECOLE: { name: "bookshelf", folder: "objects" },
+  JARDIN: { name: "quest-scroll", folder: "objects" },
+  ANIMAUX: { name: "quest-scroll", folder: "objects" },
+};
 
 export function Quests() {
   const t = useCopy(copy);
@@ -37,9 +47,9 @@ export function Quests() {
   return <div className="quests-page"><header className="page-scene-title page-scene-title--art"><ObjectArt name="quest-board" folder="quests" size={132} /><div><p className="scene-kicker">{t.kicker}</p><h1>{t.title}</h1><p>{t.intro}</p></div></header>
     {loading ? <p className="loading-message" role="status">{t.loading}</p> : quests.length === 0 && !error ? <EmptyState art="quest-scroll" title={t.empty} subtitle={t.emptyHelp}/> : null}
     {error && <p className="form-error" role="alert">{error}</p>}
-    <div className="quest-journal">{quests.map((q, index) => <article className={`quest-sheet quest-sheet--${q.status.toLowerCase()}`} key={q.id}>
-      <div className="quest-sheet-index"><ObjectArt name={questObject(q)} size={100}/><span>{String(index+1).padStart(2,"0")}</span></div>
-      <div className="quest-sheet-main"><div className="quest-sheet-heading"><div><span className="quest-kind">{questKind(q, t.kind)}</span><h2>{q.title}</h2></div><span className="quest-status">{t.status[q.status as keyof typeof t.status] ?? q.status}</span></div>
+    <div className="quest-journal">{quests.map((q) => <article className={`quest-sheet quest-sheet--${q.status.toLowerCase()}${q.recurrence !== "UNIQUE" ? " quest-sheet--habit" : q.difficulty === "IMPORTANTE" || q.difficulty === "EXCEPTIONNELLE" ? " quest-sheet--major" : ""}`} key={q.id}>
+      <div className="quest-sheet-index"><ObjectArt name={questArt[q.category]?.name ?? "quest-scroll"} folder={questArt[q.category]?.folder ?? "objects"} size={100}/></div>
+      <div className="quest-sheet-main"><div className="quest-sheet-heading"><div><span className="quest-kind">{t.category[q.category]} · {questKind(q, t.kind)}</span><h2>{q.title}</h2></div><span className="quest-status">{t.status[q.status as keyof typeof t.status] ?? q.status}</span></div>
         {q.description && <p>{q.description}</p>}
         <div className="quest-sheet-bottom"><div className="quest-sheet-rewards"><span className="reward-label">{t.reward}</span><CoinPill amount={q.rewardCoins}/><span className="xp-badge"><GameIcon name="xp" size={17}/>{q.rewardXp} XP</span></div>
           {(q.status === "DISPONIBLE" || q.status === "A_REFAIRE") && <button className="btn btn-primary" disabled={busyId === q.id} onClick={() => void act(q.id,"accept")}>{t.start}</button>}

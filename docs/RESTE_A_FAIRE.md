@@ -1,5 +1,11 @@
 # Reste à faire : passation (26 septembre 2026)
 
+## Point d'étape du 27 septembre 2026 : objets des quêtes courantes
+
+- Le journal montre une illustration selon la catégorie de chaque quête renvoyée par l'API. Maison, autonomie, apprentissage et entraide ont quatre nouveaux objets cohérents ; le type habitude ou grande quête reste identifiable par le bord de la fiche. Les numéros de fiche arbitraires ont été retirés. Les chaînes de catégorie sont en français et en anglais.
+- Captures `docs/screenshots/child-experience-quests-{375,768,1280}.png`, avec fixture visuelle en lecture seule : le foyer local n'avait plus de quêtes actives pour Emma. Images chargées, pas de débordement horizontal ; build web vert. Les récompenses affichées dans ces captures sont fictives et ne servent qu'à la revue graphique.
+- Restent les illustrations dédiées aux catégories créativité, école, jardin et animaux. Le serveur donne désormais un booster toutes les trois quêtes validées : une fiche individuelle ne promet donc pas de booster.
+
 ## Point d'étape du 27 septembre 2026 : liste des comptes parents dans l'administration
 
 - La page Administration affiche les e-mails et dates d'inscription des comptes parents, 25 par page. L'API `/admin/users` sélectionne uniquement ces champs, relit le droit admin en base à chaque requête et interdit la mise en cache, y compris pour les accès refusés. Les enfants et l'activité individuelle ne figurent pas dans cette liste.

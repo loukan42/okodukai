@@ -81,9 +81,10 @@
 .quest-sheet { border-radius: 3px 15px 15px 3px; border-color: #c7a96f; box-shadow: 0 2px 0 #b28b57, 0 5px 12px rgba(39, 27, 15, .18); }
 .quest-sheet { grid-template-columns: 112px minmax(0, 1fr); min-height: 160px; }
 .quest-sheet:nth-child(even) { transform: rotate(.25deg); }
+.quest-sheet--habit { border-left: 5px dashed #628063; }
+.quest-sheet--major { border-left: 7px solid #b67f2f; }
 .quest-sheet-index { position: relative; gap: 0; padding: 7px; background: radial-gradient(circle at 50% 35%, #f4dcaa, #d5ae71); }
 .quest-sheet-index .object-art { width: 96px; height: 96px; object-fit: contain; filter: drop-shadow(0 5px 3px rgba(78, 48, 16, .22)); }
-.quest-sheet-index > span { display: grid; place-items: center; min-width: 27px; height: 25px; margin-top: -5px; border: 1px solid #a78349; border-radius: 7px; background: #f7ebd0; font-size: 14px; }
 .quest-kind { display: block; margin-bottom: 4px; color: #80602f; font-size: 12px; font-weight: 900; letter-spacing: .035em; }
 .quest-sheet--en_attente_validation .quest-sheet-index { background: radial-gradient(circle at 50% 35%, #ebd6a5, #c9a873); }
 .quest-sheet--validee .quest-sheet-index { background: radial-gradient(circle at 50% 35%, #e2ebc1, #a5c796); }
