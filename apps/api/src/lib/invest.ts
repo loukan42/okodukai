@@ -382,3 +382,18 @@ function finalReport(run: SimulationRun, ops: { step: number; type: string; amou
 export async function activeRun(client: Client, childId: string, mode: SimMode = "MIROIR") {
   return client.simulationRun.findFirst({ where: { childId, mode, status: { not: "ARRETEE" } }, orderBy: { createdAt: "desc" } });
 }
+
+/**
+ * Clôt, au premier accès, une partie de l'observatoire ouverte avant la décision de septembre 2026
+ * (unités école, jamais financée par le portefeuille) : seules les parties financées en pièces restent
+ * actives (spec audit du 27/09, "deux unités"). Le verger (ASSURANCE_VIE) n'est pas concerné : il garde
+ * ses unités école par choix de produit. Idempotent (la condition `status: EN_COURS` ne matche plus une
+ * fois close) ; retourne `true` la première fois, pour prévenir l'enfant une seule fois.
+ */
+export async function closeLegacySchoolRun(client: Client, childId: string) {
+  const { count } = await client.simulationRun.updateMany({
+    where: { childId, mode: "MIROIR", fundedAmount: null, status: "EN_COURS" },
+    data: { status: "ARRETEE", finishedAt: new Date() },
+  });
+  return count > 0;
+}

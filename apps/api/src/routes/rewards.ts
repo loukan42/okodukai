@@ -45,6 +45,19 @@ rewardsRouter.get("/rewards", requireParent, async (req, res) => {
   res.json({ rewards });
 });
 
+// Repère pour calibrer un prix (audit du 27/09) : moyenne hebdomadaire du foyer sur les quêtes et
+// l'argent de poche des 4 dernières semaines, tous enfants confondus (une récompense n'est pas
+// forcément liée à un seul enfant).
+rewardsRouter.get("/household/earnings-reference", requireParent, async (req, res) => {
+  const householdId = req.session!.householdId;
+  const since = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000);
+  const { _sum } = await prisma.walletTransaction.aggregate({
+    _sum: { amount: true },
+    where: { type: { in: ["QUEST_REWARD", "ALLOWANCE"] }, createdAt: { gte: since }, wallet: { child: { householdId } } },
+  });
+  res.json({ weeklyAverage: Math.round(((_sum.amount ?? 0) / 4) * 10) / 10 });
+});
+
 rewardsRouter.patch("/rewards/:id", requireParent, async (req, res) => {
   const householdId = req.session!.householdId;
   const reward = await prisma.reward.findUnique({ where: { id: req.params.id } });

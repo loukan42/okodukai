@@ -1905,6 +1905,44 @@
   color: #b07a1c;
 }
 
+.vault-prime-more {
+  display: grid;
+  gap: 12px;
+}
+
+.vault-prime-more summary {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 4px 0;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 800;
+  color: #8a5a10;
+}
+
+.vault-prime-more summary::-webkit-details-marker {
+  display: none;
+}
+
+.vault-prime-more summary::after {
+  content: "";
+  width: 9px;
+  height: 9px;
+  margin-top: -3px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.vault-prime-more[open] summary::after {
+  margin-top: 3px;
+  transform: rotate(-135deg);
+}
+
 .vault-explainer {
   border-radius: 22px;
   background: var(--surface-raised);

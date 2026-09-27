@@ -1,5 +1,28 @@
 # Reste à faire : passation (26 septembre 2026)
 
+## Point d'étape du 27 septembre 2026 (fin d'après-midi) : dernières décisions de l'audit
+
+Décisions du propriétaire (QCM) : moyenne du foyer pour le repère de prix, clore et archiver les
+anciennes parties en unités école, simplifier les textes du coffre maintenant, vallée par paliers
+reportée. Historique Git (e-mail en clair, commits antérieurs à la sécurisation) : ne rien faire.
+
+- **Repère de prix boutique** : `GET /household/earnings-reference` (moyenne par semaine des quêtes et
+  de l'argent de poche du foyer sur les 4 dernières semaines, tous enfants confondus, sans les cadeaux) ;
+  affiché sous le prix dans le formulaire de récompense (`RewardsManage.tsx`), mis à jour en direct.
+- **Clôture des anciennes parties en unités école** : `closeLegacySchoolRun` (`lib/invest.ts`) clôt, au
+  premier accès à `GET /child/invest`, toute partie MIROIR encore en cours jamais financée par le
+  portefeuille (`fundedAmount: null`) ; elle reste consultable dans « Mes parties ». Le verger
+  (ASSURANCE_VIE) n'est jamais concerné, il garde ses unités école par choix de produit. Un bandeau
+  explique le changement à l'enfant une seule fois (`legacyClosed` dans la réponse, jamais stocké côté
+  client : redevient faux dès qu'il n'y a plus rien à clore).
+- **Textes du coffre pour 8-9 ans** : le graphique de projection et la phrase de règle de « Ma prime de
+  lundi » (`VaultPrimeCard.tsx`) passent derrière un « En savoir plus » replié ; le titre et la phrase
+  courte restent visibles. Vérifié dans le navigateur (foyer de démo, Emma).
+- **Vallée par paliers** : reportée (décision du propriétaire), `data-world-tier` reste posé sans
+  variante visuelle.
+- Tests API : 81/81 verts (2 nouveaux : clôture des vieilles parties, repère de prix). Build web vert.
+  Vérifié en navigateur sur le foyer de démo (prix qui se recalcule, bandeau replié du coffre).
+
 ## Point d'étape du 27 septembre 2026 (après-midi) : rythme des boosters, XP par difficulté, sécurité
 
 - **Rythme des boosters tranché** : un booster de quête toutes les trois quêtes validées (au lieu d'une à

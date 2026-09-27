@@ -45,6 +45,12 @@ const COPY = defineCopy({
     object: "Objet",
     price: "Prix en pièces",
     priceHint: "Repère : une quête du quotidien rapporte 5 à 15 pièces.",
+    priceWeeks: (weeks: number) =>
+      weeks < 0.7
+        ? "Moins d'une semaine des gains du foyer (quêtes et argent de poche des 4 dernières semaines)."
+        : weeks <= 1.4
+          ? "Environ 1 semaine des gains du foyer (quêtes et argent de poche des 4 dernières semaines)."
+          : `Environ ${Math.round(weeks)} semaines des gains du foyer (quêtes et argent de poche des 4 dernières semaines).`,
     adding: "Ajout en cours…",
     submit: "Ajouter à la boutique",
     created: "Récompenses créées",
@@ -83,6 +89,12 @@ const COPY = defineCopy({
     object: "Item",
     price: "Price in coins",
     priceHint: "As a guide, an everyday quest pays 5 to 15 coins.",
+    priceWeeks: (weeks: number) =>
+      weeks < 0.7
+        ? "Less than a week of the household's earnings (quests and pocket money over the last 4 weeks)."
+        : weeks <= 1.4
+          ? "About 1 week of the household's earnings (quests and pocket money over the last 4 weeks)."
+          : `About ${Math.round(weeks)} weeks of the household's earnings (quests and pocket money over the last 4 weeks).`,
     adding: "Adding…",
     submit: "Add to the shop",
     created: "Your rewards",
@@ -110,6 +122,7 @@ export function RewardsManage() {
   const [creating, setCreating] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [weeklyAverage, setWeeklyAverage] = useState<number | null>(null);
 
   async function load() {
     const res = await api.get<{ rewards: RewardRow[] }>("/rewards");
@@ -118,6 +131,10 @@ export function RewardsManage() {
 
   useEffect(() => {
     load();
+    api
+      .get<{ weeklyAverage: number }>("/household/earnings-reference")
+      .then((r) => setWeeklyAverage(r.weeklyAverage))
+      .catch(() => setWeeklyAverage(null));
   }, []);
 
   function applyTemplate(template: (typeof TEMPLATES)[number]) {
@@ -195,6 +212,7 @@ export function RewardsManage() {
               <label htmlFor="reward-price">{t.price}</label>
               <input id="reward-price" type="number" inputMode="numeric" min={1} value={price} onChange={(e) => setPrice(Number(e.target.value))} aria-describedby="reward-price-hint" />
               <p id="reward-price-hint" className="field-hint">{t.priceHint}</p>
+              {weeklyAverage !== null && weeklyAverage > 0 && <p className="field-hint">{t.priceWeeks(price / weeklyAverage)}</p>}
             </div>
           </div>
           <button type="submit" className="btn btn-primary btn-block" disabled={creating || !title.trim() || price < 1}>

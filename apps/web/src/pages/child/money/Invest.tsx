@@ -121,6 +121,7 @@ const COPY = defineCopy({
     failed: "Impossible d'afficher tes placements pour l'instant.",
     failedHint: "Réessaie dans un instant pour voir où en sont tes pièces.",
     retry: "Réessayer",
+    legacyClosed: "Ta partie précédente en unités école est terminée. Tu la retrouves dans « Mes parties » ; tes nouvelles parties utilisent tes pièces.",
     loading: "L'observatoire s'ouvre…",
     disabled: "Tes parents peuvent activer les placements depuis leurs réglages.",
     lockedTitle: "L'observatoire est fermé",
@@ -210,6 +211,7 @@ const COPY = defineCopy({
     failed: "We can't show your investments right now.",
     failedHint: "Try again in a moment to see how your coins are doing.",
     retry: "Try again",
+    legacyClosed: "Your earlier practice-unit game has ended. Find it under \"My games\"; new games use your coins.",
     loading: "Opening the observatory…",
     disabled: "Your parents can turn on investing in their settings.",
     lockedTitle: "The observatory is closed",
@@ -273,6 +275,7 @@ function Onboarding({ state, onDone }: { state: InvestState; onDone: () => Promi
 
   return (
     <div className="money-page">
+      {state.legacyClosed && step === 1 && <p className="money-banner" role="status">{t.legacyClosed}</p>}
       <p className="onboarding-count">{t.step(step)}</p>
       {step === 1 && (
         <section className="invest-step">
@@ -688,6 +691,7 @@ export function Invest() {
     return (
       <div className="money-page">
         <ObservatoryHeader title={t.lockedTitle} subtitle={t.lockedText} />
+        {state.legacyClosed && <p className="money-banner" role="status">{t.legacyClosed}</p>}
         <p className="money-hint">{t.lockedHint}</p>
         <Link to="/enfant/argent/coffre" className="btn btn-quest">
           {t.putAside}

@@ -194,6 +194,8 @@ export interface InvestState {
   firstRendezVousAt?: string;
   run: InvestRun | null;
   orchard?: { gate: "hidden" | "locked" | "onboarding" | "open"; run: InvestRun | null };
+  /** Une ancienne partie en unités école vient d'être close (une seule fois, à afficher puis oublier). */
+  legacyClosed?: boolean;
 }
 
 const UNITS_2 = numberFormatter({ minimumFractionDigits: 2, maximumFractionDigits: 2 });

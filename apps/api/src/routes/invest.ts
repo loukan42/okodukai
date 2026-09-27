@@ -12,6 +12,7 @@ import {
   TIME_ZONE,
   activeRun,
   allocationStep,
+  closeLegacySchoolRun,
   createRun,
   financeXpKey,
   investSettingsFor,
@@ -60,6 +61,7 @@ async function orchardState(childId: string, ageBand: AgeBand, mirror: Simulatio
 }
 
 async function investState(childId: string) {
+  const legacyClosed = await closeLegacySchoolRun(prisma, childId);
   const child = await prisma.childProfile.findUniqueOrThrow({ where: { id: childId } });
   const wallet = await prisma.wallet.findUnique({ where: { childId } });
   const availablePoints = wallet ? (await getBalances(prisma, wallet.id)).available : 0;
@@ -70,6 +72,7 @@ async function investState(childId: string) {
     availablePoints,
     settings: { enabled: settings.enabled, rhythm: settings.rhythm, horizonMonths: settings.horizonMonths, contributionsEnabled: settings.contributionsEnabled, contributionCap: settings.contributionCap, notifyStatement: settings.notifyStatement },
     allocationStep: allocationStep(pedagogyBand(child)),
+    legacyClosed,
   };
   if (!settings.enabled) return { ...base, gate: "disabled" as const, run: null, orchard: { gate: "hidden" as const, run: null } };
   const orchard = await orchardState(childId, pedagogyBand(child), run, settings.rhythm);

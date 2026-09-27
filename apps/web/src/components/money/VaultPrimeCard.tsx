@@ -20,6 +20,7 @@ const COPY = defineCopy({
     moreTitle: (coins: string) => `Encore ${coins} à ranger`,
     moreDetail: (coins: string) => `Avec ${coins} gardées toute la semaine, ton coffre te donne 1 pièce en plus.`,
     fromNextWeek: (coins: string) => `Les ${coins} rangées cette semaine compteront à partir de lundi.`,
+    more: "En savoir plus",
     ifUntouched: "Si tu n'y touches pas, chaque lundi",
     today: "Aujourd'hui",
     inWeeks: (n: number) => `Dans ${n} semaines :`,
@@ -37,6 +38,7 @@ const COPY = defineCopy({
     moreTitle: (coins: string) => `${coins} more to put away`,
     moreDetail: (coins: string) => `With ${coins} kept all week, your vault gives you 1 extra coin.`,
     fromNextWeek: (coins: string) => `The ${coins} you put away this week will count from Monday.`,
+    more: "Learn more",
     ifUntouched: "If you leave them, every Monday",
     today: "Today",
     inWeeks: (n: number) => `In ${n} weeks:`,
@@ -90,35 +92,37 @@ export function VaultPrimeCard({ prime }: { prime: VaultPrimePreview }) {
 
       {next.amount > 0 && countsFromNextWeek > 0 && <p className="vault-prime-note">{t.fromNextWeek(pieces(countsFromNextWeek))}</p>}
 
-      {grows && last && (
-        <figure className="vault-prime-growth">
-          <figcaption>{t.ifUntouched}</figcaption>
-          <ol>
-            <li style={{ "--h": balance / last.balance } as CSSProperties}>
-              <strong>{balance}</strong>
-              <span className="vault-prime-bar" aria-hidden="true" />
-              <span className="vault-prime-when">{t.today}</span>
-            </li>
-            {projection.map((p) => (
-              <li key={p.at} style={{ "--h": p.balance / last.balance } as CSSProperties}>
-                <strong>{p.balance}</strong>
-                <span className="vault-prime-bar" aria-hidden="true">
-                  {p.prime > 0 && <em>+{p.prime}</em>}
-                </span>
-                <span className="vault-prime-when">{SHORT.format(new Date(p.at))}</span>
-              </li>
-            ))}
-          </ol>
-          <p>
-            {t.inWeeks(projection.length)} <strong>{pieces(last.balance)}</strong> {t.inVault}
-          </p>
-        </figure>
-      )}
-
-      <p className="vault-prime-rule">
-        <GameIcon name="coin" size={16} />
-        <span>{t.rule(step, pieces(weeklyCap))}</span>
-      </p>
+      <details className="vault-prime-more">
+        <summary>{t.more}</summary>
+          {grows && last && (
+            <figure className="vault-prime-growth">
+              <figcaption>{t.ifUntouched}</figcaption>
+              <ol>
+                <li style={{ "--h": balance / last.balance } as CSSProperties}>
+                  <strong>{balance}</strong>
+                  <span className="vault-prime-bar" aria-hidden="true" />
+                  <span className="vault-prime-when">{t.today}</span>
+                </li>
+                {projection.map((p) => (
+                  <li key={p.at} style={{ "--h": p.balance / last.balance } as CSSProperties}>
+                    <strong>{p.balance}</strong>
+                    <span className="vault-prime-bar" aria-hidden="true">
+                      {p.prime > 0 && <em>+{p.prime}</em>}
+                    </span>
+                    <span className="vault-prime-when">{SHORT.format(new Date(p.at))}</span>
+                  </li>
+                ))}
+              </ol>
+              <p>
+                {t.inWeeks(projection.length)} <strong>{pieces(last.balance)}</strong> {t.inVault}
+              </p>
+            </figure>
+          )}
+        <p className="vault-prime-rule">
+          <GameIcon name="coin" size={16} />
+          <span>{t.rule(step, pieces(weeklyCap))}</span>
+        </p>
+      </details>
     </section>
   );
 }
