@@ -37,6 +37,12 @@ model User {
   email        String   @unique
   passwordHash String
   displayName  String
+  /// Accès aux statistiques globales. Attribution manuelle à un compte existant uniquement.
+  isPlatformAdmin Boolean @default(false)
+  /// Identifiant stable du compte Google ; l'adresse e-mail peut changer.
+  googleSub String? @unique
+  /// Les comptes créés avec Google n'ont pas de mot de passe utilisable.
+  passwordLoginEnabled Boolean @default(true)
   /// Code court réservé au retour vers l'espace parent sur un appareil déjà autorisé.
   parentPinHash String?
   createdAt    DateTime @default(now())

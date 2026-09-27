@@ -27,6 +27,8 @@ import { MoneyHistory } from "./pages/child/money/MoneyHistory";
 import { Invest } from "./pages/child/money/Invest";
 import { SupportSheet } from "./pages/child/money/SupportSheet";
 import { ChildInvestView } from "./pages/parent/ChildInvestView";
+import { AdminAnalytics } from "./pages/parent/AdminAnalytics";
+import { ParentAccount } from "./pages/parent/ParentAccount";
 import { PossessionsPage } from "./pages/child/money/Possessions";
 import { GameArchive, GamesArchive } from "./pages/child/money/GamesArchive";
 import { Orchard } from "./pages/child/money/Orchard";
@@ -93,6 +95,8 @@ export default function App() {
         <Route path="enfants" element={<ChildrenManage />} />
         <Route path="enfants/:childId/placements" element={<ChildInvestView />} />
         <Route path="univers" element={<UniversesManage />} />
+        <Route path="compte" element={<ParentAccount />} />
+        {session?.kind === "parent" && session.isPlatformAdmin && <Route path="statistiques" element={<AdminAnalytics />} />}
       </Route>
 
       <Route

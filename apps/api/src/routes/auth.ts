@@ -23,11 +23,19 @@ import {
 } from "../lib/throttle.js";
 import { attachSession } from "../middleware/requireAuth.js";
 import { locale, tr } from "../lib/i18n.js";
+import { googleClientId, verifyGoogleCredential } from "../lib/googleSignIn.js";
 
 export const authRouter = Router();
 authRouter.use(attachSession);
 
 const cookieOptions = SESSION_COOKIE_OPTIONS;
+const googleCredentialSchema = z.object({ credential: z.string().min(100).max(10000) });
+
+function googleRequest(req: import("express").Request): boolean {
+  // Le jeton vient de notre fetch JSON sur la même origine. Un formulaire tiers ne
+  // peut pas envoyer cet en-tête ; un fetch tiers serait arrêté par le preflight CORS.
+  return req.header("x-requested-with") === "XMLHttpRequest";
+}
 
 /** Un parent connecté sur cet appareil en fait un appareil familial (profils enfants et PIN). */
 function rememberDevice(res: import("express").Response, householdId: string, parentUserId?: string) {
@@ -72,6 +80,7 @@ authRouter.post("/continue", validateBody(continueSchema), async (req, res) => {
   const existing = await findUserByEmail(email);
 
   if (existing) {
+    if (!existing.passwordLoginEnabled) return res.status(401).json({ error: "Ce compte utilise la connexion Google." });
     const check = await throttledVerify(parentThrottleKey(email), PARENT_PASSWORD, () => argon2.verify(existing.passwordHash, password));
     if (!check.ok) {
       if (check.retryAfterMs) return tooManyParentAttempts(res, check.retryAfterMs);
@@ -137,6 +146,85 @@ authRouter.post("/continue", validateBody(continueSchema), async (req, res) => {
   res.status(201).json({ outcome: "created", onboardingCompleted: false });
 });
 
+authRouter.get("/google/client", (_req, res) => {
+  res.set("Cache-Control", "no-store");
+  res.json({ clientId: googleClientId() });
+});
+
+/** Connexion d'un compte Google déjà associé, ou création d'un nouveau foyer. */
+authRouter.post("/google/continue", validateBody(googleCredentialSchema), async (req, res) => {
+  if (!googleRequest(req)) return res.status(403).json({ error: "Requête Google non autorisée" });
+  const blocked = await addressLimit(req);
+  if (blocked) return tooManyFromAddress(res, blocked);
+  const identity = await verifyGoogleCredential(req.body.credential);
+  if (!identity) return res.status(401).json({ error: "Connexion Google invalide" });
+
+  const linked = await prisma.user.findUnique({
+    where: { googleSub: identity.sub },
+    include: { memberships: { include: { household: true }, orderBy: { createdAt: "asc" } } },
+  });
+  if (linked) {
+    const membership = linked.memberships[0];
+    if (!membership) return res.status(403).json({ error: "Aucun foyer associé" });
+    res.cookie(SESSION_COOKIE, signSession({ kind: "parent", userId: linked.id, householdId: membership.householdId, role: membership.role }), cookieOptions);
+    rememberDevice(res, membership.householdId, linked.id);
+    return res.json({ outcome: "signed_in", onboardingCompleted: Boolean(membership.household.onboardingCompletedAt) });
+  }
+
+  // Ne pas associer automatiquement un compte créé par mot de passe : son adresse
+  // n'a jamais été vérifiée. Le parent le fait après s'être connecté à ce compte.
+  const existing = await findUserByEmail(identity.email);
+  if (existing) return res.status(409).json({ error: "Connectez-vous avec votre mot de passe, puis associez Google dans l'onglet Compte." });
+
+  const passwordHash = await argon2.hash(randomBytes(32).toString("base64url"));
+  const created = await prisma.$transaction(async (tx) => {
+    const household = await tx.household.create({ data: { name: tr("Ma famille", "My family"), locale: locale() } });
+    const user = await tx.user.create({ data: { email: identity.email, passwordHash, passwordLoginEnabled: false, googleSub: identity.sub, displayName: identity.name } });
+    await tx.householdMembership.create({ data: { householdId: household.id, userId: user.id, role: "PARENT_ADMIN" } });
+    const starterUniverse = await tx.universe.findFirst({
+      where: { active: true, boosterDefinitions: { some: {} }, cards: { some: { active: true } } },
+      orderBy: { sortOrder: "asc" },
+    });
+    if (starterUniverse) await tx.householdUniverse.create({ data: { householdId: household.id, universeId: starterUniverse.id } });
+    await tx.auditLog.create({ data: { householdId: household.id, actorUserId: user.id, action: "household_created", targetType: "Household", targetId: household.id } });
+    return { user, household };
+  }).catch((err: unknown) => {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") return null;
+    throw err;
+  });
+  if (!created) return res.status(409).json({ error: "Ce compte vient d'être créé. Réessayez de vous connecter." });
+
+  res.cookie(SESSION_COOKIE, signSession({ kind: "parent", userId: created.user.id, householdId: created.household.id, role: "PARENT_ADMIN" }), cookieOptions);
+  rememberDevice(res, created.household.id, created.user.id);
+  return res.status(201).json({ outcome: "created", onboardingCompleted: false });
+});
+
+/** Association volontaire depuis une session parent du compte existant. */
+authRouter.post("/google/link", validateBody(googleCredentialSchema), async (req, res) => {
+  if (req.session?.kind !== "parent") return res.status(401).json({ error: "Authentification parent requise" });
+  if (!googleRequest(req)) return res.status(403).json({ error: "Requête Google non autorisée" });
+  const blocked = await addressLimit(req);
+  if (blocked) return tooManyFromAddress(res, blocked);
+  const identity = await verifyGoogleCredential(req.body.credential);
+  if (!identity) return res.status(401).json({ error: "Connexion Google invalide" });
+  const user = await prisma.user.findUnique({ where: { id: req.session.userId } });
+  if (!user) return res.status(401).json({ error: "Non authentifié" });
+  if (user.googleSub === identity.sub) return res.json({ linked: true });
+  if (user.googleSub || user.email.toLowerCase() !== identity.email) {
+    return res.status(409).json({ error: "Choisissez le compte Google avec la même adresse e-mail." });
+  }
+  try {
+    const linked = await prisma.user.updateMany({ where: { id: user.id, googleSub: null }, data: { googleSub: identity.sub } });
+    if (linked.count !== 1) return res.status(409).json({ error: "Un compte Google est déjà associé à ce compte." });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return res.status(409).json({ error: "Ce compte Google est déjà associé à un autre compte." });
+    }
+    throw err;
+  }
+  res.json({ linked: true });
+});
+
 authRouter.post("/logout", (_req, res) => {
   res.clearCookie(SESSION_COOKIE, { httpOnly: true, sameSite: cookieOptions.sameSite, secure: cookieOptions.secure });
   res.status(204).end();
@@ -159,6 +247,9 @@ authRouter.get("/me", async (req, res) => {
       householdId: req.session.householdId,
       household: { name: household.name, onboardingCompleted: Boolean(household.onboardingCompletedAt), locale: household.locale },
       role: req.session.role,
+      isPlatformAdmin: user.isPlatformAdmin,
+      hasGoogleLogin: Boolean(user.googleSub),
+      hasPasswordLogin: user.passwordLoginEnabled,
       hasParentPin: Boolean(user.parentPinHash),
     });
   }
@@ -211,7 +302,7 @@ authRouter.post(
   }
 );
 
-const parentPinSchema = z.object({ password: z.string().min(1), pin: z.string().regex(/^\d{4}$/) });
+const parentPinSchema = z.object({ password: z.string().min(1).optional(), credential: z.string().min(100).max(10000).optional(), pin: z.string().regex(/^\d{4}$/) });
 
 /** Le parent définit son code sur une session parent, après vérification du mot de passe. */
 authRouter.post("/parent-pin", validateBody(parentPinSchema), async (req, res) => {
@@ -220,7 +311,14 @@ authRouter.post("/parent-pin", validateBody(parentPinSchema), async (req, res) =
   if (!user) return res.status(401).json({ error: "Non authentifié" });
   const blocked = await addressLimit(req);
   if (blocked) return tooManyFromAddress(res, blocked);
-  const check = await throttledVerify(parentThrottleKey(user.email), PARENT_PASSWORD, () => argon2.verify(user.passwordHash, req.body.password));
+  const check = await throttledVerify(parentThrottleKey(user.email), PARENT_PASSWORD, async () => {
+    if (req.body.credential && googleRequest(req) && user.googleSub) {
+      const identity = await verifyGoogleCredential(req.body.credential);
+      return identity?.sub === user.googleSub;
+    }
+    if (!req.body.password || !user.passwordLoginEnabled) return false;
+    return argon2.verify(user.passwordHash, req.body.password);
+  });
   if (!check.ok) {
     if (check.retryAfterMs) return tooManyParentAttempts(res, check.retryAfterMs);
     return res.status(401).json({ error: "Mot de passe incorrect" });
@@ -260,6 +358,25 @@ authRouter.post("/exit-child-mode/pin", validateBody(exitWithPinSchema), async (
     return res.status(401).json({ error: "Code incorrect" });
   }
   res.cookie(SESSION_COOKIE, signSession({ kind: "parent", userId: user.id, householdId: membership!.householdId, role: membership!.role }), cookieOptions);
+  res.json({ ok: true });
+});
+
+/** Retour parent sur l'appareil partagé avec son compte Google si le PIN est oublié. */
+authRouter.post("/exit-child-mode/google", validateBody(googleCredentialSchema), async (req, res) => {
+  if (req.session?.kind !== "child") return res.status(403).json({ error: "Espace enfant requis" });
+  if (!googleRequest(req)) return res.status(403).json({ error: "Requête Google non autorisée" });
+  const blocked = await addressLimit(req);
+  if (blocked) return tooManyFromAddress(res, blocked);
+  const identity = await verifyGoogleCredential(req.body.credential);
+  if (!identity) return res.status(401).json({ error: "Connexion Google invalide" });
+  const user = await prisma.user.findUnique({ where: { googleSub: identity.sub } });
+  if (!user) return res.status(403).json({ error: "Aucun foyer associé" });
+  const membership = await prisma.householdMembership.findUnique({
+    where: { householdId_userId: { householdId: req.session.householdId, userId: user.id } },
+  });
+  if (!membership) return res.status(403).json({ error: "Aucun foyer associé" });
+  res.cookie(SESSION_COOKIE, signSession({ kind: "parent", userId: user.id, householdId: membership.householdId, role: membership.role }), cookieOptions);
+  rememberDevice(res, membership.householdId, user.id);
   res.json({ ok: true });
 });
 
@@ -312,6 +429,7 @@ authRouter.post("/exit-child-mode", validateBody(exitChildModeSchema), async (re
   if (blocked) return tooManyFromAddress(res, blocked);
   const user = await findUserByEmail(email);
   if (!user) return res.status(401).json({ error: "Identifiants invalides" });
+  if (!user.passwordLoginEnabled) return res.status(401).json({ error: "Ce compte utilise la connexion Google." });
   // Même compteur que la connexion : l'enfant sur l'appareil ne peut pas deviner le mot de passe.
   const check = await throttledVerify(parentThrottleKey(email), PARENT_PASSWORD, () => argon2.verify(user.passwordHash, password));
   if (!check.ok) {

@@ -7,6 +7,9 @@ export interface ParentSession {
   user: { id: string; email: string; displayName: string };
   householdId: string;
   role: "PARENT_ADMIN" | "PARENT";
+  isPlatformAdmin: boolean;
+  hasGoogleLogin: boolean;
+  hasPasswordLogin: boolean;
   /**
    * Foyer du parent ; `onboardingCompleted` est faux tant que l'accueil n'est pas terminé.
    * `locale` : langue de l'application pour toute la famille, réglée dans l'en-tête parent.

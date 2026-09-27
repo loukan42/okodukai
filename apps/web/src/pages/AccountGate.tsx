@@ -6,6 +6,7 @@ import { WorldShell } from "../components/WorldShell";
 import { OnboardingPath } from "../components/OnboardingPath";
 import { ChestArt } from "../art/ChestArt";
 import { defineCopy, useCopy } from "../i18n";
+import { GoogleSignInButton } from "../components/GoogleSignInButton";
 
 interface ContinueResponse {
   outcome: "created" | "signed_in";
@@ -15,7 +16,7 @@ interface ContinueResponse {
 const TEXT = defineCopy({
   fr: {
     title: "Votre compte Okodukai",
-    lead: "Un e-mail et un mot de passe. Nouveau ici : le compte est créé. Déjà inscrit : vous êtes connecté.",
+    lead: "Continuez avec Google ou utilisez votre e-mail et votre mot de passe. Votre compte est créé si vous êtes nouveau.",
     email: "E-mail",
     password: "Mot de passe",
     passwordHint: "8 caractères minimum pour un nouveau compte.",
@@ -31,7 +32,7 @@ const TEXT = defineCopy({
   },
   en: {
     title: "Your Okodukai account",
-    lead: "An email and a password. New here: we create the account. Already signed up: you're logged in.",
+    lead: "Continue with Google or use your email and password. We'll create an account if you're new.",
     email: "Email",
     password: "Password",
     passwordHint: "At least 8 characters for a new account.",
@@ -86,6 +87,19 @@ export function AccountGate() {
     }
   }
 
+  async function onGoogleCredential(credential: string) {
+    setError(null);
+    setSubmitting(true);
+    try {
+      const res = await api.postGoogle<ContinueResponse>("/auth/google/continue", { credential });
+      const me = await refresh();
+      if (!me) { setError(COPY.cookieBlocked); return; }
+      navigate(res.outcome === "created" || !res.onboardingCompleted ? "/accueil/famille" : "/parent", { replace: true });
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : COPY.fallback);
+    } finally { setSubmitting(false); }
+  }
+
   return (
     <WorldShell emblem={<ChestArt state="closed" size={148} />}>
       <OnboardingPath current={0} />
@@ -136,6 +150,7 @@ export function AccountGate() {
           {submitting ? COPY.submitting : COPY.submit}
         </button>
       </form>
+      <GoogleSignInButton onCredential={(credential) => { if (!submitting) void onGoogleCredential(credential); }} />
       <p className="world-footnote">{COPY.privacy}</p>
     </WorldShell>
   );

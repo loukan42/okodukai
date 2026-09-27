@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-const SELECTOR = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const SELECTOR = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), iframe:not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])';
 
 /** Keeps keyboard focus inside an active custom dialog and restores its opener. */
 export function useDialogFocus<T extends HTMLElement>(active: boolean) {
@@ -21,8 +21,18 @@ export function useDialogFocus<T extends HTMLElement>(active: boolean) {
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
+    const onFocusIn = (event: FocusEvent) => {
+      if (event.target instanceof Node && !root.contains(event.target)) {
+        focusable()[0]?.focus();
+      }
+    };
     root.addEventListener("keydown", onKeyDown);
-    return () => { root.removeEventListener("keydown", onKeyDown); if (previous?.isConnected) previous.focus(); };
+    document.addEventListener("focusin", onFocusIn);
+    return () => {
+      root.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("focusin", onFocusIn);
+      if (previous?.isConnected) previous.focus();
+    };
   }, [active]);
 
   return ref;

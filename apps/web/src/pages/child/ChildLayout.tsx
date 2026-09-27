@@ -10,6 +10,7 @@ import { Logo } from "../../art/Logo";
 import { QuestRewardCelebration } from "../../components/QuestRewardCelebration";
 import { PinPad } from "../../components/PinPad";
 import { defineCopy, useCopy } from "../../i18n";
+import { GoogleSignInButton } from "../../components/GoogleSignInButton";
 
 const navigation: { to: string; key: "home" | "money" | "quests" | "shop" | "collection"; icon: GameIconName; end?: boolean }[] = [
   { to: "/enfant", key: "home", icon: "home", end: true },
@@ -63,6 +64,18 @@ export function ChildLayout() {
     } finally { setSubmitting(false); }
   }
 
+  async function exitWithGoogle(credential: string) {
+    setError(null);
+    setSubmitting(true);
+    try {
+      await api.postGoogle("/auth/exit-child-mode/google", { credential });
+      await refresh();
+      navigate("/parent", { replace: true });
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t.invalid);
+    } finally { setSubmitting(false); }
+  }
+
   return (
     <div className="screen child-screen">
       <header className="child-header">
@@ -110,6 +123,7 @@ export function ChildLayout() {
                 {t.cancel}
               </button>
             </div>
+            <GoogleSignInButton onCredential={(credential) => { if (!submitting) void exitWithGoogle(credential); }} />
             </>}
             {!usePassword && <button type="button" className="btn btn-ghost btn-block" onClick={() => setShowExit(false)}>{t.stay}</button>}
           </form>

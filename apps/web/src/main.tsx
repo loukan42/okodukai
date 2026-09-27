@@ -14,6 +14,7 @@ import "./styles/booster.css";
 import "./styles/celebration.css";
 import "./styles/finance.css";
 import "./styles/parent-management.css";
+import "./styles/admin-analytics.css";
 import "./styles/child-world.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
