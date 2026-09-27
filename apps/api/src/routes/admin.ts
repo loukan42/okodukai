@@ -50,12 +50,27 @@ adminRouter.get("/analytics", async (req, res) => {
     prisma.questCompletion.count({ where: { status: "VALIDEE", reviewedAt: inPeriod } }),
   ]);
   const rewardsRequested = await prisma.rewardRedemption.count({ where: { requestedAt: inPeriod } });
+  const shareEvents = await prisma.shareEvent.groupBy({
+    by: ["name"],
+    where: { createdAt: inPeriod },
+    _count: { _all: true },
+  });
+  const shareByName = Object.fromEntries(shareEvents.map((row) => [row.name, row._count._all]));
 
   res.json({
     generatedAt: to.toISOString(),
     period: { days, from: from.toISOString(), to: to.toISOString() },
     totals: { parents, children, households, quests, validated },
     activity: { newParents, newChildren, newHouseholds, questsCreated, questsSubmitted, questsValidated, rewardsRequested },
+    share: {
+      cardViewed: shareByName.parent_share_card_viewed ?? 0,
+      modalOpened: shareByName.parent_share_modal_opened ?? 0,
+      nativeStarted: shareByName.parent_share_native_started ?? 0,
+      videoDownloaded: shareByName.parent_share_video_downloaded ?? 0,
+      linkCopied: shareByName.parent_share_link_copied ?? 0,
+      referralLanding: shareByName.referral_landing_visited ?? 0,
+      referralSignupCompleted: shareByName.referral_signup_completed ?? 0,
+    },
   });
 });
 

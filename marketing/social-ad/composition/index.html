@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Okodukai — parent organic v1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="stage" class="stage" data-variant="story12" aria-hidden="true">
+      <div class="bg"></div>
+      <div class="vignette"></div>
+
+      <!-- Scene 1: parental phrases -->
+      <section class="scene scene-hook" data-from="0" data-to="1.5">
+        <p class="eyebrow">Vous répétez ça tous les jours ?</p>
+        <ul class="phrases">
+          <li class="phrase p1">Range ta chambre.</li>
+          <li class="phrase p2">Prépare ton sac.</li>
+          <li class="phrase p3">Mets la table.</li>
+        </ul>
+      </section>
+
+      <!-- Scene 2: phrases become quest cards -->
+      <section class="scene scene-quests" data-from="1.5" data-to="3.5">
+        <p class="line">Transformez les routines en missions.</p>
+        <article class="quest-card">
+          <header>
+            <span class="quest-tag">Quête</span>
+            <span class="quest-reward">+10</span>
+          </header>
+          <h2>Ranger sa chambre</h2>
+          <p>Pour Lina · validée par un parent</p>
+        </article>
+      </section>
+
+      <!-- Scene 3: validation + coins -->
+      <section class="scene scene-validate" data-from="3.5" data-to="5.5">
+        <p class="line">Une mission. Une validation. +10.</p>
+        <div class="phone-panel">
+          <div class="row">
+            <span>Lina a terminé</span>
+            <strong>Ranger sa chambre</strong>
+          </div>
+          <div class="actions">
+            <span class="btn ghost">À refaire</span>
+            <span class="btn primary">Valider</span>
+          </div>
+          <div class="coin-burst">
+            <img class="coin" src="" alt="" width="72" height="72" />
+            <span class="plus">+10</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 4: choices -->
+      <section class="scene scene-choice" data-from="5.5" data-to="8">
+        <p class="line">Après, c’est à elle de choisir.</p>
+        <div class="choice-grid">
+          <div class="choice"><span>Dépenser</span></div>
+          <div class="choice highlight"><span>Mon coffre</span></div>
+          <div class="choice"><span>Placer</span></div>
+        </div>
+        <div class="balance">
+          <img class="coin small" src="" alt="" width="36" height="36" />
+          <strong>42</strong>
+          <span>pièces disponibles</span>
+        </div>
+      </section>
+
+      <!-- Scene 5: montage -->
+      <section class="scene scene-montage" data-from="8" data-to="10.5">
+        <p class="line">Dépenser. Économiser. Comprendre.</p>
+        <div class="montage">
+          <div class="tile">Glace en famille</div>
+          <div class="tile">Objectif 80</div>
+          <div class="tile chart">
+            <svg viewBox="0 0 120 48" width="120" height="48" aria-hidden="true">
+              <polyline
+                fill="none"
+                stroke="#d59b38"
+                stroke-width="4"
+                stroke-linecap="round"
+                points="4,36 28,28 52,30 76,14 100,18 116,10"
+              />
+            </svg>
+          </div>
+          <div class="tile booster">Booster</div>
+        </div>
+      </section>
+
+      <!-- Scene 6: end card -->
+      <section class="scene scene-end" data-from="10.5" data-to="15">
+        <img class="logo" src="" alt="Okodukai" width="280" height="72" />
+        <h1>Son premier compte. Pour de faux.</h1>
+        <p class="tagline">Ses premiers réflexes avec l’argent. Pour de vrai.</p>
+        <p class="cta">100 % gratuit</p>
+        <p class="url">okodukai-gold.vercel.app</p>
+      </section>
+
+      <!-- Short-cut overlays for 6s variant copy -->
+      <section class="scene scene-short-end" data-from="4.5" data-to="6" hidden>
+        <img class="logo" src="" alt="Okodukai" width="280" height="72" />
+        <p class="line short">Le quotidien devient un jeu. L’argent s’apprend en faisant.</p>
+        <p class="cta">100 % gratuit</p>
+      </section>
+    </div>
+    <script src="./timeline.js"></script>
+  </body>
+</html>

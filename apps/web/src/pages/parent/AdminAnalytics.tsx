@@ -9,6 +9,15 @@ interface Analytics {
   period: { days: Days; from: string; to: string };
   totals: { parents: number; children: number; households: number; quests: number; validated: number };
   activity: { newParents: number; newChildren: number; newHouseholds: number; questsCreated: number; questsSubmitted: number; questsValidated: number; rewardsRequested: number };
+  share?: {
+    cardViewed: number;
+    modalOpened: number;
+    nativeStarted: number;
+    videoDownloaded: number;
+    linkCopied: number;
+    referralLanding: number;
+    referralSignupCompleted: number;
+  };
 }
 interface UsersPage {
   page: number;
@@ -53,6 +62,14 @@ const COPY = defineCopy({
     next: "Suivant",
     privacy: "Les statistiques restent agrégées. Seule la liste des comptes affiche des adresses e-mail, pour l’administration.",
     note: "Une quête récurrente peut être validée plusieurs fois. « Quêtes réussies » compte chaque validation, même si la quête a été créée avant la période choisie.",
+    shareTitle: "Partage organique",
+    shareCard: "Carte vue",
+    shareModal: "Modale ouverte",
+    shareNative: "Partage natif lancé",
+    shareDownload: "Vidéos téléchargées",
+    shareLink: "Liens copiés",
+    shareLanding: "Visites referral",
+    shareSignup: "Inscriptions referral",
   },
   en: {
     title: "Okodukai usage",
@@ -89,6 +106,14 @@ const COPY = defineCopy({
     next: "Next",
     privacy: "Statistics remain aggregated. Only the account list shows email addresses, for administration.",
     note: "A recurring quest can be approved more than once. ‘Quests completed’ counts each approval, including quests created before the selected period.",
+    shareTitle: "Organic sharing",
+    shareCard: "Card views",
+    shareModal: "Modal opened",
+    shareNative: "Native share started",
+    shareDownload: "Videos downloaded",
+    shareLink: "Links copied",
+    shareLanding: "Referral visits",
+    shareSignup: "Referral signups",
   },
 });
 
@@ -128,6 +153,7 @@ export function AdminAnalytics() {
   const signupDate = dateFormatter({ dateStyle: "medium" });
   const totals = stats?.totals;
   const activity = stats?.activity;
+  const share = stats?.share;
   const totalItems = totals && [
     [t.parents, totals.parents], [t.children, totals.children], [t.households, totals.households],
     [t.quests, totals.quests], [t.validated, totals.validated],
@@ -136,6 +162,11 @@ export function AdminAnalytics() {
     [t.newParents, activity.newParents], [t.newChildren, activity.newChildren], [t.newHouseholds, activity.newHouseholds],
     [t.questsCreated, activity.questsCreated], [t.questsSubmitted, activity.questsSubmitted],
     [t.questsValidated, activity.questsValidated], [t.rewardsRequested, activity.rewardsRequested],
+  ] as const;
+  const shareItems = share && [
+    [t.shareCard, share.cardViewed], [t.shareModal, share.modalOpened], [t.shareNative, share.nativeStarted],
+    [t.shareDownload, share.videoDownloaded], [t.shareLink, share.linkCopied],
+    [t.shareLanding, share.referralLanding], [t.shareSignup, share.referralSignupCompleted],
   ] as const;
 
   return <main className="admin-analytics">
@@ -164,6 +195,10 @@ export function AdminAnalytics() {
         <h2 id="admin-activity-heading">{t.activity}</h2>
         <dl className="admin-metrics admin-metrics--activity">{activityItems && activityItems.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{number.format(value)}</dd></div>)}</dl>
       </section>
+      {shareItems && <section aria-labelledby="admin-share-heading">
+        <h2 id="admin-share-heading">{t.shareTitle}</h2>
+        <dl className="admin-metrics admin-metrics--activity">{shareItems.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{number.format(value)}</dd></div>)}</dl>
+      </section>}
       <p className="admin-analytics-note">{t.note}</p>
     </>}
     <section className="admin-users" aria-labelledby="admin-users-heading">

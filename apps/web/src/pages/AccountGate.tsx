@@ -7,6 +7,7 @@ import { OnboardingPath } from "../components/OnboardingPath";
 import { ChestArt } from "../art/ChestArt";
 import { defineCopy, useCopy } from "../i18n";
 import { GoogleSignInButton } from "../components/GoogleSignInButton";
+import { trackReferralSignupCompletedOnce, trackReferralSignupStartedOnce } from "../share/analytics";
 
 interface ContinueResponse {
   outcome: "created" | "signed_in";
@@ -76,12 +77,14 @@ export function AccountGate() {
     setError(null);
     setSubmitting(true);
     try {
+      trackReferralSignupStartedOnce();
       const res = await api.post<ContinueResponse>("/auth/continue", { email, password });
       const me = await refresh();
       if (!me) {
         setError(COPY.cookieBlocked);
         return;
       }
+      if (res.outcome === "created") trackReferralSignupCompletedOnce();
       navigate(res.outcome === "created" || !res.onboardingCompleted ? "/accueil/famille" : "/parent", { replace: true });
     } catch (err) {
       if (err instanceof ApiError) setError(err.status === 0 ? COPY.unreachable : err.message);
@@ -95,9 +98,11 @@ export function AccountGate() {
     setError(null);
     setSubmitting(true);
     try {
+      trackReferralSignupStartedOnce();
       const res = await api.postGoogle<ContinueResponse>("/auth/google/continue", { credential });
       const me = await refresh();
       if (!me) { setError(COPY.cookieBlocked); return; }
+      if (res.outcome === "created") trackReferralSignupCompletedOnce();
       navigate(res.outcome === "created" || !res.onboardingCompleted ? "/accueil/famille" : "/parent", { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : COPY.fallback);

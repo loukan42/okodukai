@@ -5,6 +5,9 @@ import { Avatar } from "../../components/Avatar";
 import { CoinPill } from "../../components/CoinPill";
 import { EmptyState } from "../../components/EmptyState";
 import { GameIcon } from "../../components/GameIcon";
+import { ParentShareCard } from "../../components/share/ParentShareCard";
+import { ParentShareModal } from "../../components/share/ParentShareModal";
+import { isShareCardDismissed } from "../../share/dismiss";
 import { defineCopy, useCopy } from "../../i18n";
 import { LEVEL_TITLE, titleCodeForLevel } from "../../lib/levels";
 
@@ -90,16 +93,19 @@ export function Dashboard() {
   const [redemptions, setRedemptions] = useState<PendingRedemption[]>([]);
   const [children, setChildren] = useState<ChildSummary[]>([]);
   const [vaultRequests, setVaultRequests] = useState<VaultRequest[]>([]);
+  const [hasValidatedQuest, setHasValidatedQuest] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareCardVisible, setShareCardVisible] = useState(() => !isShareCardDismissed());
 
   async function load() {
     try { const [dashboard, childrenRes, vaultRes] = await Promise.all([
-      api.get<{ pendingCompletions: PendingCompletion[]; pendingRedemptions: PendingRedemption[] }>("/household/dashboard"),
+      api.get<{ pendingCompletions: PendingCompletion[]; pendingRedemptions: PendingRedemption[]; hasValidatedQuest?: boolean }>("/household/dashboard"),
       api.get<{ children: ChildSummary[] }>("/household/children"),
       api.get<{ requests: VaultRequest[] }>("/household/vault-requests"),
-    ]); setCompletions(dashboard.pendingCompletions); setRedemptions(dashboard.pendingRedemptions); setChildren(childrenRes.children); setVaultRequests(vaultRes.requests); setError(null); }
+    ]); setCompletions(dashboard.pendingCompletions); setRedemptions(dashboard.pendingRedemptions); setChildren(childrenRes.children); setVaultRequests(vaultRes.requests); setHasValidatedQuest(Boolean(dashboard.hasValidatedQuest)); setError(null); }
     catch { setError(t.loadError); }
     finally { setLoading(false); }
   }
@@ -122,6 +128,10 @@ export function Dashboard() {
   return <div className="parent-dashboard">
     <header className="parent-dashboard-header"><div><p className="scene-kicker">{t.kicker}</p><h1>{t.title}</h1><p>{t.lead}</p></div><div className="parent-dashboard-pending"><strong>{pendingCount}</strong><span>{t.toApprove}</span></div></header>
     {error && <p className="form-error" role="alert">{error}</p>}
+    {hasValidatedQuest && shareCardVisible && (
+      <ParentShareCard onOpen={() => setShareOpen(true)} onDismiss={() => setShareCardVisible(false)} />
+    )}
+    <ParentShareModal open={shareOpen} onClose={() => setShareOpen(false)} />
     <section aria-labelledby="children-title"><div className="parent-section-heading"><h2 id="children-title">{t.children}</h2><Link to="/parent/enfants">{t.manage} <GameIcon name="arrow" size={16}/></Link></div>
       {children.length === 0 ? <EmptyState icon="user" title={t.noChild} subtitle={t.noChildHint}/> : <div className="parent-child-grid">{children.map((child) => <div className="parent-child-card" key={child.id}>
         <div className="parent-child-identity"><Avatar avatarId={child.avatarId}/><div><strong>{child.displayName}</strong><span>{t.level(child.currentLevel, LEVEL_TITLE[titleCodeForLevel(child.currentLevel)])}</span></div></div>

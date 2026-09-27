@@ -102,7 +102,7 @@ householdRouter.get("/children", async (req, res) => {
 householdRouter.get("/dashboard", async (req, res) => {
   const householdId = req.session!.householdId;
 
-  const [pendingCompletions, pendingRedemptions, recentAudit] = await Promise.all([
+  const [pendingCompletions, pendingRedemptions, recentAudit, validatedCount] = await Promise.all([
     prisma.questCompletion.findMany({
       where: { status: "EN_ATTENTE", quest: { householdId } },
       include: { quest: true, child: { select: { id: true, displayName: true, avatarId: true } } },
@@ -118,9 +118,17 @@ householdRouter.get("/dashboard", async (req, res) => {
       orderBy: { createdAt: "desc" },
       take: 15,
     }),
+    prisma.questCompletion.count({
+      where: { status: "VALIDEE", quest: { householdId } },
+    }),
   ]);
 
-  res.json({ pendingCompletions, pendingRedemptions, recentAudit });
+  res.json({
+    pendingCompletions,
+    pendingRedemptions,
+    recentAudit,
+    hasValidatedQuest: validatedCount > 0,
+  });
 });
 
 /** Langue de l'application pour toute la famille (en-tête de l'espace parent). */

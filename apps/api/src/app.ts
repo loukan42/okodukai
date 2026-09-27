@@ -22,6 +22,7 @@ import { badgesRouter } from "./routes/badges.js";
 import { notificationsRouter } from "./routes/notifications.js";
 import { devRouter } from "./routes/dev.js";
 import { adminRouter } from "./routes/admin.js";
+import { shareRouter } from "./routes/share.js";
 import { jwtSecretMissing } from "./lib/auth.js";
 import { prisma } from "./lib/prisma.js";
 import { localeMiddleware } from "./lib/i18n.js";
@@ -60,6 +61,7 @@ export function createApp() {
 
   app.use("/auth", authRouter);
   app.use("/admin", adminRouter);
+  app.use("/share", shareRouter);
   app.use("/household", householdRouter);
   app.use("/", childRouter);
   app.use("/", questsRouter);

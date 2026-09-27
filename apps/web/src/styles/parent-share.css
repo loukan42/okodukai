@@ -1,0 +1,223 @@
+.parent-share-card {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid #d2bd99;
+  background: linear-gradient(145deg, #fffaf0, #f4e7c9);
+  box-shadow: var(--shadow-md);
+}
+
+.parent-share-card-media img {
+  width: 96px;
+  height: auto;
+  border-radius: 12px;
+  display: block;
+  box-shadow: var(--shadow-sm);
+}
+
+.parent-share-card-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.parent-share-card-copy h2 {
+  margin: 0;
+  font-size: 22px;
+  font-family: var(--font-display);
+}
+
+.parent-share-card-copy p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.parent-share-card-meta {
+  font-size: 12px !important;
+  font-weight: 800;
+  color: var(--ink-faint) !important;
+}
+
+.parent-share-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.parent-share-modal-root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dialog);
+  display: grid;
+  place-items: end center;
+  padding: 12px;
+}
+
+.parent-share-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(23, 41, 65, 0.55);
+  cursor: pointer;
+}
+
+.parent-share-modal {
+  position: relative;
+  width: min(640px, 100%);
+  max-height: min(92vh, 900px);
+  overflow: auto;
+  border-radius: 20px 20px 16px 16px;
+  background: var(--surface);
+  border: 1px solid var(--parchment-line);
+  box-shadow: var(--shadow-lg);
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.parent-share-modal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.parent-share-modal-header h2 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-family: var(--font-display);
+}
+
+.parent-share-modal-header p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.parent-share-preview {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  background: #1c2e4a;
+  border-radius: 16px;
+  padding: 12px;
+}
+
+.parent-share-video {
+  width: min(100%, 280px);
+  max-height: 420px;
+  border-radius: 12px;
+  background: #0f1c2e;
+}
+
+.parent-share-formats {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.parent-share-formats legend {
+  font-weight: 800;
+  font-size: 13px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.parent-share-formats label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--parchment-line);
+  background: var(--parchment);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.parent-share-formats label.is-active {
+  border-color: var(--gold);
+  background: #f3dfb0;
+}
+
+.parent-share-privacy,
+.parent-share-hint,
+.parent-share-status {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.parent-share-hint {
+  background: var(--sky-soft);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.parent-share-primary-actions,
+.parent-share-platforms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.parent-share-platforms .btn {
+  min-height: 44px;
+}
+
+.parent-share-transcript summary {
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.parent-share-transcript p {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+@media (min-width: 768px) {
+  .parent-share-modal-root {
+    place-items: center;
+  }
+  .parent-share-modal {
+    border-radius: 20px;
+  }
+  .parent-share-video {
+    width: min(100%, 320px);
+  }
+}
+
+@media (max-width: 540px) {
+  .parent-share-card {
+    grid-template-columns: 72px 1fr;
+    gap: 12px;
+    padding: 14px;
+  }
+  .parent-share-card-media img {
+    width: 72px;
+  }
+  .parent-share-card-copy h2 {
+    font-size: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .parent-share-modal,
+  .parent-share-card {
+    transition: none;
+  }
+}

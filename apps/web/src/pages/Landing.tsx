@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
+import { trackReferralLandingOnce } from "../share/analytics";
 import { LandingNav } from "./landing/LandingNav";
 import { Hero } from "./landing/Hero";
 import { Choice } from "./landing/Choice";
@@ -40,6 +41,9 @@ export function Landing() {
   const { session } = useAuth();
   const t = useCopy(LANDING);
   useGlassHighlight();
+  useEffect(() => {
+    trackReferralLandingOnce(window.location.search);
+  }, []);
   if (session?.kind === "parent") return <Navigate to="/parent" replace />;
   if (session?.kind === "child") return <Navigate to="/enfant" replace />;
   const ctas = landingCtas();

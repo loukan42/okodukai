@@ -1,5 +1,15 @@
 # Reste à faire : passation (26 septembre 2026)
 
+## Point d'étape du 27 septembre 2026 (soir) : partage organique parent
+
+- Branche `feat/parent-organic-share` : campagne `parent-organic-v1` (concept A, routines → missions).
+- Vidéos rendues (`npm run social:render`, FFmpeg + ASS) dans `apps/web/public/social/parent-organic-v1/` (story 6s/12s, feed 4:5, carré, paysage 15s, versions muettes, poster, OG).
+- Espace parent : carte dismissible après première quête validée (`hasValidatedQuest`), accès permanent dans Compte, modale de partage (natif / téléchargement / copies / intentions), i18n FR/EN.
+- Analytics anonymes `ShareEvent` + `POST /share/events` (liste blanche, throttle) ; totaux dans Admin ; UTM `parent_referral` ; Open Graph dans `index.html`.
+- Docs : `marketing/*`, `docs/PARENT_SHARE_FEATURE.md`, `docs/SOCIAL_SHARE_COMPATIBILITY.md`.
+- Tests web share (7) verts ; typecheck + build web verts. E2E share et migrate nécessitent `apps/api/.env` + Postgres. Matrice Safari/iOS réelle non exécutée ici (Windows).
+- Note machine : `npm` workspace symlink échoue sur ce volume ; install via `pnpm` + copie manuelle de `@okodukai/shared` si besoin. `pnpm-workspace.yaml` et `.npmrc` ajoutés.
+
 ## Bilan du 27 septembre 2026 : refonte enfant livrée
 
 - Ajout après la revue finale : trois cadres de portrait cosmétiques aux niveaux 5, 10 et 20. Le choix est conservé sur le profil enfant et vérifié côté API. Captures à 375, 768 et 1280 px : `child-portrait-frames-*`. Les 16 portraits et l'arbre d'XP restent en place.

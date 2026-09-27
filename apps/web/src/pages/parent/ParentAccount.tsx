@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { GoogleSignInButton } from "../../components/GoogleSignInButton";
+import { ParentShareModal } from "../../components/share/ParentShareModal";
+import { ACTIVE_CTA_VARIANT, CTA_VARIANTS } from "../../share/campaign";
 import { api, ApiError } from "../../lib/api";
 import { useAuth } from "../../lib/AuthContext";
-import { defineCopy, useCopy } from "../../i18n";
+import { defineCopy, useCopy, useLocale } from "../../i18n";
 
 const COPY = defineCopy({
   fr: {
@@ -14,6 +16,8 @@ const COPY = defineCopy({
     link: "Associez votre compte Google pour retrouver cette famille avec le bouton Google. Choisissez la même adresse e-mail que celle affichée ici.",
     success: "Compte Google associé.",
     error: "Impossible d'associer ce compte Google. Réessayez.",
+    shareTitle: "Faire connaître Okodukai",
+    shareLead: "Okodukai est gratuit. Une courte vidéo est prête à partager avec d'autres parents.",
   },
   en: {
     title: "Your account",
@@ -24,14 +28,18 @@ const COPY = defineCopy({
     link: "Link your Google account to access this family with the Google button. Choose the same email address shown here.",
     success: "Google account linked.",
     error: "We couldn't link this Google account. Try again.",
+    shareTitle: "Help others discover Okodukai",
+    shareLead: "Okodukai is free. A short video is ready to share with other parents.",
   },
 });
 
 export function ParentAccount() {
   const t = useCopy(COPY);
+  const { locale } = useLocale();
   const { session, refresh } = useAuth();
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
   if (session?.kind !== "parent") return null;
 
   async function link(credential: string) {
@@ -59,5 +67,13 @@ export function ParentAccount() {
       {message && <p role="status">{message}</p>}
       {error && <p role="alert" className="form-error">{error}</p>}
     </section>
+    <section className="card" aria-labelledby="account-share-title">
+      <h2 id="account-share-title">{t.shareTitle}</h2>
+      <p>{t.shareLead}</p>
+      <button type="button" className="btn btn-primary" onClick={() => setShareOpen(true)}>
+        {CTA_VARIANTS[ACTIVE_CTA_VARIANT][locale]}
+      </button>
+    </section>
+    <ParentShareModal open={shareOpen} onClose={() => setShareOpen(false)} />
   </main>;
 }

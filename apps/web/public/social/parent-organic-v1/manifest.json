@@ -1,0 +1,47 @@
+{
+  "campaignId": "parent-organic-v1",
+  "landingUrl": "https://okodukai-gold.vercel.app/",
+  "headline": "Son premier compte. Pour de faux.",
+  "concept": "A",
+  "demoChildName": "Lina",
+  "formats": {
+    "story12": {
+      "url": "/social/parent-organic-v1/video/okodukai-story-12s.mp4",
+      "silentUrl": "/social/parent-organic-v1/video/okodukai-story-12s-silent.mp4",
+      "width": 1080,
+      "height": 1920,
+      "duration": 12.5
+    },
+    "story6": {
+      "url": "/social/parent-organic-v1/video/okodukai-story-6s.mp4",
+      "silentUrl": "/social/parent-organic-v1/video/okodukai-story-6s-silent.mp4",
+      "width": 1080,
+      "height": 1920,
+      "duration": 6
+    },
+    "feed": {
+      "url": "/social/parent-organic-v1/video/okodukai-feed-12s.mp4",
+      "silentUrl": "/social/parent-organic-v1/video/okodukai-feed-12s-silent.mp4",
+      "width": 1080,
+      "height": 1350,
+      "duration": 12.5
+    },
+    "square": {
+      "url": "/social/parent-organic-v1/video/okodukai-square-12s.mp4",
+      "silentUrl": "/social/parent-organic-v1/video/okodukai-square-12s-silent.mp4",
+      "width": 1080,
+      "height": 1080,
+      "duration": 12.5
+    },
+    "landscape": {
+      "url": "/social/parent-organic-v1/video/okodukai-landscape-15s.mp4",
+      "silentUrl": "/social/parent-organic-v1/video/okodukai-landscape-15s-silent.mp4",
+      "width": 1920,
+      "height": 1080,
+      "duration": 15
+    }
+  },
+  "poster": "/social/parent-organic-v1/poster/okodukai-story-poster.webp",
+  "thumbnail": "/social/parent-organic-v1/thumbnail/okodukai-story-thumb.webp",
+  "ogImage": "/social/parent-organic-v1/og/okodukai-og.jpg"
+}

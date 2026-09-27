@@ -13,7 +13,8 @@
     "db:up": "docker compose up -d db",
     "db:migrate": "npm run prisma:migrate --workspace apps/api",
     "db:seed": "npm run seed --workspace apps/api",
-    "test": "npm run test --workspace apps/api"
+    "test": "npm run test --workspace apps/api && npm run test --workspace apps/web",
+    "social:render": "node marketing/social-ad/scripts/render.mjs"
   },
   "allowScripts": {
     "@prisma/client@5.22.0": true,

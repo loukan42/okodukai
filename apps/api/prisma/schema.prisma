@@ -759,6 +759,20 @@ model AuthThrottle {
   updatedAt       DateTime  @updatedAt
 }
 
+/// Événements de partage organique : agrégats anonymes, sans foyer ni utilisateur.
+model ShareEvent {
+  id         String   @id @default(uuid())
+  name       String
+  campaignId String
+  format     String?
+  platform   String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([name, createdAt])
+  @@index([campaignId, createdAt])
+}
+
 // ---------------------------------------------------------------------------
 // Placements école (moteur finsim) : unités école uniquement, jamais des pièces.
 // Voir docs/FINANCIAL_SIMULATION_ENGINE.md §10 et docs/INVESTMENT_UX.md.
