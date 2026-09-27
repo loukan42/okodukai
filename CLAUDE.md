@@ -133,3 +133,14 @@ boosters + album + doublons/maîtrise → sélection d'univers par le parent →
 Quand un LLM code une tâche demandée par l'utilisateur sur ce projet, il doit indiquer régulièrement
 où il en est par rapport à la demande initiale — environ tous les 25% d'avancement (25%, 50%, 75%,
 100%) — avec à chaque fois une estimation du temps restant en minutes.
+
+## Ne jamais laisser le travail en suspens
+
+Plusieurs sessions (locales ou cloud) peuvent travailler sur ce repo à des moments différents, sans
+mémoire de ce que la précédente a fait en tête, sinon `docs/RESTE_A_FAIRE.md`, l'historique Git et
+l'état réel du dépôt. Un LLM qui code sur ce projet doit donc surveiller sa consommation de quota et,
+avant de risquer de le manquer en cours de tâche, ramener le dépôt à un état repris par n'importe qui :
+tests et build vérifiés, travail terminé commité et poussé sur `main` (jamais laissé seulement en
+local), et `docs/RESTE_A_FAIRE.md` à jour (ce qui est fait, ce qui reste, toute décision encore en
+attente). Un point d'étape à moitié fini, non commité, est plus coûteux à reprendre pour la session
+suivante qu'un point d'étape plus court mais propre.
