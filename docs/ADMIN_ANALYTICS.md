@@ -18,10 +18,12 @@ L'attribution est ponctuelle : les builds suivants ne changent pas les droits ad
 
 La page affiche les nombres globaux de parents, de profils enfant, de familles, de quêtes créées et de validations. Elle permet aussi de voir les créations et actions des 7, 30 ou 90 derniers jours. Chaque validation d’une quête récurrente est comptée séparément. Les périodes sont des fenêtres glissantes, calculées à l’heure de la requête.
 
+Elle affiche également une liste paginée des comptes parents : adresse e-mail et date d'inscription, 25 comptes par page. Cette liste sert à la gestion et à l'assistance des comptes. Elle n'affiche aucun profil enfant ni activité individuelle.
+
 ## Données et accès
 
-L’API ne renvoie que des nombres et la période de calcul. Aucun nom, adresse, identifiant, âge, titre de quête ou ligne d’activité individuelle n’est envoyé à cet écran. Aucune nouvelle collecte d’événements ni cookie de mesure d’audience n’est ajouté. La réponse HTTP porte `Cache-Control: private, no-store` et le droit d’accès est revérifié en base à chaque appel.
+L'API `/admin/analytics` ne renvoie que des nombres et la période de calcul. L'API `/admin/users` ne sélectionne que l'e-mail et la date de création des comptes parents ; elle ne renvoie ni identifiant interne, ni mot de passe, ni donnée d'enfant. Aucune nouvelle collecte d'événements ni cookie de mesure d'audience n'est ajouté. Les réponses HTTP portent `Cache-Control: private, no-store` et le droit d'accès est revérifié en base à chaque appel.
 
-Ces mesures utilisent les données opérationnelles existantes. Avant la mise en production, documenter cette finalité statistique dans l’information fournie aux familles, sa base légale et les durées de conservation des données source. Les petits effectifs globaux peuvent encore permettre des déductions : maintenir cet accès strictement limité au propriétaire.
+Ces vues utilisent les données opérationnelles existantes. L'écran de connexion précise désormais que l'administrateur peut consulter l'e-mail pour gérer les comptes. Il reste à publier une notice de confidentialité complète décrivant les finalités, la base juridique retenue, les destinataires, les droits des personnes et les durées de conservation des données source. Ces choix relèvent du responsable de traitement. Les petits effectifs globaux peuvent encore permettre des déductions : maintenir cet accès strictement limité au propriétaire.
 
 Références : [minimisation des données, CNIL](https://www.cnil.fr/fr/minimiser-les-donnees-collectees) et [durées de conservation, CNIL](https://www.cnil.fr/fr/passer-laction/les-durees-de-conservation-des-donnees).

@@ -29,6 +29,8 @@ const TEXT = defineCopy({
       "Le compte est prêt, mais votre navigateur a refusé le cookie de connexion. Autorisez les cookies pour ce site puis réessayez.",
     fallback: "La connexion n'a pas abouti. Réessayez dans un instant.",
     privacy: "Aucun paiement, aucune carte bancaire : les pièces d'Okodukai restent virtuelles.",
+    accountPrivacy: "Votre e-mail sert à vous connecter. L'administrateur du service peut le consulter pour gérer votre compte.",
+    noApp: "Ça marche directement dans le navigateur, sur ordinateur comme sur le téléphone de votre enfant : rien à télécharger.",
   },
   en: {
     title: "Your Okodukai account",
@@ -45,6 +47,8 @@ const TEXT = defineCopy({
       "Your account is ready, but your browser blocked the login cookie. Allow cookies for this site and try again.",
     fallback: "We couldn't log you in. Try again in a moment.",
     privacy: "No payment and no bank card: Okodukai coins are only virtual.",
+    accountPrivacy: "Your email is used to sign in. The service administrator can view it to manage your account.",
+    noApp: "It works directly in the browser, on a computer or on your child's phone: nothing to download.",
   },
 });
 
@@ -151,6 +155,8 @@ export function AccountGate() {
         </button>
       </form>
       <GoogleSignInButton onCredential={(credential) => { if (!submitting) void onGoogleCredential(credential); }} />
+      <p className="world-footnote">{COPY.noApp}</p>
+      <p className="world-footnote">{COPY.accountPrivacy}</p>
       <p className="world-footnote">{COPY.privacy}</p>
     </WorldShell>
   );

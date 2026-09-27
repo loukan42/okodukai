@@ -1,5 +1,11 @@
 # Reste à faire : passation (26 septembre 2026)
 
+## Point d'étape du 27 septembre 2026 : liste des comptes parents dans l'administration
+
+- La page Administration affiche les e-mails et dates d'inscription des comptes parents, 25 par page. L'API `/admin/users` sélectionne uniquement ces champs, relit le droit admin en base à chaque requête et interdit la mise en cache, y compris pour les accès refusés. Les enfants et l'activité individuelle ne figurent pas dans cette liste.
+- L'écran de connexion informe les parents que l'administrateur peut consulter leur e-mail pour gérer les comptes. Tableau vérifié dans Chrome avec un admin local à 375 et 1280 px, sans débordement horizontal. Builds API/web et test d'accès admin verts.
+- À compléter pour la conformité RGPD : notice de confidentialité publique, base juridique des finalités, durées de conservation et modalités d'exercice des droits. Ces choix demandent les informations du responsable de traitement ; voir `docs/ADMIN_ANALYTICS.md`.
+
 ## Point d'étape du 27 septembre 2026 : quatre personnages du roster en pied
 
 - Les portraits 01–04 ont chacun une illustration en pied fidèle au visage, à la coiffure et aux vêtements du portrait, dans la lumière de la vallée. Les quatre PNG sources et les WebP 256/512/768 sont versionnés ; les générer à nouveau avec `node apps/web/scripts/optimize-child-art.mjs`.

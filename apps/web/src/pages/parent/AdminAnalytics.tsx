@@ -10,11 +10,17 @@ interface Analytics {
   totals: { parents: number; children: number; households: number; quests: number; validated: number };
   activity: { newParents: number; newChildren: number; newHouseholds: number; questsCreated: number; questsSubmitted: number; questsValidated: number; rewardsRequested: number };
 }
+interface UsersPage {
+  page: number;
+  pageSize: number;
+  total: number;
+  users: { email: string; createdAt: string }[];
+}
 
 const COPY = defineCopy({
   fr: {
     title: "Utilisation d’Okodukai",
-    intro: "Les comptes et les actions de toutes les familles, sans détail individuel.",
+    intro: "Vue d’ensemble de l’activité et gestion des comptes parents.",
     period: "Période d’activité",
     days: (n: number) => `${n} derniers jours`,
     loading: "Chargement des statistiques…",
@@ -35,12 +41,22 @@ const COPY = defineCopy({
     questsSubmitted: "Quêtes déclarées terminées",
     questsValidated: "Quêtes validées",
     rewardsRequested: "Récompenses demandées",
-    privacy: "Les chiffres sont calculés à la demande. Cet écran n’affiche ni nom, ni e-mail, ni détail par famille.",
+    usersTitle: "Comptes parents",
+    usersIntro: "Adresses utilisées pour la connexion et l’assistance aux comptes. Aucun profil enfant ni détail d’activité n’est affiché.",
+    usersLoading: "Chargement des comptes…",
+    usersError: "Impossible de charger les comptes. Réessayez.",
+    usersEmpty: "Aucun compte parent enregistré.",
+    usersEmail: "Adresse e-mail",
+    usersRegistered: "Inscription",
+    usersRange: (from: number, to: number, total: number) => `${from} à ${to} sur ${total}`,
+    previous: "Précédent",
+    next: "Suivant",
+    privacy: "Les statistiques restent agrégées. Seule la liste des comptes affiche des adresses e-mail, pour l’administration.",
     note: "Une quête récurrente peut être validée plusieurs fois. « Quêtes réussies » compte chaque validation, même si la quête a été créée avant la période choisie.",
   },
   en: {
     title: "Okodukai usage",
-    intro: "Accounts and activity across all families, without individual details.",
+    intro: "Activity overview and parent account management.",
     period: "Activity period",
     days: (n: number) => `Last ${n} days`,
     loading: "Loading statistics…",
@@ -61,7 +77,17 @@ const COPY = defineCopy({
     questsSubmitted: "Quests submitted",
     questsValidated: "Quests approved",
     rewardsRequested: "Rewards requested",
-    privacy: "Figures are calculated on request. This screen shows no names, email addresses or family-level details.",
+    usersTitle: "Parent accounts",
+    usersIntro: "Addresses used for sign-in and account support. Child profiles and individual activity are not shown.",
+    usersLoading: "Loading accounts…",
+    usersError: "We couldn't load the accounts. Try again.",
+    usersEmpty: "No parent accounts yet.",
+    usersEmail: "Email address",
+    usersRegistered: "Joined",
+    usersRange: (from: number, to: number, total: number) => `${from}–${to} of ${total}`,
+    previous: "Previous",
+    next: "Next",
+    privacy: "Statistics remain aggregated. Only the account list shows email addresses, for administration.",
     note: "A recurring quest can be approved more than once. ‘Quests completed’ counts each approval, including quests created before the selected period.",
   },
 });
@@ -73,6 +99,11 @@ export function AdminAnalytics() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [reload, setReload] = useState(0);
+  const [usersPage, setUsersPage] = useState(1);
+  const [users, setUsers] = useState<UsersPage | null>(null);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [usersError, setUsersError] = useState(false);
+  const [usersReload, setUsersReload] = useState(0);
 
   useEffect(() => {
     let live = true;
@@ -83,8 +114,18 @@ export function AdminAnalytics() {
     return () => { live = false; };
   }, [days, reload]);
 
+  useEffect(() => {
+    let live = true;
+    api.get<UsersPage>(`/admin/users?page=${usersPage}`)
+      .then((result) => { if (live) { setUsers(result); setUsersError(false); } })
+      .catch(() => { if (live) { setUsers(null); setUsersError(true); } })
+      .finally(() => { if (live) setUsersLoading(false); });
+    return () => { live = false; };
+  }, [usersPage, usersReload]);
+
   const number = numberFormatter();
   const date = dateFormatter({ dateStyle: "medium", timeStyle: "short" });
+  const signupDate = dateFormatter({ dateStyle: "medium" });
   const totals = stats?.totals;
   const activity = stats?.activity;
   const totalItems = totals && [
@@ -125,6 +166,30 @@ export function AdminAnalytics() {
       </section>
       <p className="admin-analytics-note">{t.note}</p>
     </>}
+    <section className="admin-users" aria-labelledby="admin-users-heading">
+      <h2 id="admin-users-heading">{t.usersTitle}</h2>
+      <p>{t.usersIntro}</p>
+      <div aria-live="polite" className="admin-status">
+        {usersLoading ? t.usersLoading : usersError ? <>{t.usersError} <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setUsersLoading(true); setUsersReload((n) => n + 1); }}>{t.retry}</button></> : users?.total === 0 ? t.usersEmpty : null}
+      </div>
+      {users && !usersLoading && users.users.length > 0 && <>
+        <div className="admin-users-table-wrap">
+          <table className="admin-users-table" aria-label={t.usersTitle}>
+            <thead><tr><th scope="col">{t.usersEmail}</th><th scope="col">{t.usersRegistered}</th></tr></thead>
+            <tbody>{users.users.map((user) => <tr key={`${user.email}-${user.createdAt}`}>
+              <td>{user.email}</td><td>{signupDate.format(new Date(user.createdAt))}</td>
+            </tr>)}</tbody>
+          </table>
+        </div>
+        <div className="admin-users-pagination">
+          <span aria-live="polite">{t.usersRange((users.page - 1) * users.pageSize + 1, Math.min(users.page * users.pageSize, users.total), users.total)}</span>
+          <div>
+            <button type="button" className="btn btn-ghost btn-sm" disabled={users.page <= 1} onClick={() => { setUsersLoading(true); setUsersPage((page) => page - 1); }}>{t.previous}</button>
+            <button type="button" className="btn btn-ghost btn-sm" disabled={users.page * users.pageSize >= users.total} onClick={() => { setUsersLoading(true); setUsersPage((page) => page + 1); }}>{t.next}</button>
+          </div>
+        </div>
+      </>}
+    </section>
     <p className="admin-analytics-privacy">{t.privacy}</p>
   </main>;
 }

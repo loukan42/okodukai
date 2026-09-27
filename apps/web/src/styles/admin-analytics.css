@@ -18,7 +18,20 @@
 .admin-metrics--activity > div { min-height: 112px; }
 .admin-analytics-note, .admin-analytics-privacy { max-width: 70ch; margin: 0; color: var(--ink-soft); font-size: 14px; line-height: 1.6; }
 .admin-analytics-privacy { padding: 16px; border-left: 3px solid var(--forest); background: var(--forest-soft); color: var(--ink); }
+.admin-users > p { max-width: 70ch; margin: 0 0 14px; color: var(--ink-soft); line-height: 1.5; }
+.admin-users .admin-status:empty { display: none; }
+.admin-users-table-wrap { max-width: 100%; overflow-x: auto; border: 1px solid var(--parchment-line); border-radius: var(--radius-md); background: var(--surface); box-shadow: var(--shadow-sm); }
+.admin-users-table { width: 100%; min-width: 320px; border-collapse: collapse; table-layout: fixed; }
+.admin-users-table th, .admin-users-table td { padding: 13px 16px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--parchment-line); }
+.admin-users-table th { color: var(--ink-soft); font-size: 14px; font-weight: 800; }
+.admin-users-table th:first-child { width: 70%; }
+.admin-users-table td:first-child { overflow-wrap: anywhere; }
+.admin-users-table tbody tr:last-child td { border-bottom: 0; }
+.admin-users-pagination { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 12px; color: var(--ink-soft); font-size: 14px; }
+.admin-users-pagination > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.admin-users-pagination button { min-height: 44px; }
 @media (max-width: 540px) { .admin-analytics { gap: 20px; } .admin-analytics-header { padding: 20px; } .admin-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .admin-metrics > div { padding: 14px; min-height: 116px; } }
+@media (max-width: 540px) { .admin-users-table th, .admin-users-table td { padding: 11px 10px; font-size: 14px; } }
 .parent-nav-short { display: none; }
 .parent-nav a:focus-visible { outline: 2px solid var(--forest); outline-offset: -3px; }
 @media (max-width: 600px) { .parent-nav-full { display: none; } .parent-nav-short { display: inline; } }

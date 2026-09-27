@@ -3,9 +3,11 @@ import { prisma } from "../lib/prisma.js";
 import { attachSession, requireParent, parentSession } from "../middleware/requireAuth.js";
 
 export const adminRouter = Router();
-adminRouter.use(attachSession, requireParent);
-
-adminRouter.get("/analytics", async (req, res) => {
+adminRouter.use((_req, res, next) => {
+  res.set("Cache-Control", "private, no-store");
+  next();
+});
+adminRouter.use(attachSession, requireParent, async (req, res, next) => {
   // Le rôle du foyer ne donne aucun accès global. Relire ce droit en base à chaque appel
   // pour qu'une révocation prenne effet même si la session est encore valide.
   const user = await prisma.user.findUnique({
@@ -13,7 +15,10 @@ adminRouter.get("/analytics", async (req, res) => {
     select: { isPlatformAdmin: true },
   });
   if (!user?.isPlatformAdmin) return res.status(403).json({ error: "Accès administration réservé" });
+  next();
+});
 
+adminRouter.get("/analytics", async (req, res) => {
   const requestedDays = req.query.days ?? "30";
   if (requestedDays !== "7" && requestedDays !== "30" && requestedDays !== "90") {
     return res.status(400).json({ error: "Période invalide" });
@@ -46,11 +51,29 @@ adminRouter.get("/analytics", async (req, res) => {
   ]);
   const rewardsRequested = await prisma.rewardRedemption.count({ where: { requestedAt: inPeriod } });
 
-  res.set("Cache-Control", "private, no-store");
   res.json({
     generatedAt: to.toISOString(),
     period: { days, from: from.toISOString(), to: to.toISOString() },
     totals: { parents, children, households, quests, validated },
     activity: { newParents, newChildren, newHouseholds, questsCreated, questsSubmitted, questsValidated, rewardsRequested },
   });
+});
+
+adminRouter.get("/users", async (req, res) => {
+  const rawPage = req.query.page ?? "1";
+  if (typeof rawPage !== "string" || !/^[1-9]\d{0,4}$/.test(rawPage)) {
+    return res.status(400).json({ error: "Page invalide" });
+  }
+  const page = Number(rawPage);
+  const pageSize = 25;
+  const [total, users] = await Promise.all([
+    prisma.user.count(),
+    prisma.user.findMany({
+      select: { email: true, createdAt: true },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+  ]);
+  res.json({ page, pageSize, total, users });
 });
