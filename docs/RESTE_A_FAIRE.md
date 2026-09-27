@@ -11,9 +11,22 @@
   (`XP_BY_DIFFICULTY` dans `routes/quests.ts`) ; l'ancien champ XP libre a disparu du formulaire.
 - **Sécurité** : les scripts `admin:grant`/`admin:bootstrap-local` et `apps/api/vercel.json` ne contiennent
   plus l'e-mail du propriétaire ni de commande en clair ; ils lisent `PLATFORM_ADMIN_EMAIL` (variable
-  ajoutée sur Vercel, projet `okodukai-api`, environnement Production). L'e-mail reste visible dans
-  l'historique Git antérieur à ce point d'étape (réécriture d'historique non faite, à décider).
+  ajoutée sur Vercel, projet `okodukai-api`, environnement Production (posée en autonomie via Claude in
+  Chrome). L'e-mail reste visible dans l'historique Git antérieur à ce point d'étape (réécriture
+  d'historique non faite, à décider). Redéploiement Vercel pas déclenché : se fera au prochain push, ou
+  à la main si besoin plus tôt.
+- **Mobile** : nav parent qui passait sur 2-3 rangées sur téléphone (grille à colonnes fixes) repassée en
+  une seule ligne défilante ; libellés à 10-11 px remontés à 12 (HUD vallée, onglets « Mon trésor »,
+  place, quêtes) ; boutons de la barre parent enfant à 44 px.
 - Tests API : 79/79 verts ; build web vert.
+
+**Restent de l'audit** (non traités cette session, plus incertains ou plus coûteux à faire à l'aveugle) :
+repère de prix dans la boutique (la récompense n'est pas liée à un enfant précis, à trancher) ; alléger
+les textes du coffre/observatoire pour les 8-9 ans (récriture éditoriale + vérifier la hauteur d'écran) ;
+clore les anciennes parties en « unités école » (touche aux données) ; vallée qui grandit aux paliers
+(demande de nouveaux assets 3D) ; écrans de téléphone illisibles dans la démo de la landing (le mockup
+réduit toute la maquette 390 px, il faudrait recadrer sur la zone utile — change selon le chapitre,
+à vérifier en navigateur).
 
 ## Point d'étape du 27 septembre 2026 (matin) : anglais, XP, mobile, audit
 
