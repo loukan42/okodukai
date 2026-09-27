@@ -35,6 +35,21 @@ try {
       else await page.screenshot({ path: file, fullPage: true });
       console.log(file);
     }
+    await page.goto(`${base}/enfant/argent/investir/bibliotheque`, { waitUntil: "networkidle" });
+    await page.locator(".learning-module").first().waitFor({ state: "visible" });
+    await page.locator(".learning-module-art").first().evaluate((image) => image.decode());
+    await page.addStyleTag({ content: ".dev-bar { display: none !important; }" });
+    for (const screen of ["learning-list", "learning-detail"]) {
+      if (screen === "learning-detail") {
+        await page.locator(".learning-module").first().click();
+        await page.locator(".learning-detail-stage img").first().evaluate((image) => image.decode());
+      }
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      if (overflow > 1) throw new Error(`${screen} ${width}px: horizontal overflow ${overflow}px`);
+      const file = `${out}/child-experience-${screen}-${width}.png`;
+      await page.screenshot({ path: file, fullPage: true });
+      console.log(file);
+    }
     const universesResponse = await page.request.get(`${base}/api/child/universes`);
     if (!universesResponse.ok()) throw new Error(`Universes: HTTP ${universesResponse.status()} ${await universesResponse.text()}`);
     const { universes } = await universesResponse.json();

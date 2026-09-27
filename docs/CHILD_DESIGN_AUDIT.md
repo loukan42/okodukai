@@ -22,6 +22,7 @@
 - 1280 px : `screenshots/child-home-desktop-1280.png`, `child-observatory-desktop-1280.png`.
 - 375, 768 et 1280 px : `screenshots/child-experience-{home,profile,account,goal}-*.png`, régénérables par `node apps/web/scripts/capture-child-experience.mjs`.
 - 375, 768 et 1280 px : `screenshots/child-experience-{collection,album,album-empty}-*.png`. L'album possède maintenant la salle aux lanternes jusque dans la vue d'un univers ; les filtres vides montrent une bibliothèque et une consigne adaptée.
+- 375, 768 et 1280 px : `screenshots/child-experience-{learning-list,learning-detail}-*.png`. Les six poses d'Emma et de Lucas sont disponibles ; la scène de leçon affiche découverte, réflexion ou fierté selon l'étape. Le décor et le texte restent lisibles sur téléphone, tablette et ordinateur.
 
 Les captures viennent du foyer local de démonstration ; le bouton « Démo » n'apparaît pas en production. Le contrôle a aussi porté sur le dialogue PIN à 375 px, sa fermeture par Échap et l'absence de débordement horizontal sur les principaux écrans.
 
@@ -50,4 +51,4 @@ Les captures viennent du foyer local de démonstration ; le bouton « Démo » n
 
 ## Limites constatées
 
-Les personnages de plein pied couvrent deux portraits et deux poses chacun. Les autres portraits restent des avatars. Les paliers visuels 5/10/20/30 utilisent encore la scène de base. Les contenus éditoriaux du foyer et du seed restent en français. Ces limites sont consignées dans `CHILD_UI_REDESIGN.md` et `CHILD_ASSET_PLAN.md` ; elles ne changent ni les soldes, ni les protections parentales.
+Les personnages de plein pied couvrent deux portraits et six poses chacun. Les 14 autres portraits restent des avatars. Les paliers visuels 5/10/20/30 utilisent encore la scène de base. Les contenus éditoriaux du foyer et du seed restent en français. Ces limites sont consignées dans `CHILD_UI_REDESIGN.md` et `CHILD_ASSET_PLAN.md` ; elles ne changent ni les soldes, ni les protections parentales.

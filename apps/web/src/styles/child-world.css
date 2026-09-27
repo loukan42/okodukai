@@ -180,9 +180,13 @@
 .learning-module-copy { display: grid; gap: 4px; }
 .learning-module-copy strong { font: 700 22px/1.17 var(--font-display); color: var(--ink); }
 .learning-module-copy small { color: var(--ink-soft); font-weight: 700; }
-.learning-detail { max-width: 840px; margin-inline: auto; }
-.learning-detail-scene { width: 100%; max-height: 265px; object-fit: cover; border: 3px solid #a77a45; border-radius: 16px; }
-.learning-detail .card { border: 2px solid #bc9b66; background: #fff7e5; }
+.learning-detail { width: min(100%, 840px); margin-inline: auto; }
+.learning-detail-stage { position: relative; height: 300px; overflow: hidden; border: 3px solid #a77a45; border-radius: 18px; background: #203a4e; box-shadow: 0 10px 24px rgba(38, 44, 38, .18); }
+.learning-detail-stage::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, transparent 55%, rgba(19, 35, 47, .28)); }
+.learning-detail-scene { display: block; width: 100%; height: 100%; object-fit: cover; }
+.learning-detail-character { position: absolute; z-index: 1; right: 2%; bottom: -14px; width: 230px; height: 290px; object-fit: contain; object-position: bottom center; filter: drop-shadow(0 9px 8px rgba(16, 29, 37, .4)); }
+.learning-detail-character .avatar { width: 110px; height: 110px; }
+.learning-detail .card { width: min(100%, 700px); align-self: center; border: 2px solid #bc9b66; background: #fff7e5; }
 .lesson-head { position: relative; min-height: 86px; padding-left: 100px; overflow: hidden; }
 .lesson-head-art { position: absolute; left: 8px; top: 7px; width: 78px; height: 72px; object-fit: cover; border-radius: 8px; }
 
@@ -240,6 +244,9 @@
   .learning-module-art { width: 90px; height: 90px; }
   .learning-module-copy strong { font-size: 16px; }
   .learning-module .pill { grid-column: 2; justify-self: start; }
+  .learning-detail-stage { height: 225px; }
+  .learning-detail-character { right: -8px; bottom: -10px; width: 138px; height: 205px; }
+  .learning-detail-character .avatar { width: 80px; height: 80px; }
   .learn-page > .page-scene-title { min-height: 175px; padding: 10px; }
   .parent-child-dialog { padding: 14px; }
   .parent-child-option { align-items: start; flex-wrap: wrap; }

@@ -1,7 +1,9 @@
 import { Avatar } from "./Avatar";
 
-/** Two illustrated poses are matched to their roster portraits; all other portraits remain selectable. */
-export function ChildCharacter({ avatarId, pose = "idle", className = "" }: { avatarId: string; pose?: "idle" | "victory"; className?: string }) {
+/** Illustrated expressions for the two featured characters; other portraits remain selectable. */
+export type CharacterPose = "idle" | "happy" | "proud" | "thinking" | "victory" | "discovery";
+
+export function ChildCharacter({ avatarId, pose = "idle", className = "" }: { avatarId: string; pose?: CharacterPose; className?: string }) {
   const character = avatarId === "aventurier-06" ? "emma" : avatarId === "aventurier-05" ? "lucas" : null;
   if (!character) return <span className={className}><Avatar avatarId={avatarId} size="lg" /></span>;
   return <img

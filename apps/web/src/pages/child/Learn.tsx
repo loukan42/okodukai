@@ -5,6 +5,7 @@ import { GameIcon } from "../../components/GameIcon";
 import { Lessons } from "../../components/invest/Lessons";
 import { Carnet } from "../../components/finance/Carnet";
 import { ObjectArt } from "../../art/ObjectArt";
+import { ChildCharacter } from "../../components/ChildCharacter";
 import { useAuth } from "../../lib/AuthContext";
 import { defineCopy, useCopy } from "../../i18n";
 
@@ -111,7 +112,10 @@ export function Learn() {
   if (active) {
     return (
       <div className="stack learning-detail">
-        <LearningScene code={active.code} subtitle={active.subtitle} className="learning-detail-scene" />
+        <div className="learning-detail-stage">
+          <LearningScene code={active.code} subtitle={active.subtitle} className="learning-detail-scene" />
+          {session?.kind === "child" && <ChildCharacter avatarId={session.child.avatarId} pose={step === "situation" ? "discovery" : step === "done" ? "proud" : "thinking"} className="learning-detail-character" />}
+        </div>
         <div className="card">
           <p className="text-sm text-faint">{active.subtitle}</p>
           <h1 className="font-display" style={{ fontSize: 22, marginBottom: 16 }}>

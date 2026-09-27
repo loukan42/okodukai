@@ -30,7 +30,7 @@ Depuis l'espace parent, **Espace enfant** ouvre le choix d'un profil. Pour prêt
 - À 768 px, le panorama montre les six bâtiments et les panneaux de contenu restent limités en largeur.
 - À 1280 px, le monde remplit une grande scène sans étirer les fiches de lecture. La navigation flotte au bas de la fenêtre, sans couvrir les plaques du village.
 - Les actions ont au moins 44 px ; le focus est visible. Les animations s'arrêtent avec `prefers-reduced-motion`.
-- L'arbre, le profil, le registre, un objectif du coffre, la collection et ses albums ont été capturés aux trois largeurs dans `docs/screenshots/child-experience-*` ; la capture est régénérable par `node apps/web/scripts/capture-child-experience.mjs` avec Chrome local. Les chargements enfant montrent le sablier illustré, sans spinner bloquant.
+- L'arbre, le profil, le registre, un objectif du coffre, la collection, ses albums et la bibliothèque ont été capturés aux trois largeurs dans `docs/screenshots/child-experience-*` ; la capture est régénérable par `node apps/web/scripts/capture-child-experience.mjs` avec Chrome local. Les chargements enfant montrent le sablier illustré, sans spinner bloquant.
 
 ## Langue et contenu
 
@@ -38,4 +38,4 @@ Les nouveaux textes de l'accueil, de la navigation, du journal, de la boutique, 
 
 ## Suite prévue
 
-Les 16 portraits sont disponibles, mais seuls Emma (`aventurier-06`) et Lucas (`aventurier-05`) disposent aujourd'hui de personnages de plein pied, en repos et en victoire. Les autres choix affichent leur portrait. Les cinq paliers du village sont sélectionnés par le niveau mais partagent encore le même décor ; les calques de progression et les poses supplémentaires sont des enrichissements graphiques futurs. Aucun effet de progression fictif n'est affiché.
+Les 16 portraits sont disponibles. Emma (`aventurier-06`) et Lucas (`aventurier-05`) disposent chacun des six poses cohérentes prévues : repos, heureux, fier, réflexion, victoire et découverte. La place montre la pose heureuse, le profil la pose fière et les étapes de leçon passent de découverte à réflexion puis fier ; la validation de quête utilise victoire. Les 14 autres choix affichent leur portrait. Les cinq paliers du village sont sélectionnés par le niveau mais partagent encore le même décor ; les calques de progression restent à produire. Aucun effet de progression fictif n'est affiché.
