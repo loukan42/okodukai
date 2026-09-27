@@ -21,6 +21,8 @@ Le registre des fichiers livrés et de leur provenance est `ASSET_REGISTRY.md`. 
 | `learning-{diversification,inflation,risk,compound}-{320,640}.webp` | Bibliothèque, mini scènes | WebP carré | Notions illustrées, même vallée | P2 | Livré |
 | `child-{gallery,observatory,library,shop}-interior-{1280,1920}.webp` | Lieux intérieurs | WebP panoramique | Même bois, laiton, vallée et lumière | P1 | Livré |
 | `child-savings-chamber-{1280,1920}.webp` | Chambre du trésor | WebP panoramique | Pierre moussue et grand coffre | P1 | Livré |
+| `child-registry-interior-{1280,1920}.webp` | Registre de compte enfant | WebP panoramique | Comptoir de bois, registre ouvert, vallée par la fenêtre ; zone calme à gauche pour les chiffres | P1 | Livré |
 | `hub-tier-{5,10,20,30}.webp` | Progression du village | WebP transparent, calques 1280/720 | Même caméra que les fonds | P2 | Prévu dans l’architecture |
+| `xp-tree-{sprout,sapling,young,flowering,mature}-{256,512}.webp` | HUD et profil, croissance avec l'XP | WebP transparent, deux tailles | Trois-quarts, arbre courbe à fleurs ivoire, base moussue et lumière de la vallée | P1 | Livré, cinq formes |
 
 Les sources de la nouvelle série sont dans `apps/web/art/source/child/`. `node apps/web/scripts/optimize-child-art.mjs` régénère les WebP. Les images des cartes et le sachet de booster sont déjà intégrés. Leur changement demande une revue d’ensemble, car ils constituent un système de collection existant.

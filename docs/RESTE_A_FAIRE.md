@@ -12,6 +12,7 @@
 
 ## Point d’étape du 27 septembre 2026 — refonte enfant en cours
 
+- L'XP fait désormais pousser l'arbre d'aventure : cinq formes illustrées aux niveaux 1/5/10/20/30, une croissance graduelle entre deux formes, une brève réaction après un gain réellement renvoyé par le serveur. HUD et profil l'affichent ; l'XP et les récompenses restent sous autorité serveur. Captures 375/768/1280 dans `docs/screenshots/child-experience-*`.
 - Reprise de 04 h 05 : galerie, chambre du trésor, observatoire, bibliothèque et échoppe disposent de décors distincts. Deux personnages en pied avec poses repos/victoire, quatre illustrations de récompenses et quatre scènes pédagogiques sont intégrés. Les sources PNG et le script `apps/web/scripts/optimize-child-art.mjs` sont versionnés ; les WebP sont servis en tailles adaptées.
 - Journal de quêtes illustré, bibliothèque et leçons visuelles, échoppe à objets, personnage sur la place et dans le profil. Les nouvelles chaînes du hub, du journal, de la boutique, du profil, du PIN et du passage parent/enfant ont une version française et anglaise.
 - Revue en navigateur à 375, 768 et 1280 px ; les captures sont dans `docs/screenshots/child-*`. Les plaques de la place ne sont plus cachées par la navigation ; nom complet dans le HUD mobile et quatre onglets d'argent visibles. `docs/CHILD_UI_REDESIGN.md`, `CHILD_MOTION.md` et `CHILD_DESIGN_AUDIT.md` décrivent les décisions et limites.

@@ -18,6 +18,8 @@ L'accueil est une scène navigable. Chaque destination est un lien HTML nommé e
 
 Les pièces et XP demeurent des valeurs serveur. Une quête en attente n'affiche pas son gain comme acquis. Le compte garde un relevé lisible ; les placements restent une simulation pédagogique. Les cartes et l'ouverture de booster existantes sont réemployées.
 
+L'XP fait aussi pousser un arbre personnel, visible dans le HUD et sur le profil. Cinq illustrations de la même espèce correspondent aux niveaux 1, 5, 10, 20 et 30. La taille varie légèrement entre ces seuils selon l'XP du niveau courant ; le prochain seuil est indiqué en texte. Un gain détecté depuis la dernière visite sur l'appareil déclenche une réaction courte, jamais un gain simulé. Ce compagnon visuel est purement cosmétique ; les nombres et les récompenses restent ceux du serveur. Le registre de compte possède maintenant sa propre scène intérieure, avec le solde sur une surface sombre lisible.
+
 ## Deux appareils, un foyer
 
 Depuis l'espace parent, **Espace enfant** ouvre le choix d'un profil. Pour prêter le téléphone, le parent crée d'abord un PIN parent de quatre chiffres en confirmant son mot de passe, puis appuie sur **Donner ce téléphone**. Le bouton Parent de l'espace enfant demande ce PIN pour revenir. Le mot de passe parent reste une solution de retour. Pour un téléphone distinct, **Partager un lien** crée une invitation à usage unique valable 24 heures ; l'enfant ouvre le lien et saisit son propre PIN. L'invitation ne transporte pas la session parent. Les routes et protections serveur sont décrites dans `DATA_MODEL.md` et testées dans `auth.e2e.test.ts`.
@@ -28,6 +30,7 @@ Depuis l'espace parent, **Espace enfant** ouvre le choix d'un profil. Pour prêt
 - À 768 px, le panorama montre les six bâtiments et les panneaux de contenu restent limités en largeur.
 - À 1280 px, le monde remplit une grande scène sans étirer les fiches de lecture. La navigation flotte au bas de la fenêtre, sans couvrir les plaques du village.
 - Les actions ont au moins 44 px ; le focus est visible. Les animations s'arrêtent avec `prefers-reduced-motion`.
+- L'arbre, le profil et le registre de compte ont été capturés aux trois largeurs dans `docs/screenshots/child-experience-*` ; la capture est régénérable par `node apps/web/scripts/capture-child-experience.mjs` avec Chrome local.
 
 ## Langue et contenu
 

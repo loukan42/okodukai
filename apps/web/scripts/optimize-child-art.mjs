@@ -42,7 +42,7 @@ for (const item of images) {
   }
 }
 
-for (const name of ["gallery-interior", "savings-chamber", "observatory-interior", "library-interior", "shop-interior"]) {
+for (const name of ["gallery-interior", "savings-chamber", "observatory-interior", "library-interior", "shop-interior", "registry-interior"]) {
   const folder = join(output, "backgrounds");
   await mkdir(folder, { recursive: true });
   for (const width of [1280, 1920]) {

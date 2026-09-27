@@ -93,7 +93,7 @@
 .money-tab:hover { background: rgba(255, 255, 255, .1); }
 .money-tab--on, .money-tab--on:hover { color: #182d41; }
 .money-tab .nav-pill { background: #f2d28e; }
-.money-passbook { background: radial-gradient(circle at 82% 28%, rgba(229, 180, 72, .24), transparent 34%), linear-gradient(155deg, #2c4b5f, #13273d); }
+.money-passbook { background: linear-gradient(90deg, rgba(16, 38, 56, .94) 0%, rgba(16, 38, 56, .86) 49%, rgba(16, 38, 56, .30) 100%), url('/assets/backgrounds/child-registry-interior-1280.webp') 65% 56% / cover, #203a4f; }
 .money-vault-hero { min-height: 300px; border: 3px solid #a17a43; background: linear-gradient(90deg, rgba(20, 36, 48, .65), rgba(20, 36, 48, .86)), url('/assets/backgrounds/child-savings-chamber-1280.webp') center 53% / cover; }
 .money-vault-hero-text { color: #fff4d9; }
 .money-vault-hero-text h1, .money-vault-hero-balance strong, .money-vault-hero-balance span, .money-vault-purpose, .money-vault-hero-text .money-rule { color: inherit; }

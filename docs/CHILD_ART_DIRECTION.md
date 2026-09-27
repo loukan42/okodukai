@@ -35,6 +35,8 @@ Le portrait existant représente l’identité choisie. Le personnage de plein p
 
 Le modèle de décor accepte cinq paliers : 1 campement, 5 lanternes et fanion, 10 échoppe et jardin, 20 hameau et pont, 30 nouvelle lisière. Le niveau serveur sélectionne un palier ; les lieux, liens et données sont identiques. Les variantes de décor P5+ ne sont pas encore produites : l’architecture réserve des calques décoratifs et n’affiche jamais un progrès fictif.
 
+L'arbre d'aventure est la trace visible de l'effort de l'enfant. Il garde le même tronc courbe, les mêmes feuilles et la même base moussue pendant cinq formes : pousse (niveau 1), jeune arbre (5), premières branches (10), fleurs (20), grand arbre (30). Entre deux formes, chaque gain d'XP augmente légèrement sa taille. Les fleurs sont ivoire et ne deviennent jamais des pièces : cet arbre représente l'expérience, sans valeur monétaire ni avantage de jeu. La lumière et la caméra sont celles de la vallée. L'arbre figure dans le HUD et en grand sur le profil.
+
 ## Pièce, cartes et boosters
 
 La pièce à trou carré et blason à quatre pétales est l’unique monnaie visuelle. Elle existe en 48, 96, 192 et 512 px ; son changement de taille suffit aux usages petit, moyen, grand. Pile, bourse et animation réutilisent cette géométrie. Aucun emoji monétaire. Les cartes gardent un cadre et une illustration frontale. Commune = papier mat, peu commune = papier renforcé, rare = vernis et métal, épique = relief d’or, légendaire = foil et moment lumineux court. La rareté est aussi écrite. Le sachet existant et son ouverture serveur restent la référence fonctionnelle.
