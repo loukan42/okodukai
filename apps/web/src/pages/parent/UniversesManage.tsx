@@ -15,7 +15,7 @@ const COPY = defineCopy({
   fr: {
     title: "Univers de collection",
     intro:
-      "Choisissez les univers que votre enfant peut collectionner. Il ne recevra des cartes que dans les univers activés. Chaque quête validée offre un booster d'un de ces univers.",
+      "Choisissez les univers que votre enfant peut collectionner. Il ne recevra des cartes que dans les univers activés. Toutes les trois quêtes validées, un booster d'un de ces univers est offert.",
     selectAll: "Tout sélectionner",
     count: (on: number, total: number) => `${on} sur ${total} activés`,
     keepOne: (title: string) => `Au moins un univers reste actif pour les boosters : « ${title} » est gardé. Cochez ceux que vous voulez, puis décochez-le.`,
@@ -26,7 +26,7 @@ const COPY = defineCopy({
   en: {
     title: "Card worlds",
     intro:
-      "Choose the worlds your child can collect. Cards only come from the worlds you turn on. Every approved quest gives a booster from one of them.",
+      "Choose the worlds your child can collect. Cards only come from the worlds you turn on. Every third approved quest gives a booster from one of them.",
     selectAll: "Select all",
     count: (on: number, total: number) => `${on} of ${total} on`,
     keepOne: (title: string) => `At least one world has to stay on for boosters, so "${title}" is kept. Tick the ones you want, then untick it.`,

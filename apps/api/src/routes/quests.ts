@@ -14,6 +14,14 @@ questsRouter.use(attachSession);
 // Parent : création / gestion des quêtes
 // ---------------------------------------------------------------------------
 
+// L'XP d'une quête suit sa difficulté ; le parent ne saisit jamais la valeur (spec : plafond serveur).
+const XP_BY_DIFFICULTY: Record<"FACILE" | "MOYENNE" | "IMPORTANTE" | "EXCEPTIONNELLE", number> = {
+  FACILE: 10,
+  MOYENNE: 15,
+  IMPORTANTE: 25,
+  EXCEPTIONNELLE: 40,
+};
+
 const createQuestSchema = z.object({
   childId: z.string().uuid(),
   title: z.string().min(1).max(120),
@@ -21,7 +29,6 @@ const createQuestSchema = z.object({
   category: z.enum(["MAISON", "AUTONOMIE", "APPRENTISSAGE", "ENTRAIDE", "CREATIVITE", "ECOLE", "JARDIN", "ANIMAUX"]),
   difficulty: z.enum(["FACILE", "MOYENNE", "IMPORTANTE", "EXCEPTIONNELLE"]).default("FACILE"),
   rewardCoins: z.number().int().min(0).default(0),
-  rewardXp: z.number().int().min(0).default(0),
   boosterDefinitionId: z.string().uuid().optional(),
   recurrence: z.enum(["UNIQUE", "QUOTIDIENNE", "HEBDOMADAIRE"]).default("UNIQUE"),
   dueAt: z.string().datetime().optional(),
@@ -51,7 +58,7 @@ questsRouter.post("/quests", requireParent, validateBody(createQuestSchema), asy
       category: req.body.category,
       difficulty: req.body.difficulty,
       rewardCoins: req.body.rewardCoins,
-      rewardXp: req.body.rewardXp,
+      rewardXp: XP_BY_DIFFICULTY[req.body.difficulty as keyof typeof XP_BY_DIFFICULTY],
       boosterDefinitionId: req.body.boosterDefinitionId,
       recurrence: req.body.recurrence,
       dueAt: req.body.dueAt ? new Date(req.body.dueAt) : undefined,
@@ -92,6 +99,7 @@ questsRouter.patch("/quests/:id", requireParent, async (req, res) => {
     where: { id: quest.id },
     data: {
       ...parsed.data,
+      ...(parsed.data.difficulty ? { rewardXp: XP_BY_DIFFICULTY[parsed.data.difficulty] } : {}),
       dueAt: parsed.data.dueAt ? new Date(parsed.data.dueAt) : undefined,
     },
   });
@@ -121,22 +129,28 @@ questsRouter.post(
       return res.status(409).json({ error: "Cette déclaration a déjà été traitée" });
     }
 
-    // Every approved quest grants one unopened pack. A quest may request a
-    // specific theme; otherwise we rotate through the household's enabled themes.
+    // Un booster toutes les trois quêtes validées (audit du 27/09 : un par quête
+    // épuisait la collection en ~2 mois). Une quête peut demander un univers précis ;
+    // sinon on tourne parmi les univers activés par le foyer.
     let boosterDefinitionId: string | undefined;
+    let grantsBooster = false;
     if (req.body.decision === "VALIDEE") {
-      const definitions = await prisma.boosterDefinition.findMany({
-        where: { universe: { active: true, householdGrants: { some: { householdId } }, cards: { some: { active: true } } } },
-        orderBy: { code: "asc" },
-        select: { id: true },
-      });
-      if (definitions.length === 0) {
-        return res.status(409).json({ error: "Activez un univers de cartes avant de valider cette quête." });
+      const validatedCount = await prisma.questCompletion.count({ where: { childId: completion.childId, status: "VALIDEE" } });
+      grantsBooster = (validatedCount + 1) % 3 === 0;
+      if (grantsBooster) {
+        const definitions = await prisma.boosterDefinition.findMany({
+          where: { universe: { active: true, householdGrants: { some: { householdId } }, cards: { some: { active: true } } } },
+          orderBy: { code: "asc" },
+          select: { id: true },
+        });
+        if (definitions.length === 0) {
+          return res.status(409).json({ error: "Activez un univers de cartes avant de valider cette quête." });
+        }
+        const earnedPacks = await prisma.boosterInstance.count({ where: { childId: completion.childId, sourceType: "quest_reward" } });
+        boosterDefinitionId = definitions.some((definition) => definition.id === completion.quest.boosterDefinitionId)
+          ? completion.quest.boosterDefinitionId!
+          : definitions[earnedPacks % definitions.length].id;
       }
-      const earnedPacks = await prisma.boosterInstance.count({ where: { childId: completion.childId, sourceType: "quest_reward" } });
-      boosterDefinitionId = definitions.some((definition) => definition.id === completion.quest.boosterDefinitionId)
-        ? completion.quest.boosterDefinitionId!
-        : definitions[earnedPacks % definitions.length].id;
     }
 
     try {
@@ -179,14 +193,16 @@ questsRouter.post(
           });
         }
 
-        await tx.boosterInstance.create({
-          data: {
-            childId: completion.childId,
-            definitionId: boosterDefinitionId!,
-            sourceType: "quest_reward",
-            sourceId: completion.id,
-          },
-        });
+        if (grantsBooster) {
+          await tx.boosterInstance.create({
+            data: {
+              childId: completion.childId,
+              definitionId: boosterDefinitionId!,
+              sourceType: "quest_reward",
+              sourceId: completion.id,
+            },
+          });
+        }
 
         if (completion.quest.recurrence === "UNIQUE") {
           await tx.quest.update({ where: { id: completion.quest.id }, data: { active: false } });
@@ -213,7 +229,9 @@ questsRouter.post(
           payload: {
             questId: completion.quest.id,
             questTitle: completion.quest.title,
-            ...(req.body.decision === "VALIDEE" ? { rewardCoins: completion.quest.rewardCoins, rewardXp: completion.quest.rewardXp, boosters: 1 } : {}),
+            ...(req.body.decision === "VALIDEE"
+              ? { rewardCoins: completion.quest.rewardCoins, rewardXp: completion.quest.rewardXp, boosters: grantsBooster ? 1 : 0 }
+              : {}),
           },
         },
       });

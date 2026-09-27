@@ -10,7 +10,7 @@ import { signSession } from "../lib/auth.js";
 config({ path: fileURLToPath(new URL("../../.env", import.meta.url)) });
 
 describe.skipIf(!process.env.DATABASE_URL)("quest booster journey", () => {
-  it("grants one unopened pack for a quest without an assigned theme and opens it once", async () => {
+  it("grants one unopened pack every third validated quest and opens it once", async () => {
     const code = `test-${randomUUID()}`;
     let householdId: string | undefined;
     let userId: string | undefined;
@@ -32,14 +32,20 @@ describe.skipIf(!process.env.DATABASE_URL)("quest booster journey", () => {
       await prisma.householdUniverse.create({ data: { householdId, universeId } });
       await prisma.card.create({ data: { universeId, cardNumber: 1, name: "Carte test", rarity: "COMMUNE" } });
       await prisma.boosterDefinition.create({ data: { universeId, code: `booster-${code}`, title: "Booster test", cardCount: 1, slotConfig: { slots: [{ weights: { COMMUNE: 100 } }] } } });
-      const quest = await prisma.quest.create({ data: { householdId, creatorId: userId, childId: child.id, title: "Quête test", category: "MAISON", rewardCoins: 3, rewardXp: 4, status: "EN_ATTENTE_VALIDATION" } });
-      const completion = await prisma.questCompletion.create({ data: { questId: quest.id, childId: child.id } });
-
       const parentCookie = `okodukai_session=${signSession({ kind: "parent", userId, householdId, role: "PARENT_ADMIN" })}`;
       const childCookie = `okodukai_session=${signSession({ kind: "child", childId: child.id, householdId })}`;
-      const review = await fetch(`${base}/quest-completions/${completion.id}/review`, { method: "POST", headers: { cookie: parentCookie, "content-type": "application/json" }, body: JSON.stringify({ decision: "VALIDEE" }) });
-      expect(review.status).toBe(200);
-      const repeatReview = await fetch(`${base}/quest-completions/${completion.id}/review`, { method: "POST", headers: { cookie: parentCookie, "content-type": "application/json" }, body: JSON.stringify({ decision: "VALIDEE" }) });
+
+      let lastCompletionId = "";
+      for (let i = 0; i < 3; i += 1) {
+        const quest = await prisma.quest.create({ data: { householdId, creatorId: userId, childId: child.id, title: `Quête test ${i}`, category: "MAISON", rewardCoins: 3, rewardXp: 4, status: "EN_ATTENTE_VALIDATION" } });
+        const completion = await prisma.questCompletion.create({ data: { questId: quest.id, childId: child.id } });
+        lastCompletionId = completion.id;
+        const review = await fetch(`${base}/quest-completions/${completion.id}/review`, { method: "POST", headers: { cookie: parentCookie, "content-type": "application/json" }, body: JSON.stringify({ decision: "VALIDEE" }) });
+        expect(review.status).toBe(200);
+        const boosterCountSoFar = await prisma.boosterInstance.count({ where: { childId: child.id } });
+        expect(boosterCountSoFar).toBe(i === 2 ? 1 : 0);
+      }
+      const repeatReview = await fetch(`${base}/quest-completions/${lastCompletionId}/review`, { method: "POST", headers: { cookie: parentCookie, "content-type": "application/json" }, body: JSON.stringify({ decision: "VALIDEE" }) });
       expect(repeatReview.status).toBe(409);
 
       const inventory = await fetch(`${base}/child/boosters`, { headers: { cookie: childCookie } });

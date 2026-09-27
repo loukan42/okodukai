@@ -21,20 +21,24 @@ interface QuestRow {
 }
 
 type Category = "MAISON" | "AUTONOMIE" | "APPRENTISSAGE" | "ENTRAIDE" | "CREATIVITE" | "ECOLE" | "JARDIN" | "ANIMAUX";
+type Difficulty = "FACILE" | "MOYENNE" | "IMPORTANTE" | "EXCEPTIONNELLE";
 
-const TEMPLATES: { key: string; category: Category; coins: number; xp: number }[] = [
-  { key: "dishwasher", category: "MAISON", coins: 10, xp: 15 },
-  { key: "room", category: "AUTONOMIE", coins: 15, xp: 20 },
-  { key: "table", category: "ENTRAIDE", coins: 5, xp: 10 },
-  { key: "read", category: "APPRENTISSAGE", coins: 5, xp: 15 },
-  { key: "bins", category: "MAISON", coins: 10, xp: 15 },
-  { key: "pet", category: "ANIMAUX", coins: 5, xp: 10 },
+// Reprend le plafond serveur (routes/quests.ts) : le parent choisit une difficulté, jamais l'XP directement.
+const XP_BY_DIFFICULTY: Record<Difficulty, number> = { FACILE: 10, MOYENNE: 15, IMPORTANTE: 25, EXCEPTIONNELLE: 40 };
+
+const TEMPLATES: { key: string; category: Category; coins: number; difficulty: Difficulty }[] = [
+  { key: "dishwasher", category: "MAISON", coins: 10, difficulty: "MOYENNE" },
+  { key: "room", category: "AUTONOMIE", coins: 15, difficulty: "IMPORTANTE" },
+  { key: "table", category: "ENTRAIDE", coins: 5, difficulty: "FACILE" },
+  { key: "read", category: "APPRENTISSAGE", coins: 5, difficulty: "MOYENNE" },
+  { key: "bins", category: "MAISON", coins: 10, difficulty: "MOYENNE" },
+  { key: "pet", category: "ANIMAUX", coins: 5, difficulty: "FACILE" },
 ];
 
 const COPY = defineCopy({
   fr: {
     title: "Nouvelle quête",
-    intro: "Partez d'une idée ou écrivez votre propre quête. Chaque quête validée offre aussi un booster de cartes, ajouté à l'inventaire de l'enfant.",
+    intro: "Partez d'une idée ou écrivez votre propre quête. Toutes les trois quêtes validées, l'enfant reçoit aussi un booster de cartes.",
     templates: {
       dishwasher: "Vider le lave-vaisselle",
       room: "Ranger sa chambre",
@@ -58,9 +62,15 @@ const COPY = defineCopy({
     questTitle: "Titre de la quête",
     placeholder: "Vider le lave-vaisselle",
     coins: "Pièces",
-    xp: "XP",
+    difficulty: "Difficulté",
+    difficulties: {
+      FACILE: "Facile · +10 XP",
+      MOYENNE: "Moyenne · +15 XP",
+      IMPORTANTE: "Importante · +25 XP",
+      EXCEPTIONNELLE: "Exceptionnelle · +40 XP",
+    } as Record<Difficulty, string>,
     xpHint:
-      "L'XP fait monter le niveau de votre enfant. Chaque niveau lui offre un booster de cartes et, à certains niveaux, un nouveau titre. Elle ne se convertit jamais en pièces : gardez les pièces pour l'argent, l'XP pour l'effort.",
+      "L'XP fait monter le niveau de votre enfant ; elle vient de la difficulté choisie. Chaque niveau lui offre un booster de cartes et, à certains niveaux, un nouveau titre. Elle ne se convertit jamais en pièces : gardez les pièces pour l'argent, l'XP pour l'effort.",
     coinsHint: "Repère : 5 à 15 pièces pour une tâche du quotidien.",
     recurrence: "Récurrence",
     recurrences: { UNIQUE: "Une seule fois", QUOTIDIENNE: "Chaque jour", HEBDOMADAIRE: "Chaque semaine" } as Record<string, string>,
@@ -68,7 +78,7 @@ const COPY = defineCopy({
     active: "Quêtes actives",
     none: "Aucune quête",
     noneHint: "Créez-en une pour commencer.",
-    meta: (name: string, xp: number) => `${name} · +${xp} XP · 1 booster`,
+    meta: (name: string, xp: number) => `${name} · +${xp} XP`,
     statuses: {
       DISPONIBLE: "Disponible",
       ACCEPTEE: "Acceptée",
@@ -84,7 +94,7 @@ const COPY = defineCopy({
   },
   en: {
     title: "New quest",
-    intro: "Start from an idea or write your own quest. Every approved quest also gives a booster of cards, added to your child's inventory.",
+    intro: "Start from an idea or write your own quest. Every third approved quest also gives a booster of cards.",
     templates: {
       dishwasher: "Empty the dishwasher",
       room: "Tidy your room",
@@ -108,9 +118,15 @@ const COPY = defineCopy({
     questTitle: "Quest title",
     placeholder: "Empty the dishwasher",
     coins: "Coins",
-    xp: "XP",
+    difficulty: "Difficulty",
+    difficulties: {
+      FACILE: "Easy · +10 XP",
+      MOYENNE: "Medium · +15 XP",
+      IMPORTANTE: "Big · +25 XP",
+      EXCEPTIONNELLE: "Exceptional · +40 XP",
+    },
     xpHint:
-      "XP raises your child's level. Each level gives them a booster of cards, and some levels add a new title. XP never turns into coins: coins are for money, XP is for effort.",
+      "XP raises your child's level and comes from the difficulty you pick. Each level gives them a booster of cards, and some levels add a new title. XP never turns into coins: coins are for money, XP is for effort.",
     coinsHint: "As a guide: 5 to 15 coins for an everyday chore.",
     recurrence: "Repeats",
     recurrences: { UNIQUE: "Just once", QUOTIDIENNE: "Every day", HEBDOMADAIRE: "Every week" },
@@ -118,7 +134,7 @@ const COPY = defineCopy({
     active: "Active quests",
     none: "No quests yet",
     noneHint: "Create one to get started.",
-    meta: (name: string, xp: number) => `${name} · +${xp} XP · 1 booster`,
+    meta: (name: string, xp: number) => `${name} · +${xp} XP`,
     statuses: {
       DISPONIBLE: "Available",
       ACCEPTEE: "Accepted",
@@ -142,7 +158,7 @@ export function QuestsManage() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<Category>("MAISON");
   const [coins, setCoins] = useState(10);
-  const [xp, setXp] = useState(15);
+  const [difficulty, setDifficulty] = useState<Difficulty>("MOYENNE");
   const [recurrence, setRecurrence] = useState("UNIQUE");
   const [creating, setCreating] = useState(false);
 
@@ -165,7 +181,7 @@ export function QuestsManage() {
     setTitle(t.templates[template.key]);
     setCategory(template.category);
     setCoins(template.coins);
-    setXp(template.xp);
+    setDifficulty(template.difficulty);
   }
 
   async function onSubmit(e: FormEvent) {
@@ -177,9 +193,8 @@ export function QuestsManage() {
         childId,
         title,
         category,
-        difficulty: "FACILE",
+        difficulty,
         rewardCoins: coins,
-        rewardXp: xp,
         recurrence,
       });
       setTitle("");
@@ -245,8 +260,14 @@ export function QuestsManage() {
               <p id="quest-coins-hint" className="field-hint">{t.coinsHint}</p>
             </div>
             <div className="field">
-              <label htmlFor="quest-xp">{t.xp}</label>
-              <input id="quest-xp" type="number" inputMode="numeric" min={0} value={xp} onChange={(e) => setXp(Number(e.target.value))} aria-describedby="quest-xp-hint" />
+              <label htmlFor="quest-difficulty">{t.difficulty}</label>
+              <select id="quest-difficulty" value={difficulty} onChange={(e) => setDifficulty(e.target.value as Difficulty)} aria-describedby="quest-xp-hint">
+                {(Object.keys(XP_BY_DIFFICULTY) as Difficulty[]).map((d) => (
+                  <option key={d} value={d}>
+                    {t.difficulties[d]}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
           <p id="quest-xp-hint" className="field-hint field-hint--box">

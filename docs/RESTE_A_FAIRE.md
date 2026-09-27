@@ -1,5 +1,20 @@
 # Reste à faire : passation (26 septembre 2026)
 
+## Point d'étape du 27 septembre 2026 (après-midi) : rythme des boosters, XP par difficulté, sécurité
+
+- **Rythme des boosters tranché** : un booster de quête toutes les trois quêtes validées (au lieu d'une à
+  chaque fois), plus toujours un par niveau. Compteur : nombre de `QuestCompletion` `VALIDEE` du foyer
+  pour l'enfant, pas de nouveau champ. Tous les textes qui promettaient « 1 booster » par quête (fiche de
+  quête enfant, formulaire et tableau de bord parent, univers, landing) ont été corrigés ou retirés.
+- **XP par difficulté tranché** : le parent choisit Facile/Moyenne/Importante/Exceptionnelle
+  (+10/15/25/40 XP), le serveur calcule l'XP et ignore toute valeur envoyée par le client
+  (`XP_BY_DIFFICULTY` dans `routes/quests.ts`) ; l'ancien champ XP libre a disparu du formulaire.
+- **Sécurité** : les scripts `admin:grant`/`admin:bootstrap-local` et `apps/api/vercel.json` ne contiennent
+  plus l'e-mail du propriétaire ni de commande en clair ; ils lisent `PLATFORM_ADMIN_EMAIL` (variable
+  ajoutée sur Vercel, projet `okodukai-api`, environnement Production). L'e-mail reste visible dans
+  l'historique Git antérieur à ce point d'étape (réécriture d'historique non faite, à décider).
+- Tests API : 79/79 verts ; build web vert.
+
 ## Point d'étape du 27 septembre 2026 (matin) : anglais, XP, mobile, audit
 
 - **Site et API en anglais**. La langue est un réglage de la famille (`Household.locale`, migration `20260927130000_household_locale`) : choisie dans l'en-tête des écrans de création du compte (le compte créé prend la langue de l'écran), puis dans l'en-tête parent (`PUT /household/locale`). L'espace enfant n'a pas de choix de langue et suit celle du foyer (`/auth/me`). Avant connexion : choix de l'appareil sur la landing, `?lang=en` dans l'adresse. Textes du site : objets `defineCopy({ fr, en })` à côté de chaque écran (`apps/web/src/i18n`), formats de dates et de nombres par `i18n/format.ts`. L'API lit l'en-tête `X-Locale` (`apps/api/src/lib/i18n.ts`) : messages d'erreur traduits dans `lib/i18n/errors.ts` (ajouter chaque nouveau message), contenus (univers, 105 cartes, badges, modules) dans `lib/i18n/content.ts`, encarts T01-T46 dans `lib/finance/tips.ts` (table `EN`), questions dans `lib/finance/questionsEn.ts`. Restent en français : ce que le parent écrit, le foyer de démonstration, l'outil Démo, le manifeste PWA.

@@ -54,7 +54,7 @@ export const LANDING = defineCopy({
       title: "Chez Okodukai, l'argent commence par",
       titleEm: "une action.",
       text: "Vous proposez les quêtes : ranger sa chambre, lire, nourrir le chat. Quand il a fini, il vous prévient. Les pièces et l'XP n'arrivent qu'une fois la quête validée par vous.",
-      aside: "Chaque quête validée rapporte aussi un booster de cartes.",
+      aside: "Toutes les trois quêtes validées rapportent aussi un booster de cartes.",
       sheetsLabel: "Le chemin d'une quête, en démonstration",
       sheets: [
         { title: "Lire 15 minutes", status: "Disponible", note: "Proposée par Sophie" },
@@ -230,7 +230,7 @@ export const LANDING = defineCopy({
       title: "At Okodukai, money starts with",
       titleEm: "doing something.",
       text: "You set the quests: tidy the bedroom, read, feed the cat. When your child is done, they let you know. Coins and XP only arrive once you've approved the quest.",
-      aside: "Every approved quest also gives a booster of cards.",
+      aside: "Every third approved quest also gives a booster of cards.",
       sheetsLabel: "A quest from start to finish, as a demo",
       sheets: [
         { title: "Read for 15 minutes", status: "Available", note: "Set by Sophie" },
