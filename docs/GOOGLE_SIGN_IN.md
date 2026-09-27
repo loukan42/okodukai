@@ -15,7 +15,7 @@ Un parent qui possède déjà un compte e-mail/mot de passe se connecte avec ce 
 
 Un nouveau parent peut créer son foyer directement avec Google. Il peut définir le code parent d’un téléphone partagé en confirmant son identité avec Google ; le retour depuis l’espace enfant accepte ce code ou Google.
 
-Le droit d’administration global sur une base distante reste une attribution manuelle sur un compte **existant**. Après création ou association du compte du propriétaire, utiliser la procédure de `docs/ADMIN_ANALYTICS.md`. La base locale dispose d'une commande d'initialisation séparée, utilisable avant la configuration Google. Aucun domaine ni adresse e-mail Google ne reçoit ce droit automatiquement.
+Le droit d’administration global sur une base distante reste une attribution manuelle sur un compte **existant**. La procédure de `docs/ADMIN_ANALYTICS.md` permet aussi l’attribution à un compte créé par mot de passe, après vérification de son propriétaire, avant la configuration Google. La base locale dispose d'une commande d'initialisation séparée. Aucun domaine ni adresse e-mail Google ne reçoit ce droit automatiquement.
 
 ## Confidentialité et exploitation
 

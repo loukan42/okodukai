@@ -11,7 +11,7 @@ Cette page est réservée au compte du propriétaire de l’application. Le rôl
 ### Autres bases
 
 1. Appliquer la migration `20260927150000_platform_admin` sur la base concernée.
-2. Vérifier que le compte parent `loucore@gmail.com` existe déjà et que Google lui est associé (création avec Google ou association depuis **Compte**). Cela confirme la possession de cette adresse, car la création par mot de passe ne vérifie pas encore l’e-mail. Lancer ensuite `npm run admin:grant --workspace apps/api -- loucore@gmail.com` avec la `DATABASE_URL` de cette base. Le script refuse une autre adresse et retire le droit à tout ancien administrateur global avant de l’attribuer au compte choisi.
+2. Vérifier que le compte parent `loucore@gmail.com` existe déjà. Avec Google associé, lancer `npm run admin:grant --workspace apps/api -- loucore@gmail.com` avec la `DATABASE_URL` de cette base. Si ce compte a été créé par mot de passe et que son propriétaire a été vérifié par un autre moyen, ajouter `--allow-password-account` à la commande : la création par mot de passe ne vérifie pas encore l’e-mail. Le script refuse toute autre adresse et retire le droit à tout ancien administrateur global avant de l’attribuer au compte choisi. Il ne modifie jamais le mot de passe.
 3. Se déconnecter puis se reconnecter, ou rafraîchir l’application. L’onglet **Administration** apparaît dans l’espace parent.
 
 La page affiche les nombres globaux de parents, de profils enfant, de familles, de quêtes créées et de validations. Elle permet aussi de voir les créations et actions des 7, 30 ou 90 derniers jours. Chaque validation d’une quête récurrente est comptée séparément. Les périodes sont des fenêtres glissantes, calculées à l’heure de la requête.
