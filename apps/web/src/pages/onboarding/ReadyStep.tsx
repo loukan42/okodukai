@@ -12,7 +12,7 @@ const COPY = defineCopy({
     steps: [
       { title: "Créez une première quête", text: "Ranger sa chambre, lire 15 minutes : vous fixez la récompense en pièces." },
       { title: "Remplissez la boutique", text: "Les récompenses sont les vôtres : une sortie, un choix de film, du temps de jeu." },
-      { title: "Laissez entrer votre enfant", text: "Depuis l'accueil, « Choisir mon profil », puis son code à 4 chiffres." },
+      { title: "Laissez entrer votre enfant", text: "Sur son téléphone ou une tablette, dans le navigateur (pas d'application à installer) : depuis l'accueil, « Choisir mon profil », puis son code à 4 chiffres." },
     ],
     failed: "Votre espace n'a pas pu s'ouvrir. Réessayez dans un instant.",
     title: (name: string) => `Tout est prêt pour ${name}`,
@@ -23,7 +23,7 @@ const COPY = defineCopy({
     steps: [
       { title: "Create a first quest", text: "Tidy the bedroom, read for 15 minutes: you set the reward in coins." },
       { title: "Fill the shop", text: "The rewards are yours to choose: an outing, picking the film, extra play time." },
-      { title: "Let your child in", text: "From the home page, \"Choose my profile\", then their 4-digit code." },
+      { title: "Let your child in", text: "On their phone or a tablet, right in the browser (no app to install): from the home page, \"Choose my profile\", then their 4-digit code." },
     ],
     failed: "Your space couldn't open. Try again in a moment.",
     title: (name: string) => `Everything is ready for ${name}`,
