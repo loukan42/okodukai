@@ -28,6 +28,13 @@ code du dépôt (aucune banque d'images, aucun modèle génératif externe, aucu
 | Tableau de bord parent (capture) | `screens/parent-dashboard-{960,1440}.webp` | Capture réelle de l'espace parent du foyer de démonstration (Playwright, outils de démo masqués), une quête « Ranger sa chambre » en attente | refaire la capture sur le foyer de démo | 2026-09-26 |
 | Avatars (roster de 12) | `avatars/aventurier-01.svg` … `aventurier-12.svg` | Pipeline vectoriel, `scripts/art/characters/avatars.mjs` | `node scripts/art/export-svg.mjs avatars` (dans `apps/web`) | 2026-09-26 |
 | Logo (déclinaisons web) | `brand/logo-full-{320,640,960}.webp` | Redimensionnement WebP (sharp) du logo peint fourni par le propriétaire (`public/logo-full.png`) | voir commande `sharp` dans l'historique du commit | 2026-09-26 |
+| Village enfant | `backgrounds/child-hub-{wide,tall}-*.webp` | Illustration générée pour la Vallée d'Okodukai, source panoramique et source verticale dans `apps/web/art/source/child/` et dossier original de génération | Sources PNG + script d'optimisation du premier lot | 2026-09-27 |
+| Cinq lieux intérieurs | `backgrounds/child-{gallery,observatory,library,shop}-interior-{1280,1920}.webp`, `backgrounds/child-savings-chamber-{1280,1920}.webp` | Génération d'images à partir de la vallée de référence ; sélection visuelle, la première échoppe avec faux caractères a été rejetée. PNG dans `apps/web/art/source/child/` | `node apps/web/scripts/optimize-child-art.mjs` | 2026-09-27 |
+| Emma et Lucas en pied | `characters/adventurer-{emma,lucas}-{idle,victory}-{256,512,768}.webp` | Génération d'images avec portrait du roster comme référence ; repos et victoire, contrôlés visuellement. PNG dans `apps/web/art/source/child/` | `node apps/web/scripts/optimize-child-art.mjs` | 2026-09-27 |
+| Récompenses familiales | `rewards/reward-{cinema,icecream,bicycle,family-game}-{256,512}.webp` | Objets générés sur fond transparent ; contrôlés puis reliés à des titres de récompenses par `RewardArt.tsx`. PNG dans `apps/web/art/source/child/` | `node apps/web/scripts/optimize-child-art.mjs` | 2026-09-27 |
+| Scènes pédagogiques | `learning/learning-{diversification,inflation,risk,compound}-{320,640}.webp` | Planche de quatre scènes générée pour la vallée puis découpée sur ses gouttières ; PNG dans `apps/web/art/source/child/` | `node apps/web/scripts/optimize-child-art.mjs` | 2026-09-27 |
+
+Les cinq lignes « génération d'images » correspondent à des créations produites pour ce projet avec l'outil de génération d'images intégré, à partir de consignes et de références du projet. Elles ne sont pas des rendus du Studio 3D. Les sources PNG sont versionnées pour permettre l'inspection ; les WebP servis sont compressés avec sharp.
 
 ## Hors registre (à traiter)
 

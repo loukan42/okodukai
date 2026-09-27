@@ -6,6 +6,8 @@ import { useDialogFocus } from "../lib/useDialogFocus";
 import { CoinFlight, type Flight } from "../art/CoinFlight";
 import { BoosterPack } from "./booster/BoosterPack";
 import { GameIcon } from "./GameIcon";
+import { ChildCharacter } from "./ChildCharacter";
+import { useAuth } from "../lib/AuthContext";
 
 interface Notification {
   id: string;
@@ -22,6 +24,7 @@ const plural = (n: number, one: string, many: string) => (n > 1 ? many : one);
  * Les montants viennent de la notification écrite par le serveur au moment du crédit.
  */
 export function QuestRewardCelebration() {
+  const { session } = useAuth();
   const navigate = useNavigate();
   const [items, setItems] = useState<Notification[]>([]);
   const [flight, setFlight] = useState<Flight | null>(null);
@@ -99,7 +102,7 @@ export function QuestRewardCelebration() {
     <div className="celebration-backdrop">
       <div ref={dialogRef} className="celebration" role="dialog" aria-modal="true" aria-labelledby="celebration-title">
         <span className="celebration-rays" aria-hidden="true" />
-        <ObjectBadge />
+        {session?.kind === "child" && ["aventurier-05", "aventurier-06"].includes(session.child.avatarId) ? <ChildCharacter avatarId={session.child.avatarId} pose="victory" className="celebration-character" /> : <ObjectBadge />}
         <h2 id="celebration-title" className="celebration-title">
           {heading}
         </h2>

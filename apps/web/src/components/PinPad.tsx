@@ -1,4 +1,10 @@
 import { useState } from "react";
+import { defineCopy, useCopy } from "../i18n";
+
+const copy = defineCopy({
+  fr: { label: (length: number) => `Code à ${length} chiffres`, erase: "Effacer le dernier chiffre" },
+  en: { label: (length: number) => `${length}-digit code`, erase: "Erase the last digit" },
+});
 
 export function PinPad({
   length = 4,
@@ -11,6 +17,7 @@ export function PinPad({
   submitting?: boolean;
   error?: string | null;
 }) {
+  const t = useCopy(copy);
   const [pin, setPin] = useState("");
 
   function press(digit: string) {
@@ -29,8 +36,8 @@ export function PinPad({
 
   return (
     <div style={{ textAlign: "center" }}>
-      <label htmlFor="profile-pin" className="sr-only">Code à {length} chiffres</label>
-      <input id="profile-pin" className="pin-pad-input" type="text" inputMode="numeric" autoComplete="one-time-code" pattern={`[0-9]{${length}}`} maxLength={length} value={pin} disabled={submitting} onChange={(event) => { const next = event.target.value.replace(/\D/g, "").slice(0, length); setPin(next); if (next.length === length) { onSubmit(next); setTimeout(() => setPin(""), 400); } }} />
+      <label htmlFor="profile-pin" className="sr-only">{t.label(length)}</label>
+      <input id="profile-pin" className="pin-pad-input" type="password" inputMode="numeric" autoComplete="one-time-code" pattern={`[0-9]{${length}}`} maxLength={length} value={pin} disabled={submitting} onChange={(event) => { const next = event.target.value.replace(/\D/g, "").slice(0, length); setPin(next); if (next.length === length) { onSubmit(next); setTimeout(() => setPin(""), 400); } }} />
       <div className="row" aria-hidden="true" style={{ justifyContent: "center", gap: 12, marginBottom: 20 }}>
         {Array.from({ length }).map((_, i) => (
           <div
@@ -66,7 +73,7 @@ export function PinPad({
         <button type="button" className="btn btn-ghost" style={{ fontSize: 22 }} onClick={() => press("0")}>
           0
         </button>
-        <button type="button" className="btn btn-ghost" style={{ fontSize: 18 }} onClick={backspace}>
+        <button type="button" className="btn btn-ghost" style={{ fontSize: 18 }} onClick={backspace} aria-label={t.erase}>
           ⌫
         </button>
       </div>

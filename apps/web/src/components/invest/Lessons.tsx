@@ -116,9 +116,9 @@ function MarketList() {
 }
 
 const LESSONS = [
-  { id: "snowball", title: "L'effet boule de neige", subtitle: "Intérêts composés", Body: Snowball },
-  { id: "fees", title: "Ce que coûtent les frais", subtitle: "Frais de gestion", Body: Fees },
-  { id: "market", title: "La liste du marché", subtitle: "Inflation et pouvoir d'achat", Body: MarketList },
+  { id: "snowball", title: "L'effet boule de neige", subtitle: "Intérêts composés", art: "compound", Body: Snowball },
+  { id: "fees", title: "Ce que coûtent les frais", subtitle: "Frais de gestion", art: "risk", Body: Fees },
+  { id: "market", title: "La liste du marché", subtitle: "Inflation et pouvoir d'achat", art: "inflation", Body: MarketList },
 ];
 
 /** Leçons chiffrées (10-12 ans) : chaque tableau vient du moteur de simulation. */
@@ -127,9 +127,10 @@ export function Lessons() {
   return (
     <section className="lessons" aria-labelledby="lessons-title">
       <h2 id="lessons-title">Les leçons chiffrées</h2>
-      {LESSONS.map(({ id, title, subtitle, Body }) => (
+      {LESSONS.map(({ id, title, subtitle, art, Body }) => (
         <article key={id} className={`lesson${open === id ? " lesson--open" : ""}`}>
           <button type="button" className="lesson-head" onClick={() => setOpen(open === id ? null : id)} aria-expanded={open === id}>
+            <img className="lesson-head-art" src={`/assets/learning/learning-${art}-320.webp`} alt="" loading="lazy" />
             <strong>{title}</strong>
             <small>{subtitle}</small>
           </button>

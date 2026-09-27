@@ -7,6 +7,12 @@ export const AVATAR_LABELS = [
   "Locks et sweat orange", "Cheveux blonds et chemisier bleu", "Lunettes rouges et marinière", "Couettes et pull jaune",
   "Bonnet vert", "Boucles rousses et sweat bleu", "Carré brun et pull rouge", "Chapeau de paille",
 ];
+export const AVATAR_LABELS_EN = [
+  "Brown hair and red sweater", "Black bob and blue top", "Black curls and green sweater", "Red braids",
+  "Blond hair and glasses", "Curly bun and floral top", "Green cap", "Long hair and pink headband",
+  "Locs and orange sweater", "Blond hair and blue shirt", "Red glasses and striped top", "Pigtails and yellow top",
+  "Green beanie", "Red curls and blue sweater", "Brown bob and red sweater", "Straw hat",
+];
 
 function avatarIndex(avatarId: string) {
   const match = /^aventurier-(\d{2})$/.exec(avatarId);

@@ -13,11 +13,14 @@ Le registre des fichiers livrés et de leur provenance est `ASSET_REGISTRY.md`. 
 | `shop-stall-{180,360,540}.webp` | Boutique, objet signature | WebP transparent | Trois-quarts | P1 | Livré, réemploi |
 | `telescope-{128,256,512}.webp` | Observatoire | WebP transparent | Trois-quarts | P1 | Livré, réemploi |
 | `bookshelf-{128,256,512}.webp` | Bibliothèque | WebP transparent | Trois-quarts | P2 | Livré, réemploi |
-| `child-character-idle-{256,512}.webp` | Place, profil | WebP transparent | Trois-quarts, silhouette du roster | P1 | À produire |
-| `child-character-{happy,proud,thinking,victory,discover}.webp` | Récompenses et profil | WebP transparent 512 | Même personnage et caméra | P1 | À produire |
-| `reward-{cinema,icecream,bicycle,family-game}.webp` | Boutique, récompenses familiales | WebP transparent 256/512 | Objets trois-quarts, palette du monde | P1 | À produire |
-| `quest-{habit,mission,major,booster}.webp` | Journal, type de quête | WebP transparent 256 | Objet sobre, sans texte | P1 | À produire |
-| `learning-{diversification,inflation,risk,compound}.webp` | Bibliothèque, mini scènes | WebP 640 | Diaporama pédagogique cohérent | P2 | À produire |
+| `adventurer-{emma,lucas}-idle-{256,512,768}.webp` | Place, profil | WebP transparent | Personnages du roster en pied | P1 | Livré |
+| `adventurer-{emma,lucas}-victory-{256,512,768}.webp` | Validation de quête | WebP transparent | Même personnage et caméra | P1 | Livré |
+| Poses heureux, fier, réflexion, découverte ; 14 autres personnages | Profil et moments de jeu | WebP transparent 512 | Même personnage et caméra | P1 | À produire |
+| `reward-{cinema,icecream,bicycle,family-game}-{256,512}.webp` | Boutique, récompenses familiales | WebP transparent | Objets trois-quarts, palette du monde | P1 | Livré |
+| `quest-{habit,mission,major,booster}.webp` | Journal, type de quête | WebP transparent 256 | Objet sobre, sans texte | P1 | Variantes visuelles par objets existants livrées ; assets dédiés à produire |
+| `learning-{diversification,inflation,risk,compound}-{320,640}.webp` | Bibliothèque, mini scènes | WebP carré | Notions illustrées, même vallée | P2 | Livré |
+| `child-{gallery,observatory,library,shop}-interior-{1280,1920}.webp` | Lieux intérieurs | WebP panoramique | Même bois, laiton, vallée et lumière | P1 | Livré |
+| `child-savings-chamber-{1280,1920}.webp` | Chambre du trésor | WebP panoramique | Pierre moussue et grand coffre | P1 | Livré |
 | `hub-tier-{5,10,20,30}.webp` | Progression du village | WebP transparent, calques 1280/720 | Même caméra que les fonds | P2 | Prévu dans l’architecture |
 
-Les images des cartes et le sachet de booster sont déjà intégrés. Leur changement demande une revue d’ensemble, car ils constituent un système de collection existant.
+Les sources de la nouvelle série sont dans `apps/web/art/source/child/`. `node apps/web/scripts/optimize-child-art.mjs` régénère les WebP. Les images des cartes et le sachet de booster sont déjà intégrés. Leur changement demande une revue d’ensemble, car ils constituent un système de collection existant.

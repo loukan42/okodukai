@@ -28,6 +28,18 @@ interface ModuleRow {
 
 type Step = "situation" | "consequence" | "quiz" | "done";
 
+function sceneFor(subtitle: string) {
+  if (/inflation/i.test(subtitle)) return "inflation";
+  if (/épargne|epargne/i.test(subtitle)) return "compound";
+  if (/risque/i.test(subtitle)) return "risk";
+  return "diversification";
+}
+
+function LearningScene({ subtitle, className = "" }: { subtitle: string; className?: string }) {
+  const scene = sceneFor(subtitle);
+  return <img className={className} src={`/assets/learning/learning-${scene}-320.webp`} srcSet={`/assets/learning/learning-${scene}-320.webp 320w, /assets/learning/learning-${scene}-640.webp 640w`} sizes={className === "learning-detail-scene" ? "(max-width: 640px) 100vw, 640px" : "(max-width: 640px) 90px, 136px"} alt="" loading="lazy" decoding="async" />;
+}
+
 export function Learn() {
   const { session } = useAuth();
   const older = session?.kind === "child" && session.child.ageBand === "AGE_10_12";
@@ -65,7 +77,8 @@ export function Learn() {
 
   if (active) {
     return (
-      <div className="stack">
+      <div className="stack learning-detail">
+        <LearningScene subtitle={active.subtitle} className="learning-detail-scene" />
         <div className="card">
           <p className="text-sm text-faint">{active.subtitle}</p>
           <h1 className="font-display" style={{ fontSize: 22, marginBottom: 16 }}>
@@ -154,15 +167,14 @@ export function Learn() {
       {modules.map((m) => (
         <button
           key={m.id}
-          className="card card-row"
-          style={{ border: "none", cursor: "pointer", width: "100%", textAlign: "left" }}
+          className="learning-module"
+          style={{ cursor: "pointer", width: "100%", textAlign: "left" }}
           onClick={() => open(m)}
         >
-          <div>
-            <p style={{ fontWeight: 700, margin: 0 }}>{m.title}</p>
-            <p className="text-sm text-faint" style={{ margin: 0 }}>
-              {m.subtitle}
-            </p>
+          <LearningScene subtitle={m.subtitle} className="learning-module-art" />
+          <div className="learning-module-copy">
+            <strong>{m.title}</strong>
+            <small>{m.subtitle}</small>
           </div>
           <span className="pill" style={{ background: m.status === "TERMINE" ? "var(--forest-soft)" : "var(--parchment-dim)" }}>
             {m.status === "TERMINE" ? "✓ Fait" : `+${m.rewardXp} XP`}
