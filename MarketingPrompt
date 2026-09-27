@@ -1,0 +1,2012 @@
+# MISSION
+
+Tu travailles sur Okodukai, une application familiale entièrement gratuite qui transforme les routines du quotidien en un jeu éducatif autour de l'argent.
+
+Landing publique actuelle :
+
+https://okodukai-france.vercel.app/
+
+Utilise toutefois l'URL canonique configurée dans le repository si elle est différente.
+
+Ta mission est de concevoir puis de développer une fonctionnalité complète d'acquisition organique permettant aux parents de partager facilement une courte vidéo promotionnelle Okodukai sur les réseaux sociaux.
+
+Cette mission comprend simultanément :
+
+1. l'analyse complète du produit et de son positionnement
+2. la conception d'une campagne sociale
+3. l'écriture d'un véritable brief publicitaire
+4. la création d'une vidéo promotionnelle premium
+5. la génération de plusieurs formats adaptés aux réseaux sociaux
+6. le développement de l'interface de partage dans l'espace parent
+7. l'intégration technique du partage de la vidéo et du lien
+8. les fallbacks lorsque le partage direct n'est pas possible
+9. l'instrumentation analytics respectueuse de la vie privée
+10. les tests fonctionnels, techniques et visuels
+
+Je ne veux pas uniquement :
+
+- un bouton de partage
+- une animation Canva
+- un carrousel d'images
+- une vidéo avec quelques screenshots
+- un lien Twitter
+- un plan ou une documentation non implémentée
+
+Je veux une fonctionnalité complète, réellement développée, testée et utilisable.
+
+La vidéo doit pouvoir atteindre un niveau de qualité comparable à une véritable publicité produite par une équipe professionnelle.
+
+Elle doit être :
+
+- immédiatement compréhensible
+- émotionnelle
+- visuellement premium
+- rythmée
+- adaptée aux réseaux sociaux
+- cohérente avec l'univers RPG d'Okodukai
+- conçue pour fonctionner avec ou sans le son
+- suffisamment qualitative pour être utilisée dans une campagne publicitaire professionnelle
+
+# 1. PRÉCISION STRATÉGIQUE
+
+Cette fonctionnalité ne consiste pas à afficher de la publicité tierce aux enfants.
+
+Ne jamais ajouter :
+
+- de bannière publicitaire dans l'espace enfant
+- de publicité externe
+- de tracking publicitaire destiné aux enfants
+- de produit sponsorisé
+- de monétisation par les données
+- de récompense enfant conditionnée à un partage social
+
+L'objectif est une acquisition organique entre parents.
+
+Le principe est :
+
+Un parent utilise Okodukai.
+
+Il découvre la valeur du produit.
+
+Il peut partager une vidéo présentant Okodukai à d'autres parents.
+
+La fonctionnalité appartient exclusivement à l'espace parent.
+
+# 2. CONTEXTE PRODUIT
+
+Okodukai est un jeu de compte bancaire fictif destiné principalement aux enfants de 8 à 12 ans et administré par leurs parents.
+
+Le parent peut notamment :
+
+- créer des missions
+- créer des routines
+- définir les récompenses
+- valider les missions terminées
+- distribuer des pièces virtuelles
+- suivre les entrées et sorties
+- configurer les fonctionnalités éducatives
+- contrôler entièrement l'économie familiale
+
+L'enfant peut notamment :
+
+- consulter ses missions
+- indiquer qu'une mission est terminée
+- recevoir des pièces après validation parentale
+- consulter son compte
+- observer les entrées et sorties
+- mettre des pièces dans Mon coffre
+- économiser pour un objectif
+- acheter une récompense familiale
+- découvrir des placements simulés
+- observer des valeurs monter ou baisser
+- apprendre la diversification
+- ouvrir des boosters
+- collectionner des cartes
+- progresser dans un univers RPG
+
+Exemples de missions :
+
+- ranger sa chambre
+- préparer son sac
+- mettre la table
+- vider le lave-vaisselle
+- ranger ses vêtements
+- aider à préparer le repas
+- lire pendant 20 minutes
+- participer au rangement
+- suivre certaines routines familiales
+
+Exemples de récompenses :
+
+- choisir le film du soir
+- choisir le dessert
+- aller manger une glace
+- choisir une activité familiale
+- inviter un ami
+- obtenir un petit jouet lorsque la famille fait les courses
+- regarder un dessin animé
+- choisir le repas
+- profiter d'un temps de loisir supplémentaire
+
+Toutes les missions ne doivent pas nécessairement donner de l'argent virtuel.
+
+Le parent doit pouvoir choisir entre :
+
+- pièces
+- XP
+- booster
+- badge
+- aucune récompense financière
+
+Ne présente jamais Okodukai comme une application où chaque geste normal de l'enfant doit être payé.
+
+# 3. POSITIONNEMENT
+
+Le positionnement principal est :
+
+Son premier compte. Pour de faux.
+Ses premiers réflexes avec l'argent. Pour de vrai.
+
+Okodukai est un terrain d'entraînement à la vie financière.
+
+Le produit ne doit pas être présenté uniquement comme :
+
+- une application de corvées
+- une application d'argent de poche
+- un jeu éducatif
+- une banque
+- une application de bourse
+- un RPG
+- une collection de cartes
+
+La promesse complète est :
+
+Le parent transforme les petites missions du quotidien en une dynamique ludique.
+
+L'enfant gagne des pièces virtuelles.
+
+La vraie leçon commence lorsqu'il doit décider quoi en faire.
+
+Il peut :
+
+- les utiliser
+- les garder
+- les affecter à un objectif
+- les placer dans Mon coffre
+- observer des placements simulés
+- comprendre progressivement le risque et le temps
+
+# 4. CIBLE DE LA COMMUNICATION
+
+La communication s'adresse aux parents.
+
+Cible principale indicative :
+
+- 30 à 45 ans
+- parents d'enfants de 8 à 12 ans
+- utilisateurs réguliers du numérique
+- souvent familiers des jeux vidéo
+- sensibles aux sujets d'éducation
+- confrontés aux routines répétitives du quotidien
+- intéressés par l'autonomie de leur enfant
+- à la recherche d'outils simples, utiles et non culpabilisants
+
+Le parent doit regarder la vidéo et penser successivement :
+
+1. « Je vis exactement cette situation. »
+2. « L'idée est facile à comprendre. »
+3. « Ça pourrait rendre les routines plus simples. »
+4. « Mon enfant pourrait vraiment aimer. »
+5. « En plus, il apprend à gérer son argent. »
+6. « C'est gratuit, je peux essayer. »
+
+# 5. ÉQUIPE PLURIDISCIPLINAIRE
+
+Organise le travail comme s'il était conduit par les spécialistes suivants :
+
+- Product Marketing Manager
+- spécialiste consumer apps familiales
+- spécialiste des attentes parentales
+- Brand Strategist
+- Creative Director
+- Copywriter publicitaire
+- Social Media Strategist
+- Growth Product Manager
+- spécialiste de l'acquisition organique
+- réalisateur publicitaire
+- Motion Designer senior
+- Game UI Artist
+- Sound Designer
+- spécialiste des formats courts
+- développeur frontend senior
+- développeur vidéo programmatique
+- spécialiste PWA
+- expert du partage social
+- expert RGPD et données des mineurs
+- QA Engineer
+- Accessibility Specialist
+
+Si l'environnement prend en charge des sous-agents, utilise-les.
+
+Sinon, réalise plusieurs passes successives en adoptant chaque rôle.
+
+Ne mélange pas immédiatement toutes les opinions.
+
+Procède ainsi :
+
+1. audit par spécialité
+2. propositions
+3. contradictions identifiées
+4. arbitrage
+5. direction consolidée
+6. implémentation
+7. revue finale par spécialité
+
+# 6. AUDIT INITIAL OBLIGATOIRE
+
+Avant toute modification, analyse intégralement :
+
+- le repository
+- les fichiers d'instructions
+- AGENTS.md
+- README
+- documentation produit
+- Art Bible
+- Design System
+- documentation marketing
+- landing page actuelle
+- espace parent
+- espace enfant
+- parcours de mission
+- Mon compte
+- Mon coffre
+- boutique
+- récompenses
+- placements simulés
+- collection
+- opening de booster
+- logo
+- typographies
+- palette
+- assets
+- illustrations
+- animations
+- composants existants
+- système analytics
+- système d'authentification
+- environnement de déploiement
+- système de stockage
+- éventuelles dépendances vidéo
+- éventuelles ressources de génération d'images ou de vidéos
+
+Identifie également :
+
+- la stack frontend
+- la stack backend
+- la présence éventuelle de Remotion, FFmpeg ou d'un autre moteur vidéo
+- les capacités de génération disponibles
+- les contraintes Vercel ou de la plateforme d'hébergement
+- les limites de stockage
+- les limites de build
+- les politiques CSP
+- le fonctionnement PWA
+- l'URL canonique du produit
+
+Ne suppose pas le fonctionnement du repository.
+
+Vérifie-le.
+
+# 7. NE PAS S'ARRÊTER AU PLAN
+
+Tu dois réellement :
+
+- définir la stratégie
+- écrire le script
+- produire les assets
+- créer la vidéo
+- générer les différents formats
+- intégrer la fonctionnalité parent
+- implémenter les mécanismes de partage
+- créer les fallbacks
+- ajouter les analytics
+- ajouter les tests
+- lancer le build
+- vérifier le résultat
+
+Ne t'arrête pas après :
+
+- un audit
+- un storyboard
+- un brief
+- une liste de recommandations
+- des maquettes
+- un composant non relié
+- une vidéo non intégrée
+
+# 8. OBJECTIF DE LA VIDÉO
+
+La vidéo doit présenter la valeur d'Okodukai en 6 à 15 secondes.
+
+Elle doit fonctionner dans un environnement où :
+
+- l'utilisateur fait défiler rapidement son feed
+- le son peut être coupé
+- la vidéo doit accrocher dès la première seconde
+- les textes doivent être compris immédiatement
+- le produit doit être visible
+- l'appel à l'action doit être simple
+
+La vidéo doit montrer :
+
+1. une situation quotidienne connue des parents
+2. la transformation de cette situation en mission
+3. la validation de la mission
+4. l'arrivée des pièces sur le compte
+5. les choix possibles pour l'enfant
+6. le bénéfice éducatif
+7. le nom Okodukai
+8. le caractère entièrement gratuit
+
+# 9. PAS DE PROMESSES TROMPEUSES
+
+Ne jamais écrire ou sous-entendre :
+
+- « Votre enfant vous obéira enfin »
+- « Fini les conflits »
+- « Votre enfant fera toutes ses tâches »
+- « La méthode qui marche à tous les coups »
+- « Votre enfant deviendra riche »
+- « La bourse sans risque »
+- « Le placement qui rapporte »
+- « Une application scientifiquement prouvée »
+
+Ne pas promettre un changement comportemental garanti.
+
+Préférer :
+
+- transformer les routines en missions
+- créer une dynamique ludique
+- permettre à l'enfant de faire des choix
+- rendre les concepts financiers concrets
+- ouvrir une discussion parent-enfant
+- apprendre par l'expérience
+
+# 10. TROIS CONCEPTS CRÉATIFS
+
+Avant de produire la vidéo définitive, conçois au minimum trois concepts.
+
+## Concept A : Les phrases que tous les parents répètent
+
+Angle :
+
+« Range ta chambre. Prépare ton sac. Mets la table. »
+
+Ces phrases deviennent des missions dans Okodukai.
+
+Bénéfice principal :
+
+routines familiales + compréhension immédiate du produit.
+
+## Concept B : La première décision financière
+
+Angle :
+
+L'enfant gagne 10 pièces.
+
+Il doit choisir :
+
+- les utiliser
+- les économiser
+- les placer dans Mon coffre
+- observer une simulation de placement
+
+Bénéfice principal :
+
+éducation financière.
+
+## Concept C : La vie quotidienne devient un RPG
+
+Angle :
+
+Une mission réelle devient une quête.
+
+L'enfant gagne :
+
+- pièces
+- XP
+- booster
+
+Bénéfice principal :
+
+univers jeu vidéo et désirabilité.
+
+Pour chacun, évalue :
+
+- compréhension en 3 secondes
+- identification du parent
+- visibilité du produit
+- émotion
+- potentiel social
+- cohérence avec la marque
+- potentiel de conversion
+- faisabilité visuelle
+- risques de confusion
+
+Sélectionne ensuite un concept principal.
+
+Le concept A doit être considéré comme le point de départ recommandé, car il relie immédiatement une douleur parentale fréquente à la solution.
+
+# 11. SCRIPT MAÎTRE RECOMMANDÉ
+
+Utilise ce storyboard comme base de travail.
+
+Tu peux l'améliorer après l'audit, mais tu ne dois pas perdre sa simplicité.
+
+Durée cible :
+
+12 à 13 secondes.
+
+## 0,0 à 1,5 seconde
+
+Visuel :
+
+Plusieurs phrases parentales apparaissent rapidement dans une scène familiale stylisée.
+
+Texte principal :
+
+« Vous répétez ça tous les jours ? »
+
+Petites phrases secondaires :
+
+« Range ta chambre. »
+« Prépare ton sac. »
+« Mets la table. »
+
+Les phrases doivent être lisibles et ne pas saturer l'écran.
+
+## 1,5 à 3,5 secondes
+
+Les phrases se transforment visuellement en cartes de quête Okodukai.
+
+Afficher une vraie UI issue du produit.
+
+Exemple :
+
+« Ranger sa chambre »
+Récompense : +10
+
+Texte :
+
+« Transformez les routines en missions. »
+
+## 3,5 à 5,5 secondes
+
+L'enfant indique que la mission est terminée.
+
+Le parent valide.
+
+Les pièces arrivent sur le compte.
+
+Texte :
+
+« Une mission. Une validation. +10. »
+
+L'arrivée des pièces doit être visuellement satisfaisante.
+
+## 5,5 à 8 secondes
+
+Afficher le compte enfant.
+
+Trois chemins apparaissent :
+
+- Dépenser
+- Mon coffre
+- Placer en simulation
+
+Texte :
+
+« Après, c'est à lui de choisir. »
+
+## 8 à 10,5 secondes
+
+Montage très rapide :
+
+- une récompense « Glace en famille »
+- un objectif d'épargne
+- un graphique de placement qui monte puis baisse légèrement
+- éventuellement un booster obtenu
+
+Texte :
+
+« Dépenser. Économiser. Comprendre. »
+
+## 10,5 à 13 secondes
+
+End card Okodukai.
+
+Logo officiel.
+
+Texte :
+
+« Son premier compte. Pour de faux. »
+« Ses premiers réflexes avec l'argent. Pour de vrai. »
+
+CTA :
+
+« 100 % gratuit »
+
+Afficher l'URL canonique de manière discrète.
+
+# 12. VERSION 6 SECONDES
+
+Créer également une version courte.
+
+Structure :
+
+## 0 à 1,5 seconde
+
+« Range ta chambre. »
+
+La phrase devient une quête.
+
+## 1,5 à 3 secondes
+
+Mission validée.
+
++10 sur le compte.
+
+## 3 à 4,5 secondes
+
+Dépenser ou économiser.
+
+## 4,5 à 6 secondes
+
+Logo Okodukai.
+
+« Le quotidien devient un jeu. L'argent s'apprend en faisant. »
+
+« 100 % gratuit »
+
+# 13. VERSION 15 SECONDES
+
+Créer une version légèrement plus développée.
+
+Elle peut accorder davantage de temps à :
+
+- la validation parentale
+- Mon coffre
+- la simulation de placements
+- l'univers RPG
+- la collection
+
+La collection ne doit toutefois jamais masquer la promesse principale.
+
+# 14. VOIX OFF
+
+La vidéo doit fonctionner sans voix off.
+
+Les textes incrustés sont obligatoires.
+
+Une voix off peut être ajoutée uniquement si elle semble réellement professionnelle.
+
+Ne pas utiliser :
+
+- voix robotique générique
+- intonation artificielle
+- ton publicitaire caricatural
+- voix enfant générée artificiellement
+- imitation d'une personnalité
+
+Si aucune voix satisfaisante n'est disponible :
+
+privilégier une excellente musique, du sound design et du texte animé.
+
+Proposition de voix off courte :
+
+« Les routines deviennent des missions. Il gagne, économise et apprend à choisir. Okodukai, son premier compte pour de faux. »
+
+Ne pas forcer cette voix off si elle rend la vidéo trop dense.
+
+# 15. COPYWRITING
+
+Le wording doit être :
+
+- court
+- concret
+- humain
+- facilement lisible
+- orienté parent
+- jamais infantilisant
+- jamais corporate
+- jamais générique
+
+Formules pertinentes :
+
+- « Vous répétez ça tous les jours ? »
+- « Transformez les routines en missions. »
+- « Une mission. Une validation. +10. »
+- « Après, c'est à lui de choisir. »
+- « Dépenser. Économiser. Comprendre. »
+- « Le quotidien devient un jeu. »
+- « L'argent s'apprend en faisant. »
+- « Son premier compte. Pour de faux. »
+- « Ses premiers réflexes avec l'argent. Pour de vrai. »
+
+Éviter :
+
+- « Une expérience immersive et innovante »
+- « Révolutionnez le quotidien de votre famille »
+- « Libérez le potentiel de votre enfant »
+- « L'éducation financière réinventée »
+- « La solution ultime pour les parents »
+- « Une aventure unique »
+
+# 16. DIRECTION ARTISTIQUE
+
+La vidéo doit appartenir intégralement à l'univers Okodukai.
+
+Direction :
+
+- jeu vidéo familial premium
+- RPG léger
+- monde chaleureux
+- monnaie propriétaire
+- illustrations originales
+- UI réelle du produit
+- transitions inspirées des quêtes et récompenses
+- sentiment d'aventure
+- profondeur
+- lumière
+- matières
+- animations soignées
+
+La nostalgie des jeux vidéo peut être perceptible pour les parents de 30 à 45 ans.
+
+Mais ne copie aucune licence.
+
+Ne copie notamment aucun asset, personnage, son ou élément identifiable d'un jeu existant.
+
+# 17. UTILISER LE VRAI PRODUIT
+
+La vidéo ne doit pas montrer une fausse application sans rapport avec Okodukai.
+
+Utilise :
+
+- les vrais écrans
+- les vrais composants
+- le vrai logo
+- la vraie pièce
+- le vrai compte
+- Mon coffre
+- la vraie interface de quête
+- les vraies récompenses
+- les vrais placements simulés
+
+Créer un compte de démonstration avec des données entièrement fictives.
+
+Exemple :
+
+Prénom fictif : Noé ou Lina.
+
+Ne jamais utiliser :
+
+- le nom réel d'un enfant utilisateur
+- une photo réelle
+- une mission réelle provenant d'une famille
+- un solde réel
+- des données de production
+- un identifiant utilisateur visible
+
+# 18. ASSETS ARTISTIQUES
+
+Si les assets actuels ne suffisent pas, crée les assets manquants.
+
+Exemples :
+
+- décor familial stylisé
+- cartes de quête
+- pièce Okodukai
+- sac de pièces
+- coffre
+- illustrations de récompenses
+- éléments d'interface
+- transitions
+- textures
+- effets lumineux
+- particules
+- arrière-plans
+- end card
+- éléments RPG
+- poster de la vidéo
+
+Si un outil de génération d'images est disponible, utilise-le.
+
+Mais aucun asset de faible qualité ne doit être intégré.
+
+Vérifier :
+
+- cohérence du style
+- perspective
+- anatomie
+- lumière
+- ombres
+- matériaux
+- absence de texte généré
+- absence d'artefacts
+- cohérence avec l'Art Bible
+
+# 19. ZÉRO AI SLOP
+
+La vidéo ne doit jamais ressembler à une publicité automatiquement générée.
+
+Éviter :
+
+- personnages plastiques génériques
+- familles de stock artificielles
+- mains incorrectes
+- détails incohérents
+- dégradés violets génériques
+- blobs abstraits
+- emojis utilisés comme icônes
+- musique corporate générique
+- transitions aléatoires
+- phrases marketing creuses
+- surutilisation des particules
+- scènes surchargées
+- fausses interfaces
+- typographie incohérente
+
+Chaque plan doit avoir une fonction.
+
+# 20. SOUND DESIGN
+
+Créer une identité sonore courte.
+
+Éléments possibles :
+
+- validation de quête
+- arrivée de pièce
+- transfert vers Mon coffre
+- petite progression
+- révélation du logo
+
+Éviter :
+
+- machines à sous
+- jackpot
+- casino
+- pièces trop agressives
+- bruitages excessifs
+- musique épique disproportionnée
+
+La musique et les sons doivent être :
+
+- originaux
+- sous licence compatible
+- libres d'utilisation commerciale
+- documentés
+
+Conserver la preuve de licence ou la source dans le registre d'assets.
+
+# 21. FORMATS À PRODUIRE
+
+Créer un master puis plusieurs exports.
+
+## Story / Reels / TikTok
+
+- 1080 x 1920
+- ratio 9:16
+- 30 fps
+- MP4 H.264
+- audio AAC si audio
+- durée 6, 12 ou 15 secondes selon variante
+- textes placés dans les zones sûres
+- aucun élément essentiel trop près du haut ou du bas
+
+## Feed vertical
+
+- 1080 x 1350
+- ratio 4:5
+
+## Carré
+
+- 1080 x 1080
+- ratio 1:1
+- adapté notamment aux feeds sociaux
+
+## Paysage
+
+- 1920 x 1080
+- ratio 16:9
+- adapté à la landing, LinkedIn, X, YouTube et à une présentation plus publicitaire
+
+Créer au minimum :
+
+- master 9:16 de 12 à 13 secondes
+- cut 9:16 de 6 secondes
+- version 4:5 de 12 à 13 secondes
+- version 1:1 de 12 à 13 secondes
+- version 16:9 de 15 secondes
+
+Générer également :
+
+- poster image
+- thumbnail
+- OG image
+- version sans audio
+- sous-titres ou textes intégrés
+
+# 22. TAILLE ET PERFORMANCE
+
+Optimiser les vidéos.
+
+Objectif indicatif :
+
+- chargement rapide
+- fichier suffisamment petit pour le partage mobile
+- qualité visuelle élevée
+- pas de fichier inutilement énorme
+
+Ne charge pas automatiquement toutes les variantes sur le dashboard.
+
+Le composant parent peut charger :
+
+- un poster
+- un aperçu léger
+- la vidéo uniquement lorsque nécessaire
+
+Les fichiers complets peuvent être chargés au moment de l'ouverture de la modale ou du partage.
+
+# 23. MOTEUR DE CRÉATION VIDÉO
+
+Analyse la stack avant de choisir l'outil.
+
+Si le projet utilise React et TypeScript, étudie l'utilisation d'un moteur de vidéo programmatique adapté.
+
+Si un système existe déjà, réutilise-le.
+
+Sinon, choisis entre :
+
+- composition vidéo React
+- FFmpeg
+- génération à partir d'assets et de captures
+- pipeline hybride
+
+Le choix doit permettre :
+
+- rendu reproductible
+- déclinaison multi-format
+- modification future du texte
+- versionnement
+- automatisation
+- génération locale
+- génération CI si raisonnable
+
+Créer une commande dédiée.
+
+Exemple conceptuel :
+
+`pnpm social:render`
+
+La commande doit produire les différents exports.
+
+Ne hardcode pas une dépendance si elle ne correspond pas à la stack.
+
+# 24. CAPTURES DE L'APPLICATION
+
+Utilise une base de démonstration déterministe.
+
+Créer un parcours de démonstration contenant :
+
+- une mission « Ranger sa chambre »
+- une mission terminée
+- une validation parentale
+- un crédit de 10 pièces
+- un compte avec historique
+- Mon coffre
+- un objectif « Glace en famille »
+- un portefeuille de placements simulés
+- éventuellement un booster
+
+Si nécessaire, automatise les captures avec l'outil de test navigateur déjà présent dans le projet.
+
+Les captures doivent être stables et reproductibles.
+
+# 25. FONCTIONNALITÉ DANS L'ESPACE PARENT
+
+Créer un composant dédié dans le dashboard parent.
+
+Il ne doit pas apparaître dans l'espace enfant.
+
+Proposition de composant :
+
+# Faites découvrir Okodukai
+
+Texte :
+
+« Okodukai est gratuit. Un partage peut nous aider à le faire découvrir à d'autres parents. »
+
+Aperçu :
+
+- poster ou boucle courte muette
+- logo
+- durée
+- format
+
+CTA principal :
+
+# Partager Okodukai
+
+Action secondaire éventuelle :
+
+# Voir la vidéo
+
+Le composant doit être :
+
+- élégant
+- intégré au design parent
+- non intrusif
+- dismissible
+- accessible
+- responsive
+
+Ne pas afficher une modale automatiquement.
+
+Ne pas interrompre un parcours parent.
+
+# 26. MOMENT D'AFFICHAGE
+
+Le composant ne doit pas être agressivement présenté dès l'inscription.
+
+Afficher idéalement la proposition après que le parent a expérimenté une première boucle de valeur.
+
+Exemples de déclencheur :
+
+- une première quête a été créée
+- une première quête a été validée
+- l'enfant a reçu ses premières pièces
+- le parent a utilisé le produit plusieurs fois
+
+Le composant peut ensuite rester accessible dans :
+
+- le dashboard parent
+- les paramètres
+- une section « Faire connaître Okodukai »
+
+Si le parent ferme le composant :
+
+- respecter son choix
+- ne pas le réafficher à chaque visite
+- utiliser une fréquence raisonnable
+- conserver un accès discret ailleurs
+
+Ne pas culpabiliser le parent.
+
+# 27. MODALE DE PARTAGE
+
+Le clic sur « Partager Okodukai » ouvre une modale ou un écran dédié.
+
+Contenu :
+
+## Titre
+
+« Une vidéo prête à partager »
+
+## Description
+
+« 12 secondes pour présenter Okodukai à d'autres parents. Aucune donnée de votre enfant n'est utilisée. »
+
+## Preview
+
+Lecteur vidéo :
+
+- autoplay muted uniquement si raisonnable
+- contrôles accessibles
+- lecture / pause
+- son activable
+- poster optimisé
+
+## Formats
+
+Permettre au minimum de choisir :
+
+- Story 9:16
+- Post 4:5 ou carré
+- Paysage si pertinent
+
+Par défaut sur smartphone :
+
+Story 9:16.
+
+## Actions
+
+- Partager la vidéo
+- Instagram
+- TikTok
+- Facebook
+- X
+- LinkedIn
+- WhatsApp
+- Messenger
+- Telegram
+- SMS
+- E-mail
+- Copier le lien
+- Copier le texte
+- Télécharger la vidéo
+
+Les boutons ne doivent apparaître que si leur fonctionnement est réel ou clairement expliqué.
+
+# 28. PRINCIPE TECHNIQUE DU PARTAGE
+
+La stratégie principale doit être :
+
+# PARTAGE NATIF DU FICHIER
+
+Sur les appareils et navigateurs compatibles :
+
+1. récupérer le fichier vidéo
+2. le convertir en File avec le bon MIME type
+3. vérifier que le navigateur accepte le partage de fichiers
+4. déclencher le partage uniquement après une action utilisateur
+5. envoyer :
+   - fichier
+   - titre
+   - texte
+   - URL
+
+Utiliser les APIs officielles du navigateur.
+
+Toujours faire une détection de capacité.
+
+Ne jamais supposer que le partage de fichiers fonctionne partout.
+
+# 29. NE PAS FAIRE SEMBLANT DE PARTAGER
+
+Ne jamais afficher :
+
+« Publié sur Instagram »
+
+si le produit ne peut pas confirmer la publication.
+
+Distinguer :
+
+- menu de partage ouvert
+- fichier transmis au système
+- lien copié
+- vidéo téléchargée
+- publication réellement confirmée
+
+Dans la plupart des parcours web, il est impossible de garantir que l'utilisateur a finalisé la publication.
+
+Utiliser des événements analytics honnêtes :
+
+- share_sheet_opened
+- share_action_returned
+- video_downloaded
+- caption_copied
+- link_copied
+- platform_intent_opened
+
+Éviter :
+
+- share_published
+
+sauf si une API officielle confirme réellement la publication.
+
+# 30. INSTAGRAM STORY
+
+Ne suppose pas qu'une page web peut directement publier une Story Instagram.
+
+Vérifie les documentations officielles actuelles au moment du développement.
+
+Pour la PWA ou la web app, le parcours par défaut doit être :
+
+1. partager le fichier vidéo avec le menu natif
+2. laisser l'utilisateur choisir Instagram si disponible
+3. sinon proposer :
+   - télécharger la vidéo
+   - copier le texte
+   - ouvrir Instagram manuellement
+4. afficher une instruction très courte
+
+Exemple :
+
+« La vidéo est prête. Ajoutez-la à votre Story puis collez le texte proposé. »
+
+Ne pas utiliser de deep link non documenté ou fragile.
+
+Si le repository contient déjà une application native ou un wrapper natif :
+
+étudier l'intégration officielle Instagram Sharing to Stories.
+
+Documenter les dépendances, identifiants d'application et prérequis.
+
+# 31. TIKTOK
+
+Pour la PWA, privilégier :
+
+- partage natif du fichier
+- téléchargement
+- copie de la légende
+
+Une intégration directe via API ne doit être mise en place que si :
+
+- elle apporte une vraie valeur
+- l'application est enregistrée
+- les autorisations nécessaires sont disponibles
+- le parcours OAuth est acceptable
+- l'API est officiellement supportée
+- les contraintes de validation sont respectées
+
+Ne bloque pas le MVP sur une intégration OAuth TikTok.
+
+# 32. X, LINKEDIN ET FACEBOOK
+
+Pour chaque plateforme, distinguer :
+
+## Partage de vidéo
+
+Priorité au menu de partage natif lorsque le fichier peut être transmis.
+
+## Partage de lien
+
+Utiliser uniquement les mécanismes officiels ou les URL de partage documentées.
+
+## Publication directe via API
+
+Ne pas implémenter d'authentification lourde uniquement pour cette fonctionnalité sans justification claire.
+
+Le MVP doit rester simple pour le parent.
+
+# 33. WHATSAPP, TELEGRAM, SMS ET E-MAIL
+
+Prévoir des parcours simples de partage de lien et de texte.
+
+Exemple :
+
+« Je viens de découvrir Okodukai : un jeu de compte bancaire fictif pour apprendre aux enfants à gagner, économiser et choisir. C'est entièrement gratuit. »
+
+Joindre l'URL avec les paramètres de campagne appropriés.
+
+# 34. FALLBACK UNIVERSEL
+
+Lorsque le partage de fichier n'est pas pris en charge :
+
+afficher clairement :
+
+- Télécharger la vidéo
+- Copier le texte
+- Copier le lien
+
+Ne jamais laisser un bouton sans effet.
+
+Ne jamais afficher une erreur technique brute.
+
+Exemple de message :
+
+« Le partage direct de la vidéo n'est pas disponible sur cet appareil. La vidéo a été préparée pour être téléchargée et ajoutée manuellement. »
+
+# 35. TEXTES SOCIAUX
+
+Créer des textes adaptés à chaque plateforme.
+
+Ils doivent rester modifiables dans une configuration centralisée.
+
+## Instagram
+
+« Et si les routines du quotidien devenaient des missions ?
+
+Avec Okodukai, les enfants gagnent des pièces virtuelles, apprennent à les gérer, à économiser et à faire leurs premiers choix avec l'argent.
+
+100 % gratuit. »
+
+Hashtags éventuels :
+
+#Okodukai #Parentalité #EducationFinancière
+
+Ne pas utiliser une liste excessive de hashtags.
+
+## X
+
+« Et si ranger sa chambre devenait une quête ?
+
+Okodukai transforme les routines en missions, les missions en pièces, et les pièces en premiers choix financiers.
+
+100 % gratuit. »
+
+Respecter la limite réelle de la plateforme.
+
+## LinkedIn
+
+« Je développe Okodukai, un jeu de compte bancaire fictif pour les 8-12 ans.
+
+Les parents créent des missions. Les enfants gagnent des pièces virtuelles, choisissent de les utiliser ou de les économiser, puis découvrent progressivement les mécanismes de l'investissement grâce à des simulations.
+
+L'application est entièrement gratuite. »
+
+Adapter ce texte au fait que le partage est réalisé par un utilisateur et non nécessairement par le créateur du projet.
+
+Ne jamais faire dire au parent :
+
+« Je développe Okodukai »
+
+s'il ne le développe pas.
+
+Version parent :
+
+« Je viens de découvrir Okodukai, un jeu de compte bancaire fictif qui transforme les routines du quotidien en missions et aide les enfants à apprendre à gérer leur argent. L'application est entièrement gratuite. »
+
+## WhatsApp
+
+« Je te partage Okodukai, une application gratuite qui transforme les petites missions du quotidien en jeu et apprend aux enfants à gérer de l'argent virtuel. »
+
+## E-mail
+
+Objet :
+
+« Une application gratuite pour apprendre aux enfants à gérer leur argent »
+
+Corps :
+
+« Bonjour,
+
+Je te partage Okodukai, une application gratuite où les parents créent des missions et des récompenses, pendant que les enfants apprennent à gagner, économiser et faire des choix avec de l'argent virtuel.
+
+Voici le lien : [URL]
+
+À bientôt. »
+
+# 36. URLS DE PARTAGE
+
+Créer une URL de partage canonique.
+
+Ajouter des paramètres UTM adaptés.
+
+Exemple conceptuel :
+
+- utm_source=instagram
+- utm_medium=organic_share
+- utm_campaign=parent_referral
+- utm_content=video_v1
+
+Ne jamais placer dans l'URL :
+
+- prénom d'enfant
+- email
+- identifiant lisible
+- solde
+- nom de famille
+- identifiant de foyer
+- information personnelle
+
+Un identifiant de referral aléatoire peut être étudié uniquement s'il est :
+
+- non personnel
+- non devinable
+- sans information enfant
+- documenté
+- compatible avec la politique de confidentialité
+
+# 37. OPEN GRAPH ET SOCIAL PREVIEW
+
+Vérifier et améliorer :
+
+- og:title
+- og:description
+- og:image
+- og:url
+- twitter:card
+- twitter:title
+- twitter:description
+- twitter:image
+- canonical URL
+
+Proposition :
+
+## OG title
+
+« Son premier compte. Pour de faux. Ses premiers réflexes avec l'argent. Pour de vrai. »
+
+## OG description
+
+« Quêtes, argent de poche virtuel, épargne, placements simulés et cartes à collectionner. Okodukai aide les 8-12 ans à apprendre à gérer leur argent sous le contrôle de leurs parents. »
+
+Créer une véritable image OG cohérente avec la campagne.
+
+Ne pas supposer que les réseaux afficheront directement la vidéo dans l'aperçu du lien.
+
+# 38. VIE PRIVÉE
+
+La vidéo partagée doit être générique.
+
+Par défaut, elle ne doit contenir aucune donnée de l'utilisateur.
+
+Ne jamais utiliser automatiquement :
+
+- prénom de l'enfant
+- avatar personnalisé
+- missions réelles
+- récompenses réelles
+- historique réel
+- solde réel
+- captures réelles du foyer
+- photo réelle
+- voix de l'enfant
+- localisation
+- nom du parent
+
+Afficher dans la modale :
+
+« Cette vidéo utilise uniquement des données de démonstration. »
+
+Toute personnalisation future devra nécessiter un consentement parent explicite.
+
+# 39. AUCUNE RÉCOMPENSE POUR LE PARTAGE
+
+Ne donne pas :
+
+- de pièces
+- d'XP
+- de boosters
+- de cartes
+- de récompenses familiales
+
+en échange du partage.
+
+Ne transforme pas le partage social en mission pour l'enfant.
+
+La fonctionnalité appartient au parent.
+
+# 40. ANALYTICS
+
+Créer des événements respectueux de la vie privée.
+
+Événements utiles :
+
+- parent_share_card_viewed
+- parent_share_card_dismissed
+- parent_share_modal_opened
+- parent_share_video_played
+- parent_share_format_selected
+- parent_share_native_started
+- parent_share_native_returned
+- parent_share_platform_opened
+- parent_share_video_downloaded
+- parent_share_caption_copied
+- parent_share_link_copied
+- referral_landing_visited
+- referral_signup_started
+- referral_signup_completed
+
+Ne collecte pas :
+
+- contenu personnel partagé
+- liste des applications installées
+- contacts
+- nom des destinataires
+- contenu du post final
+- identités sociales
+- données enfant
+
+Ne considère pas le retour de l'API de partage comme une preuve certaine de publication si la plateforme ne le garantit pas.
+
+# 41. EXPÉRIMENTATION
+
+Prévoir la possibilité de tester plusieurs variantes.
+
+Exemples :
+
+## Wording de la bannière
+
+A :
+
+« Okodukai est gratuit. Aidez-nous à le faire découvrir à d'autres parents. »
+
+B :
+
+« Vous connaissez un parent qui répète “Range ta chambre” tous les jours ? »
+
+## CTA
+
+A :
+
+« Partager Okodukai »
+
+B :
+
+« Faire découvrir Okodukai »
+
+## Créatif
+
+A :
+
+routines du quotidien
+
+B :
+
+éducation financière
+
+C :
+
+univers RPG
+
+Ne déploie pas une architecture d'A/B testing complexe si le projet n'en possède pas.
+
+Prépare simplement le code pour que les variantes soient configurables.
+
+# 42. STRUCTURE TECHNIQUE POSSIBLE
+
+Adapte les noms à l'architecture existante.
+
+Composants possibles :
+
+- ParentShareCard
+- ParentShareModal
+- SocialVideoPreview
+- ShareFormatSelector
+- NativeShareButton
+- PlatformShareButton
+- CopyCaptionButton
+- CopyLinkButton
+- DownloadVideoButton
+- SharePrivacyNotice
+
+Services possibles :
+
+- socialShareService
+- shareCapabilityService
+- campaignLinkService
+- socialAnalyticsService
+
+Configuration possible :
+
+- socialCampaignManifest
+- socialCaptions
+- socialVideoFormats
+- socialTargets
+
+Ne crée pas ces abstractions si elles sont inutiles dans la stack actuelle.
+
+# 43. MANIFESTE DE CAMPAGNE
+
+Créer un manifeste centralisé.
+
+Exemple conceptuel :
+
+{
+  "campaignId": "parent-organic-v1",
+  "landingUrl": "...",
+  "headline": "...",
+  "formats": {
+    "story": {
+      "url": "...",
+      "width": 1080,
+      "height": 1920,
+      "duration": 12
+    },
+    "portrait": {},
+    "square": {},
+    "landscape": {}
+  },
+  "captions": {
+    "instagram": "...",
+    "x": "...",
+    "linkedin": "...",
+    "whatsapp": "..."
+  }
+}
+
+Le contenu ne doit pas être éparpillé dans plusieurs composants.
+
+# 44. GESTION DES ERREURS
+
+Gérer au minimum :
+
+- navigateur sans partage natif
+- partage de fichiers non pris en charge
+- fichier inaccessible
+- réseau interrompu
+- téléchargement impossible
+- presse-papiers non disponible
+- partage annulé par l'utilisateur
+- permission refusée
+- vidéo trop lourde
+- MIME incorrect
+- URL indisponible
+- composant monté côté serveur
+- navigateur desktop
+- PWA installée
+- iOS
+- Android
+
+Une annulation utilisateur n'est pas une erreur alarmante.
+
+Ne pas afficher de toast rouge lorsqu'un utilisateur ferme simplement le menu de partage.
+
+# 45. ACCESSIBILITÉ
+
+La fonctionnalité doit respecter :
+
+- navigation clavier
+- focus visible
+- libellés accessibles
+- boutons suffisamment grands
+- lecteurs d'écran
+- contraste
+- lecture / pause vidéo
+- transcription du contenu vidéo
+- reduced motion
+- absence de dépendance au son
+- fermeture accessible de la modale
+
+Créer une transcription courte de la vidéo.
+
+# 46. PERFORMANCE
+
+La bannière du dashboard ne doit pas dégrader :
+
+- LCP
+- interaction
+- bande passante
+- navigation mobile
+
+Utiliser :
+
+- poster optimisé
+- lazy loading
+- preload uniquement lorsque pertinent
+- formats adaptés
+- cache HTTP
+- CDN ou stockage approprié
+- taille de fichier maîtrisée
+
+Ne pas intégrer de vidéo en base64 dans le JavaScript.
+
+# 47. SÉCURITÉ
+
+Vérifier :
+
+- type MIME
+- origine des fichiers
+- CSP
+- URL de téléchargement
+- headers
+- stockage public ou signé selon besoin
+- absence de données privées
+- absence d'injection dans les captions
+- assainissement des URLs
+
+La vidéo promotionnelle peut être publique.
+
+Les données de l'espace parent restent privées.
+
+# 48. TESTS UNITAIRES
+
+Tester :
+
+- génération des URLs UTM
+- choix du bon format
+- détection de capacité
+- fallback
+- génération du File
+- copie de texte
+- téléchargement
+- gestion d'annulation
+- normalisation des captions
+- tracking des événements
+- absence de données personnelles dans les URLs
+
+# 49. TESTS D'INTÉGRATION
+
+Tester :
+
+## Partage natif disponible
+
+- ouverture de la modale
+- sélection du format
+- récupération de la vidéo
+- création du fichier
+- appel de partage
+
+## Partage de fichier indisponible
+
+- affichage des fallbacks
+- téléchargement
+- copie de la légende
+- copie du lien
+
+## Mobile
+
+- viewport
+- modale
+- lecture vidéo
+- boutons
+
+## Desktop
+
+- aperçu
+- partage de lien
+- téléchargement
+
+# 50. MATRICE DE TEST MANUEL
+
+Tester au minimum lorsque les environnements sont disponibles :
+
+- Safari iOS
+- PWA iOS
+- Chrome Android
+- PWA Android
+- Chrome desktop
+- Edge desktop
+- Safari desktop
+- Firefox desktop
+
+Pour chaque environnement, noter :
+
+- partage texte
+- partage URL
+- partage vidéo
+- fallback
+- téléchargement
+- copie
+- comportement après annulation
+
+# 51. QA DE LA VIDÉO
+
+Faire une revue image par image.
+
+Contrôler :
+
+- orthographe
+- durée de lecture
+- zones sûres
+- netteté
+- compression
+- couleurs
+- cohérence de l'UI
+- absence d'informations privées
+- transition
+- musique
+- sound design
+- volume
+- visibilité du logo
+- visibilité du caractère gratuit
+- compréhension sans son
+- compréhension en moins de 3 secondes
+
+# 52. TEST PARENT
+
+Montrer conceptuellement ou réellement la vidéo à un parent pendant une seule lecture.
+
+Après la lecture, il doit pouvoir répondre :
+
+- l'application est destinée à qui ?
+- que fait le parent ?
+- que fait l'enfant ?
+- que gagne l'enfant ?
+- qu'apprend-il ?
+- est-ce de l'argent réel ?
+- l'application est-elle gratuite ?
+
+Si plusieurs réponses sont incorrectes :
+
+la vidéo est trop dense ou trop ambiguë.
+
+# 53. TEST FEED
+
+Observer la première seconde sans le son.
+
+Question :
+
+« Est-ce que je m'arrêterais de scroller ? »
+
+Observer ensuite les trois premières secondes.
+
+Question :
+
+« Ai-je compris le problème et commencé à comprendre la solution ? »
+
+Observer la vidéo entière.
+
+Question :
+
+« Ai-je envie de cliquer ou de partager ? »
+
+# 54. DOCUMENTATION À PRODUIRE
+
+Créer ou mettre à jour :
+
+## `marketing/PARENT_SHARE_STRATEGY.md`
+
+- cible
+- insight
+- promesse
+- objections
+- canaux
+- stratégie de partage
+
+## `marketing/SOCIAL_AD_BRIEF.md`
+
+- brief créatif
+- concept retenu
+- concepts rejetés
+- justification
+
+## `marketing/SOCIAL_AD_SCRIPT.md`
+
+- scripts
+- textes
+- voix off
+- timing
+
+## `marketing/SOCIAL_AD_STORYBOARD.md`
+
+- plan par plan
+- composition
+- mouvement
+- assets
+
+## `marketing/SOCIAL_COPY.md`
+
+- captions par plateforme
+- hashtags
+- CTA
+
+## `marketing/SOCIAL_ASSET_REGISTRY.md`
+
+- fichiers
+- formats
+- dimensions
+- licences
+- sources
+- prompts éventuels
+
+## `docs/PARENT_SHARE_FEATURE.md`
+
+- UX
+- architecture
+- capacités
+- fallbacks
+- analytics
+
+## `docs/SOCIAL_SHARE_COMPATIBILITY.md`
+
+- comportement par plateforme
+- limites connues
+- date de vérification
+- liens vers les documentations officielles
+
+# 55. ORGANISATION DES ASSETS
+
+Exemple à adapter :
+
+/public
+  /social
+    /parent-organic-v1
+      /video
+        okodukai-story-6s.mp4
+        okodukai-story-12s.mp4
+        okodukai-feed-12s.mp4
+        okodukai-square-12s.mp4
+        okodukai-landscape-15s.mp4
+      /poster
+      /thumbnail
+      /og
+      manifest.json
+
+Ne stocke pas les fichiers à cet endroit si l'architecture recommande un CDN ou un stockage objet.
+
+Documente la décision.
+
+# 56. PRIORITÉ D'IMPLÉMENTATION
+
+## Phase 1 : audit
+
+- repository
+- produit
+- landing
+- design
+- contraintes techniques
+- partage social
+
+## Phase 2 : stratégie
+
+- cible
+- insight
+- concepts créatifs
+- sélection
+
+## Phase 3 : préproduction
+
+- script
+- storyboard
+- liste d'assets
+- voix
+- musique
+- formats
+
+## Phase 4 : production
+
+- illustrations
+- captures produit
+- composition
+- animation
+- sound design
+- exports
+
+## Phase 5 : fonctionnalité parent
+
+- carte
+- modale
+- preview
+- sélecteur de format
+- boutons
+
+## Phase 6 : partage
+
+- Web Share
+- fichiers
+- intentions plateforme
+- copie
+- téléchargement
+- fallbacks
+
+## Phase 7 : analytics
+
+- événements
+- UTM
+- referral sans donnée personnelle
+
+## Phase 8 : QA
+
+- fonctionnel
+- responsive
+- accessibilité
+- navigateurs
+- vidéo
+- confidentialité
+
+## Phase 9 : validation
+
+- lint
+- typecheck
+- tests
+- build
+- captures
+- revue finale
+
+# 57. DEFINITION OF DONE
+
+La fonctionnalité n'est pas terminée lorsque :
+
+- le bouton existe
+- la modale s'ouvre
+- une vidéo temporaire est visible
+- Instagram apparaît dans une liste
+- un plan marketing existe
+
+Elle est terminée lorsque :
+
+1. une vidéo premium a été réellement produite
+2. les différentes variantes ont été générées
+3. la vidéo utilise le vrai univers Okodukai
+4. aucune donnée enfant réelle n'est utilisée
+5. le parent peut la prévisualiser
+6. le parent peut la partager nativement lorsque son appareil le permet
+7. le parent dispose d'un fallback lorsque ce n'est pas possible
+8. les textes sociaux sont adaptés à chaque plateforme
+9. les liens possèdent les bons paramètres de campagne
+10. l'expérience fonctionne sur mobile et desktop
+11. le partage ne concerne que l'espace parent
+12. les événements analytics sont honnêtes
+13. l'accessibilité est respectée
+14. les tests passent
+15. le build passe
+16. la documentation est complète
+17. le résultat est suffisamment qualitatif pour être publié immédiatement
+
+# 58. REVUE FINALE PLURIDISCIPLINAIRE
+
+Avant de considérer le travail terminé, réalise une revue finale en adoptant successivement les rôles suivants.
+
+## Parent de 40 ans
+
+La vidéo me parle-t-elle réellement ?
+
+## Parent pressé
+
+Ai-je compris en quelques secondes ?
+
+## Copywriter
+
+Les phrases sont-elles concrètes et mémorisables ?
+
+## Creative Director
+
+Le film possède-t-il une vraie idée ?
+
+## Motion Designer
+
+Le rythme est-il professionnel ?
+
+## Game Art Director
+
+Reconnaît-on l'univers Okodukai ?
+
+## Product Marketing Manager
+
+La proposition de valeur est-elle exacte ?
+
+## Growth Manager
+
+Le parcours de partage est-il suffisamment simple ?
+
+## Expert social media
+
+Les formats sont-ils adaptés aux usages ?
+
+## Expert mineurs et vie privée
+
+Aucune donnée sensible n'est-elle exposée ?
+
+## QA Engineer
+
+Les fallbacks fonctionnent-ils ?
+
+## Accessibility Specialist
+
+La vidéo et la modale sont-elles utilisables sans son et au clavier ?
+
+Corrige tous les problèmes identifiés.
+
+# 59. QUALITÉ FINALE ATTENDUE
+
+Je ne veux pas que la réaction soit :
+
+« C'est une petite vidéo de présentation générée pour une application. »
+
+Je veux que la réaction soit :
+
+« Cette publicité est vraiment bien faite. C'est quoi Okodukai ? »
+
+La vidéo doit réussir à faire comprendre une idée simple :
+
+Le parent ne fait pas uniquement faire des missions à son enfant.
+
+Il lui donne un espace pour gagner des pièces, faire des choix, économiser et apprendre progressivement à gérer son argent.
+
+La fonctionnalité de partage doit être suffisamment fluide pour qu'un parent puisse :
+
+1. ouvrir l'espace de partage
+2. regarder la vidéo
+3. appuyer sur un bouton
+4. choisir son application
+5. publier ou envoyer le contenu
+
+sans tutoriel technique.
+
+# 60. RÈGLE FINALE
+
+Cette fonctionnalité doit refléter les valeurs d'Okodukai :
+
+- gratuit
+- utile
+- ludique
+- éducatif
+- familial
+- respectueux
+- transparent
+- sans exploitation des enfants
+- sans manipulation
+- sans publicité dans l'espace enfant
+- sans monétisation des données
+- sans AI slop
+
+Le produit est gratuit.
+
+La communauté des parents peut contribuer à le faire connaître.
+
+Le partage doit donc ressembler à une invitation sincère, pas à une mécanique virale agressive.
+
+Commence maintenant par l'audit du repository, de la landing et des fonctionnalités existantes. Formalise les concepts créatifs, choisis la meilleure direction, produis la vidéo, puis développe et teste l'intégralité de la fonctionnalité de partage.
