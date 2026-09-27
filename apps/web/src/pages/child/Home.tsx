@@ -12,6 +12,7 @@ import { ChildCharacter } from "../../components/ChildCharacter";
 import { ExperienceTree } from "../../components/ExperienceTree";
 import { defineCopy, useCopy } from "../../i18n";
 import { EMPTY_LEVEL, XP_COPY, levelTitle, type LevelView } from "../../lib/levels";
+import { childLevelForDisplay, DEMO_LEVEL_CHANGE } from "../../lib/demoLevel";
 
 interface QuestRow { id: string; title: string; status: string; rewardCoins: number; rewardXp: number }
 
@@ -32,7 +33,7 @@ const copy = defineCopy({
   fr: {
     welcome: "Bienvenue dans ton monde", experience: "Expérience", tree: "Mon arbre", account: "Mon compte", coins: "pièces", level: "Niv.",
     village: "La Vallée d'Okodukai", choose: "Choisis un lieu et poursuis ton aventure.", explore: "Explorer la vallée", character: "Mon personnage", seeCharacter: "Voir mon personnage", progress: "Ma progression", happening: "En ce moment dans ton village", statement: "Bilan prêt",
-    loading: "Le village se prépare…", failed: "Le village ne s'ouvre pas.", retry: "Réessayer",
+    loading: "Le village se prépare…", failed: "Le village ne s'ouvre pas.", retry: "Réessayer", maxLevel: "Niveau maximum atteint",
     questBoard: "Sur le tableau des quêtes", questSoon: "Une nouvelle quête t'attend bientôt", askParent: "Demande à un parent de t'en proposer une.", afterApproval: (coins: number, xp: number) => `À gagner après validation : ${coins} pièces et ${xp} XP`,
     gallery: "Dans ta galerie", vaultPath: "Sur le chemin du coffre", boosterCount: (count: number) => `${count} booster${count > 1 ? "s" : ""} à ouvrir`, openBooster: "Ouvrir un booster", discoverCards: "Découvre tes cartes", saved: (current: number, target: number) => `${current} / ${target} pièces de côté`, seeCollection: "Voir la collection",
     place: { quests: ["Quêtes", "Choisir une mission"], vault: ["Mon coffre", "Garder des pièces"], shop: ["Boutique", "Voir les récompenses"], collection: ["Collection", "Ouvrir mon album"], observatory: ["Observatoire", "Explorer le temps"], library: ["Bibliothèque", "Apprendre"] },
@@ -41,7 +42,7 @@ const copy = defineCopy({
   en: {
     welcome: "Welcome to your world", experience: "Experience", tree: "My tree", account: "My account", coins: "coins", level: "Lvl.",
     village: "Okodukai Valley", choose: "Choose a place and continue your adventure.", explore: "Explore the valley", character: "My character", seeCharacter: "See my character", progress: "My progress", happening: "Around your village", statement: "Report ready",
-    loading: "Getting the village ready…", failed: "The village couldn't open.", retry: "Try again",
+    loading: "Getting the village ready…", failed: "The village couldn't open.", retry: "Try again", maxLevel: "Highest level reached",
     questBoard: "On the quest board", questSoon: "A new quest will be here soon", askParent: "Ask a parent to add one for you.", afterApproval: (coins: number, xp: number) => `Earn after approval: ${coins} coins and ${xp} XP`,
     gallery: "In your gallery", vaultPath: "On the path to your vault", boosterCount: (count: number) => `${count} booster${count > 1 ? "s" : ""} to open`, openBooster: "Open a booster", discoverCards: "Discover your cards", saved: (current: number, target: number) => `${current} / ${target} coins saved`, seeCollection: "See the collection",
     place: { quests: ["Quests", "Choose a mission"], vault: ["My vault", "Save coins"], shop: ["Shop", "See rewards"], collection: ["Collection", "Open my album"], observatory: ["Observatory", "Explore time"], library: ["Library", "Learn"] },
@@ -57,6 +58,7 @@ export function Home() {
   const childId = session?.kind === "child" ? session.child.id : null;
   const [money, setMoney] = useState<MoneyOverview | null>(null);
   const [level, setLevel] = useState<LevelView>(EMPTY_LEVEL);
+  const [previewing, setPreviewing] = useState(false);
   const [quests, setQuests] = useState<QuestRow[]>([]);
   const [boosterCount, setBoosterCount] = useState(0);
   const [statementReady, setStatementReady] = useState(false);
@@ -64,12 +66,13 @@ export function Home() {
   const [error, setError] = useState(false);
 
   async function load() {
+    if (!childId) return;
     try {
       const [moneyRes, me, questsRes, boostersRes] = await Promise.all([
-        api.get<MoneyOverview>("/child/money"), api.get<{ level: LevelView }>("/child/me"),
+        api.get<MoneyOverview>("/child/money"), childLevelForDisplay(childId),
         api.get<{ quests: QuestRow[] }>("/child/quests"), api.get<{ boosters: { id: string }[] }>("/child/boosters"),
       ]);
-      setMoney(moneyRes); setLevel(me.level);
+      setMoney(moneyRes); setLevel(me.level); setPreviewing(me.previewing);
       setQuests(questsRes.quests.filter((q) => ["DISPONIBLE", "ACCEPTEE", "A_REFAIRE"].includes(q.status)));
       setBoosterCount(boostersRes.boosters.length); setError(false);
       api.get<{ run: { unseen: number } | null }>("/child/invest")
@@ -77,7 +80,20 @@ export function Home() {
     } catch { setError(true); } finally { setLoading(false); }
   }
 
-  useEffect(() => { if (childId) { setLoading(true); void load(); } }, [childId]);
+  useEffect(() => {
+    if (!childId) return;
+    setLoading(true);
+    void load();
+    let request = 0;
+    const onPreviewChange = () => {
+      const current = ++request;
+      void childLevelForDisplay(childId).then((result) => {
+        if (current === request) { setLevel(result.level); setPreviewing(result.previewing); }
+      }).catch(() => setError(true));
+    };
+    window.addEventListener(DEMO_LEVEL_CHANGE, onPreviewChange);
+    return () => { request++; window.removeEventListener(DEMO_LEVEL_CHANGE, onPreviewChange); };
+  }, [childId]);
   if (session?.kind !== "child") return null;
   if (loading) return <div className="village-loading" role="status"><CoinArt size={80}/><p>{t.loading}</p></div>;
   if (error || !money) return <div className="empty-state"><strong>{t.failed}</strong><button className="btn btn-primary" onClick={() => void load()}>{t.retry}</button></div>;
@@ -88,7 +104,7 @@ export function Home() {
   return <main className="village-home" data-world-tier={tier}>
     <div className="village-hud" aria-label={t.progress}>
       <Link className="village-hud-profile" to="/enfant/profil" aria-label={t.profileAria(session.child.displayName, level.level)}><Avatar avatarId={session.child.avatarId} frameId={session.child.frameId}/><span><small>{t.welcome}</small><strong>{session.child.displayName}</strong></span><span className="village-level">{t.level} {level.level}</span></Link>
-      <Link className="village-hud-xp" to="/enfant/profil#xp" aria-label={`${t.tree}. ${levelTitle(level) || t.experience}. ${level.xpForNextLevel ? xpCopy.xpLeft(level.xpForNextLevel - level.xpIntoLevel, level.level + 1) : xpCopy.maxed} ${xpCopy.whatTitle}`}><ExperienceTree level={level} childId={session.child.id} compact /><span>{t.tree}</span><ProgressBar value={level.xpIntoLevel} max={level.xpForNextLevel || 1}/><small>{level.xpIntoLevel} / {level.xpForNextLevel} XP{level.xpForNextLevel > 0 && <> · {xpCopy.hudNext(level.xpForNextLevel - level.xpIntoLevel)}</>}</small></Link>
+      <Link className="village-hud-xp" to="/enfant/profil#xp" aria-label={`${t.tree}. ${levelTitle(level) || t.experience}. ${level.xpForNextLevel ? xpCopy.xpLeft(level.xpForNextLevel - level.xpIntoLevel, level.level + 1) : xpCopy.maxed} ${xpCopy.whatTitle}`}><ExperienceTree level={level} childId={previewing ? undefined : session.child.id} compact /><span>{t.tree}</span><ProgressBar value={level.xpForNextLevel > 0 ? level.xpIntoLevel : 1} max={level.xpForNextLevel || 1}/><small>{level.xpForNextLevel > 0 ? <>{level.xpIntoLevel} / {level.xpForNextLevel} XP · {xpCopy.hudNext(level.xpForNextLevel - level.xpIntoLevel)}</> : t.maxLevel}</small></Link>
       <Link className="village-hud-coins" to="/enfant/argent" aria-label={t.accountAria(money.balances.available)}><CoinArt size={49}/><span><small>{t.account}</small><strong>{money.balances.available} <em>{t.coins}</em></strong></span></Link>
     </div>
     <section className="village-section" aria-labelledby="village-title">

@@ -4,6 +4,8 @@ import { prisma } from "../lib/prisma.js";
 import { DEVICE_COOKIE, DEVICE_COOKIE_OPTIONS, signDevice, signSession, SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from "../lib/auth.js";
 import { validateBody } from "../lib/validation.js";
 import { seedDatabase } from "../lib/devSeed.js";
+import { attachSession, requireChild } from "../middleware/requireAuth.js";
+import { levelView, MAX_LEVEL, xpAtStartOfLevel } from "../lib/levels.js";
 
 /**
  * Routes réservées au développement local : connexion instantanée sur les comptes
@@ -68,6 +70,14 @@ devRouter.post("/dev/login-as-child", validateBody(loginAsChildSchema), async (r
   res.cookie(SESSION_COOKIE, token, SESSION_COOKIE_OPTIONS);
   res.cookie(DEVICE_COOKIE, signDevice(child.householdId), DEVICE_COOKIE_OPTIONS);
   res.json({ ok: true, householdId: child.householdId });
+});
+
+/** Visual-only level preview. Never writes XP, boosters, titles or notifications. */
+devRouter.get("/dev/level-preview", attachSession, requireChild, (req, res) => {
+  const requested = z.coerce.number().int().min(1).max(MAX_LEVEL).safeParse(req.query.level);
+  if (!requested.success) return res.status(400).json({ error: "Requête invalide" });
+  res.set("Cache-Control", "private, no-store");
+  res.json({ level: levelView(xpAtStartOfLevel(requested.data)) });
 });
 
 const grantBoostersSchema = z.object({ childId: z.string().uuid(), count: z.number().int().min(1).max(10) });

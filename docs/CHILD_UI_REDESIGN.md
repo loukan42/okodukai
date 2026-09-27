@@ -32,6 +32,10 @@ Depuis l'espace parent, **Espace enfant** ouvre le choix d'un profil. Pour prêt
 
 ## Adaptation des formats
 
+Dans le build local, la barre « Démo » propose les niveaux 1 à 30 pour le profil enfant connecté. Le niveau choisi n'est qu'un aperçu dans l'onglet : la vallée, l'arbre et la fiche de progression changent, tandis que les données du foyer restent intactes. Revenir à « Niveau réel » ferme l'aperçu. Le choix d'un cadre est désactivé pendant l'aperçu, car son déblocage dépend du vrai niveau.
+
+Le script `node apps/web/scripts/capture-demo-levels.mjs` vérifie les seuils 1, 5, 10, 20 et 30, le retour au niveau réel et l'absence de débordement à 375, 768 et 1280 px. Les captures `docs/screenshots/demo-level-*` montrent le sélecteur ouvert, la vallée et le profil ; le script vérifie aussi que l'XP réel n'a pas changé.
+
 - À 375 px, la scène du village utilise le fond vertical ; les plaques restent accessibles au-dessus de la navigation fixe, le HUD dispose le niveau sous le nom, et l'échoppe garde deux objets par rangée.
 - À 768 px, le panorama montre les six bâtiments et les panneaux de contenu restent limités en largeur.
 - À 1280 px, le monde remplit une grande scène sans étirer les fiches de lecture. La navigation flotte au bas de la fenêtre, sans couvrir les plaques du village.

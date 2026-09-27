@@ -13,6 +13,13 @@ export function xpToReachNextLevel(level: number): number {
   return 100 + (level - 1) * 25;
 }
 
+/** XP at the beginning of a level, used by the read-only development preview. */
+export function xpAtStartOfLevel(level: number): number {
+  let total = 0;
+  for (let current = 1; current < level; current++) total += xpToReachNextLevel(current);
+  return total;
+}
+
 /** Titres de la vallée, par niveau de départ. Les libellés sont côté site (fr/en), ici les codes. */
 export const LEVEL_TITLES: { level: number; code: string }[] = [
   { level: 1, code: "novice" },

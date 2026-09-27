@@ -6,8 +6,28 @@ import { RARITY_LABELS } from "../lib/rarity";
 import { useAuth, LAST_HOUSEHOLD_KEY } from "../lib/AuthContext";
 import { GameIcon } from "./GameIcon";
 import { BoosterOpenOverlay, type RevealedCard } from "./booster/BoosterOpenOverlay";
+import { getDemoLevel, setDemoLevel } from "../lib/demoLevel";
+import { defineCopy, useCopy } from "../i18n";
 
 const PREVIEW_RARITIES: CardRarity[] = ["COMMUNE", "RARE", "EPIQUE", "LEGENDAIRE"];
+const DEMO_LEVELS = Array.from({ length: 30 }, (_, index) => index + 1);
+
+const copy = defineCopy({
+  fr: {
+    levelLabel: (name: string) => `Niveau affiché pour ${name}`,
+    realLevel: "Niveau réel",
+    levelOption: (level: number) => `Niveau ${level}`,
+    previewHint: "Aperçu dans cet onglet. Aucun XP ni booster ajouté.",
+    previewButton: (level: number) => `Démo · niv. ${level}`,
+  },
+  en: {
+    levelLabel: (name: string) => `Displayed level for ${name}`,
+    realLevel: "Real level",
+    levelOption: (level: number) => `Level ${level}`,
+    previewHint: "Preview in this tab. No XP or booster is added.",
+    previewButton: (level: number) => `Demo · lvl. ${level}`,
+  },
+});
 
 interface DevHousehold {
   id: string;
@@ -23,14 +43,26 @@ interface DevHousehold {
  * ses routes /dev/* (désactivées côté serveur quand NODE_ENV=production).
  */
 export function DevBar() {
+  const t = useCopy(copy);
   const navigate = useNavigate();
   const { refresh, session } = useAuth();
+  const childId = session?.kind === "child" ? session.child.id : null;
   const [open, setOpen] = useState(false);
   const [households, setHouseholds] = useState<DevHousehold[] | null>(null);
   const [available, setAvailable] = useState(true);
   const [busy, setBusy] = useState(false);
   // Aperçu de l'ouverture avec de vraies cartes d'une rareté donnée : rien n'est crédité.
   const [preview, setPreview] = useState<CardRarity | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
+
+  useEffect(() => { setSelectedLevel(childId ? getDemoLevel(childId) : null); }, [childId]);
+
+  function changeLevel(value: string) {
+    if (!childId) return;
+    const level = value === "" ? null : Number(value);
+    setSelectedLevel(level);
+    setDemoLevel(childId, level);
+  }
 
   async function load() {
     try {
@@ -121,6 +153,14 @@ export function DevBar() {
 
           {session?.kind === "child" && (
             <div style={{ marginBottom: 14 }}>
+              <div className="field" style={{ marginBottom: 12 }}>
+                <label htmlFor="demo-level-select">{t.levelLabel(session.child.displayName)}</label>
+                <select id="demo-level-select" value={selectedLevel ?? ""} onChange={(event) => changeLevel(event.target.value)}>
+                  <option value="">{t.realLevel}</option>
+                  {DEMO_LEVELS.map((level) => <option key={level} value={level}>{t.levelOption(level)}</option>)}
+                </select>
+                <small className="text-faint">{t.previewHint}</small>
+              </div>
               <p className="text-sm text-faint" style={{ fontWeight: 700, marginBottom: 6 }}>
                 Boosters de {session.child.displayName}
               </p>
@@ -179,8 +219,9 @@ export function DevBar() {
         className="btn btn-primary btn-sm"
         style={{ boxShadow: "0 4px 14px rgba(0,0,0,0.25)" }}
         onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
       >
-        Démo
+        {selectedLevel === null ? "Démo" : t.previewButton(selectedLevel)}
       </button>
       <BoosterOpenOverlay
         key={preview ?? "sans-apercu"}

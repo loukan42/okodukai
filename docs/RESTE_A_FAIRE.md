@@ -2,11 +2,15 @@
 
 ## Bilan du 27 septembre 2026 : refonte enfant livrée
 
+- La barre « Démo » permet de choisir un niveau de 1 à 30 pour l'enfant connecté, ou de revenir au niveau réel. Cet aperçu reste dans l'onglet : la vallée, l'arbre et le profil suivent le niveau choisi ; l'XP, les boosters et les cadres enregistrés ne changent pas. Le calcul de l'aperçu vient de l'API de développement. Le sélecteur n'est pas livré dans le build de production.
+- `node apps/web/scripts/capture-demo-levels.mjs` contrôle les seuils 1/5/10/20/30, le retour au niveau réel et les vues à 375/768/1280 px. Captures : `docs/screenshots/demo-level-*`. Le script vérifie que l'XP en base ne change pas.
+- Le visuel `images/metadescription.png` fourni pour les réseaux sociaux est publié en JPEG optimisé avec les balises Open Graph et Twitter. Le coffre `images/favicon.png` remplace le favicon, l'icône iOS et les icônes PWA. Les URL des balises sociales utilisent le domaine de production documenté `okodukai-gold.vercel.app` ; les adapter si le site reçoit un domaine propre.
+
 - Ajout après la revue finale : trois cadres de portrait cosmétiques aux niveaux 5, 10 et 20. Le choix est conservé sur le profil enfant et vérifié côté API. Captures à 375, 768 et 1280 px : `child-portrait-frames-*`. Les 16 portraits et l'arbre d'XP restent en place.
 
 - La vallée navigable, ses quatre paliers peints, les 16 personnages en pied, l'arbre qui grandit avec l'XP, les huit catégories de quêtes illustrées, les lieux intérieurs, le coffre, la boutique, la collection et la bibliothèque sont intégrés. Le parent peut prêter son téléphone avec retour protégé par PIN ou envoyer une invitation unique à l'enfant sur son propre appareil.
 - Captures contrôlées à 375, 768 et 1280 px : `child-experience-*`, `child-character-*` et les 15 `child-valley-tier-*` dans `docs/screenshots/`. Les cinq paliers gardent les lieux cliquables, le HUD visible et aucun débordement. Les objets du journal sont tous chargés et lisibles aux trois largeurs.
-- Vérifications finales : `npm run build` réussi (typecheck shared, API et web) ; `npm test` avec `apps/api/.env` réussi (81 tests). Le dépôt ne définit ni script `lint` ni configuration ESLint/Biome ; aucun lint dédié n'a été lancé. Les variantes WebP 1920/1080 du fond et des calques ont leur largeur annoncée et le même cadrage.
+- Vérifications finales : `npm run build` réussi (typecheck shared, API et web) ; `npm test --workspace apps/api` réussi (82 tests, dont l'aperçu de niveau). Le build contient la carte sociale, les favicons, l'icône iOS et les icônes PWA. Le dépôt ne définit ni script `lint` ni configuration ESLint/Biome ; aucun lint dédié n'a été lancé. Les variantes WebP 1920/1080 du fond et des calques ont leur largeur annoncée et le même cadrage.
 - Limites connues : Emma et Lucas ont six poses ; les 14 autres personnages ont la pose repos. Les titres de quêtes et récompenses écrits par une famille restent dans leur langue de saisie. Ce sont des choix de contenu, sans incidence sur le PIN ni sur les valeurs serveur. Les autres chantiers généraux du produit ci-dessous restent indépendants de cette refonte.
 
 ## Point d'étape du 27 septembre 2026 : les huit catégories de quêtes sont illustrées

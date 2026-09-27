@@ -12,11 +12,12 @@ export default defineConfig({
       // push-sw.js : affichage des notifications (« Ton relevé est prêt. ») et ouverture de l'app au clic.
       // La pièce 3D de la landing (three.js) n'est pas préchargée : l'app n'en a pas besoin.
       workbox: { navigateFallbackDenylist: [/^\/api\//], importScripts: ["/push-sw.js"], globIgnores: ["**/coin3d-*.js"] },
-      includeAssets: ["favicon.png"],
+      includeAssets: ["favicon.png", "favicon-32.png", "apple-touch-icon.png"],
       manifest: {
         name: "Okodukai",
         short_name: "Okodukai",
-        description: "Le premier portefeuille de votre enfant.",
+        lang: "fr",
+        description: "Okodukai aide les enfants à apprendre à gérer leur argent en jouant, avec une tirelire virtuelle, des objectifs et des récompenses familiales.",
         theme_color: "#1c2e4a",
         background_color: "#f5f1e6",
         display: "standalone",
