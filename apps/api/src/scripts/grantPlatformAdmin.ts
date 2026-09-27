@@ -2,15 +2,14 @@ import "dotenv/config";
 import { prisma } from "../lib/prisma.js";
 
 async function main() {
-  const email = process.argv[2]?.trim().toLowerCase();
-  const allowPasswordAccount = process.argv[3] === "--allow-password-account";
-  if (email !== "loucore@gmail.com") {
-    throw new Error("L'administration est réservée à loucore@gmail.com : npm run admin:grant --workspace apps/api -- loucore@gmail.com");
-  }
-  const user = await prisma.user.findFirst({ where: { email: { equals: email, mode: "insensitive" } }, select: { id: true, googleSub: true } });
-  if (!user) throw new Error("Compte inexistant. Connectez-vous d'abord avec ce compte avant de lui attribuer l'administration.");
+  const allowPasswordAccount = process.argv[2] === "--allow-password-account";
+  const configuredEmail = process.env.PLATFORM_ADMIN_EMAIL?.trim().toLowerCase();
+  if (!configuredEmail) throw new Error("Configuration incomplète : variable d'environnement manquante.");
+
+  const user = await prisma.user.findFirst({ where: { email: { equals: configuredEmail, mode: "insensitive" } }, select: { id: true, googleSub: true } });
+  if (!user) throw new Error("Compte cible introuvable.");
   if (!user.googleSub && !allowPasswordAccount) {
-    throw new Error("Compte sans Google associé. Si vous avez vérifié que ce compte appartient bien au propriétaire, relancez avec --allow-password-account.");
+    throw new Error("Compte cible non conforme (option requise pour un compte sans fournisseur externe).");
   }
 
   // Un seul compte peut détenir ce droit après l'opération.
@@ -18,7 +17,7 @@ async function main() {
     await tx.user.updateMany({ where: { isPlatformAdmin: true }, data: { isPlatformAdmin: false } });
     await tx.user.update({ where: { id: user.id }, data: { isPlatformAdmin: true } });
   });
-  console.log("Administration globale attribuée au compte existant.");
+  console.log("Administration globale attribuée.");
 }
 
 main().catch((error: unknown) => { console.error(error); process.exitCode = 1; }).finally(() => prisma.$disconnect());

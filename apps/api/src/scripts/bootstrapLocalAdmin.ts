@@ -5,18 +5,19 @@ import { fileURLToPath } from "node:url";
 import argon2 from "argon2";
 import { prisma } from "../lib/prisma.js";
 
-const ADMIN_EMAIL = "loucore@gmail.com";
 const PASSWORD_FILE = fileURLToPath(new URL("../../.env.local", import.meta.url));
 
 async function main() {
   const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) throw new Error("DATABASE_URL manquante.");
+  if (!databaseUrl) throw new Error("Configuration incomplète : variable d'environnement manquante.");
   const host = new URL(databaseUrl).hostname.toLowerCase();
   if (!["localhost", "127.0.0.1", "[::1]"].includes(host)) {
     throw new Error("Initialisation refusée : cette commande est réservée à la base locale.");
   }
+  const adminEmail = process.env.PLATFORM_ADMIN_EMAIL?.trim().toLowerCase();
+  if (!adminEmail) throw new Error("Configuration incomplète : variable d'environnement manquante.");
 
-  const existing = await prisma.user.findFirst({ where: { email: { equals: ADMIN_EMAIL, mode: "insensitive" } }, select: { id: true } });
+  const existing = await prisma.user.findFirst({ where: { email: { equals: adminEmail, mode: "insensitive" } }, select: { id: true } });
   if (existing) throw new Error("Ce compte existe déjà dans la base locale. Aucun mot de passe n'a été modifié.");
 
   const password = randomBytes(24).toString("base64url");
@@ -39,7 +40,7 @@ async function main() {
       });
       await tx.user.updateMany({ where: { isPlatformAdmin: true }, data: { isPlatformAdmin: false } });
       const user = await tx.user.create({
-        data: { email: ADMIN_EMAIL, displayName: "Lou", passwordHash, isPlatformAdmin: true },
+        data: { email: adminEmail, displayName: "Lou", passwordHash, isPlatformAdmin: true },
       });
       await tx.householdMembership.create({
         data: { householdId: household.id, userId: user.id, role: "PARENT_ADMIN" },
@@ -53,7 +54,7 @@ async function main() {
     throw error;
   }
 
-  console.log(`Compte ${ADMIN_EMAIL} créé dans la base locale avec accès admin. Mot de passe enregistré dans apps/api/.env.local (ignoré par Git).`);
+  console.log("Compte créé dans la base locale avec accès admin. Mot de passe enregistré dans apps/api/.env.local (ignoré par Git).");
 }
 
 main().catch((error: unknown) => { console.error(error); process.exitCode = 1; }).finally(() => prisma.$disconnect());
