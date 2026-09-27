@@ -23,6 +23,7 @@
 - 375, 768 et 1280 px : `screenshots/child-experience-{home,profile,account,goal}-*.png`, régénérables par `node apps/web/scripts/capture-child-experience.mjs`.
 - 375, 768 et 1280 px : `screenshots/child-experience-{collection,album,album-empty}-*.png`. L'album possède maintenant la salle aux lanternes jusque dans la vue d'un univers ; les filtres vides montrent une bibliothèque et une consigne adaptée.
 - 375, 768 et 1280 px : `screenshots/child-experience-{learning-list,learning-detail}-*.png`. Les six poses d'Emma et de Lucas sont disponibles ; la scène de leçon affiche découverte, réflexion ou fierté selon l'étape. Le décor et le texte restent lisibles sur téléphone, tablette et ordinateur.
+- 375, 768 et 1280 px : `screenshots/child-experience-{quests,vault,shop,shop-end,observatory}-*.png`. Les captures de début et de fin de boutique montrent tous les objets courants et la navigation à sa place dans la fenêtre. Les images sont contrôlées après chargement et les pages ne débordent pas horizontalement.
 
 Les captures viennent du foyer local de démonstration ; le bouton « Démo » n'apparaît pas en production. Le contrôle a aussi porté sur le dialogue PIN à 375 px, sa fermeture par Échap et l'absence de débordement horizontal sur les principaux écrans.
 
@@ -35,6 +36,7 @@ Les captures viennent du foyer local de démonstration ; le bouton « Démo » n
 - PIN masqué et touche d'effacement nommée pour le lecteur d'écran.
 - Deux rendus d'échoppe évalués : le premier comportait des pseudo-inscriptions et a été écarté ; le second, sans texte peint, est intégré.
 - Album d'univers : son entête auparavant posé sur le fond beige reprend le décor de la galerie, avec un voile qui conserve la lisibilité. Les univers sans illustration de carte utilisent un pan de la galerie. Les chargements enfant affichent un sablier du monde. L'ouverture du booster a été vérifiée jusqu'au récapitulatif ; le dernier coup sur le cristal annonce sa rupture au lieu d'afficher « encore 0 touche ».
+- Boutique : la première planche de nouveaux objets reprenait le même motif d'étoile sur plusieurs récompenses sans raison. Elle a été rejetée. Les objets ont été refaits séparément, sans inscription ni emblème arbitraire. Le dessert et la glace ont deux images distinctes ; les récompenses de musique, ami, figurine, livre et temps d'écran ont chacune un objet lisible.
 
 ## Revue par profils (inspection de l'interface, sans test utilisateur)
 

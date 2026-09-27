@@ -6,6 +6,7 @@ import { chromium } from "playwright-core";
 
 const base = "http://localhost:5173";
 const out = fileURLToPath(new URL("../../../docs/screenshots", import.meta.url));
+const shopOnly = process.argv.includes("--shop-only");
 const executablePath = process.env.CHROMIUM_PATH || undefined;
 const browser = await chromium.launch(executablePath ? { executablePath } : {});
 await mkdir(out, { recursive: true });
@@ -24,6 +25,7 @@ try {
     if (!loginResponse.ok()) throw new Error(`Demo login: HTTP ${loginResponse.status()}`);
     await page.addInitScript(() => localStorage.setItem("okodukai:locale", "fr"));
     for (const [screen, route, ready] of [["home", "/enfant", ".experience-tree img"], ["profile", "/enfant/profil#xp", ".experience-tree img"], ["account", "/enfant/argent", ".money-passbook"], ["goal", "/enfant/argent/coffre", ".money-goal"]]) {
+      if (shopOnly) break;
       await page.goto(base + route, { waitUntil: "networkidle" });
       await page.locator(ready).first().waitFor({ state: "visible" });
       if (screen === "home" || screen === "profile") await page.locator(ready).first().evaluate((image) => image.decode());
@@ -35,6 +37,29 @@ try {
       else await page.screenshot({ path: file, fullPage: true });
       console.log(file);
     }
+    for (const [screen, route, ready] of [["quests", "/enfant/quetes", ".quest-journal"], ["vault", "/enfant/argent/coffre", ".money-vault-hero"], ["shop", "/enfant/boutique", ".reward-grid"], ["observatory", "/enfant/argent/investir", ".observatory-head"]]) {
+      if (shopOnly && screen !== "shop") continue;
+      await page.goto(base + route, { waitUntil: "networkidle" });
+      await page.locator(ready).first().waitFor({ state: "visible" });
+      if (screen === "shop") {
+        await page.locator(".reward-item-art img").first().waitFor({ state: "visible" });
+        const broken = await page.locator(".reward-item-art img").evaluateAll((images) => images.filter((image) => !image.complete || image.naturalWidth === 0).length);
+        if (broken) throw new Error(`Shop ${width}px: ${broken} reward illustrations did not load`);
+      }
+      await page.addStyleTag({ content: ".dev-bar { display: none !important; }" });
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      if (overflow > 1) throw new Error(`${screen} ${width}px: horizontal overflow ${overflow}px`);
+      const file = `${out}/child-experience-${screen}-${width}.png`;
+      await page.screenshot({ path: file });
+      console.log(file);
+      if (screen === "shop") {
+        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+        const endFile = `${out}/child-experience-shop-end-${width}.png`;
+        await page.screenshot({ path: endFile });
+        console.log(endFile);
+      }
+    }
+    if (shopOnly) { await context.close(); continue; }
     await page.goto(`${base}/enfant/argent/investir/bibliotheque`, { waitUntil: "networkidle" });
     await page.locator(".learning-module").first().waitFor({ state: "visible" });
     await page.locator(".learning-module-art").first().evaluate((image) => image.decode());
@@ -47,7 +72,7 @@ try {
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       if (overflow > 1) throw new Error(`${screen} ${width}px: horizontal overflow ${overflow}px`);
       const file = `${out}/child-experience-${screen}-${width}.png`;
-      await page.screenshot({ path: file, fullPage: true });
+      await page.screenshot({ path: file });
       console.log(file);
     }
     const universesResponse = await page.request.get(`${base}/api/child/universes`);

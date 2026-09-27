@@ -13,7 +13,7 @@ const images = [
   { name: "adventurer-lucas-idle", folder: "characters", sizes: [256, 512, 768] },
   { name: "adventurer-lucas-victory", folder: "characters", sizes: [256, 512, 768] },
   ...["emma", "lucas"].flatMap((character) => ["happy", "proud", "thinking", "discovery"].map((pose) => ({ name: `adventurer-${character}-${pose}`, folder: "characters", sizes: [256, 512, 768] }))),
-  ...["cinema", "icecream", "bicycle", "family-game"].map((name) => ({ name: `reward-${name}`, folder: "rewards", sizes: [256, 512] })),
+  ...["cinema", "icecream", "dessert", "bicycle", "family-game", "music", "friend", "figurine", "book"].map((name) => ({ name: `reward-${name}`, folder: "rewards", sizes: [256, 512] })),
   { name: "goal-waypost", folder: "goals", sizes: [128, 256, 512] },
   ...["sprout", "sapling", "young", "flowering", "mature"].map((name) => ({ name: `xp-tree-${name}`, folder: "experience", sizes: [256, 512] })),
 ];

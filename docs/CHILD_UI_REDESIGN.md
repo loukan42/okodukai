@@ -18,6 +18,8 @@ L'accueil est une scène navigable. Chaque destination est un lien HTML nommé e
 
 Les pièces et XP demeurent des valeurs serveur. Une quête en attente n'affiche pas son gain comme acquis. Le compte garde un relevé lisible ; les placements restent une simulation pédagogique. Les cartes et l'ouverture de booster existantes sont réemployées.
 
+Les récompenses usuelles du foyer de démonstration possèdent maintenant des objets distincts, notamment dessert, musique, invitation d'un ami, figurine et livre. Le temps d'écran réemploie le sablier de la vallée. Une récompense libre créée par le parent conserve un pictogramme de catégorie si aucun objet ne correspond à son titre ; l'illustration ne change ni le prix ni la validation parentale.
+
 L'XP fait aussi pousser un arbre personnel, visible dans le HUD et sur le profil. Cinq illustrations de la même espèce correspondent aux niveaux 1, 5, 10, 20 et 30. La taille varie légèrement entre ces seuils selon l'XP du niveau courant ; le prochain seuil est indiqué en texte. Un gain détecté depuis la dernière visite sur l'appareil déclenche une réaction courte, jamais un gain simulé. Ce compagnon visuel est purement cosmétique ; les nombres et les récompenses restent ceux du serveur. Le registre de compte possède maintenant sa propre scène intérieure, avec le solde sur une surface sombre lisible. Chaque objectif du coffre est une destination au bout d'un chemin : la pièce avance selon le montant du serveur, les quatre récompenses illustrées connues montrent leur objet, et les titres libres utilisent un poteau sans texte peint.
 
 ## Deux appareils, un foyer

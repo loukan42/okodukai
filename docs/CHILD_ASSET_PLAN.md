@@ -18,6 +18,7 @@ Le registre des fichiers livrés et de leur provenance est `ASSET_REGISTRY.md`. 
 | `adventurer-{emma,lucas}-{happy,proud,thinking,discovery}-{256,512,768}.webp` | Place, profil et leçons | WebP transparent, trois tailles | Même personnage, tenue et caméra que les poses existantes | P1 | Livré |
 | Personnages en pied pour les 14 autres portraits | Profil et moments de jeu | WebP transparent 512 | Fidèles au portrait choisi | P1 | À produire |
 | `reward-{cinema,icecream,bicycle,family-game}-{256,512}.webp` | Boutique, récompenses familiales | WebP transparent | Objets trois-quarts, palette du monde | P1 | Livré |
+| `reward-{dessert,music,friend,figurine,book}-{256,512}.webp` | Boutique, récompenses courantes du foyer | WebP transparent | Objets distincts, détails fonctionnels et sans inscriptions | P1 | Livré, contrôlé à 375/768/1280 px |
 | `quest-{habit,mission,major,booster}.webp` | Journal, type de quête | WebP transparent 256 | Objet sobre, sans texte | P1 | Variantes visuelles par objets existants livrées ; assets dédiés à produire |
 | `learning-{diversification,inflation,risk,compound}-{320,640}.webp` | Bibliothèque, mini scènes | WebP carré | Notions illustrées, même vallée | P2 | Livré |
 | `child-{gallery,observatory,library,shop}-interior-{1280,1920}.webp` | Lieux intérieurs | WebP panoramique | Même bois, laiton, vallée et lumière | P1 | Livré |
