@@ -26,7 +26,7 @@ const places: { key: "quests" | "vault" | "shop" | "collection" | "observatory" 
 
 /** Paliers de la vallée dont le calque de décor est livré (`hub-tier-N`, un calque complet posé sur le fond
  * du campement). Un palier absent de cette liste garde le fond seul : jamais de progrès fictif. */
-const tierLayers: number[] = [];
+const tierLayers: number[] = [5, 10, 20, 30];
 
 const copy = defineCopy({
   fr: {

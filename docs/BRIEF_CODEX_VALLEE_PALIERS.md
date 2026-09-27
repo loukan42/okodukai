@@ -1,5 +1,7 @@
 # Brief Codex : illustrer les paliers de la Vallée d'Okodukai
 
+**Exécuté le 27 septembre 2026.** Les huit scènes, les calques extraits, les WebP et les 15 captures de contrôle sont versionnés. Ce brief reste la procédure de régénération.
+
 Tâche à reprendre dans Codex, qui dispose de la génération d'images. Tout le code est déjà en place : il reste à
 produire huit images, à les passer dans les scripts fournis et à activer les paliers. Lire d'abord `CLAUDE.md` et
 `AGENTS.md` à la racine. Ce brief est la procédure de référence des calques de palier.

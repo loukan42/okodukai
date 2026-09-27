@@ -1,13 +1,20 @@
 # Reste à faire : passation (26 septembre 2026)
 
+## Point d'étape du 27 septembre 2026 : les quatre paliers de la vallée sont livrés
+
+- Les paliers 5, 10, 20 et 30 ont chacun un calque peint complet pour le cadrage paysage et portrait. Les huit scènes successives ont été produites depuis `hub-wide.png` ou `hub-tall.png` ; un essai portrait au mauvais cadrage a été écarté. Le hameau existant reste le palier 1. Les ajouts cumulés sont lanternes et fanion, échoppe et potager, maisonnettes et pont, puis nouvelle lisière. `Home.tsx` active les quatre calques, choisis par le niveau renvoyé par `/child/me`.
+- Les sources intégrales et les calques transparents sont dans `apps/web/art/source/child/`, les WebP optimisés dans `apps/web/public/assets/backgrounds/`. L'extraction a modifié 1,8 à 29,3 % de chaque scène, sous le seuil d'un tiers du brief. Les aperçus de calque posé sur le fond ont été inspectés ; les lieux initiaux, le personnage et les chemins restent lisibles.
+- `node apps/web/scripts/capture-child-valley-tiers.mjs` a contrôlé les cinq paliers à 375, 768 et 1280 px : calque aligné, non cliquable, cibles de lieu utilisables, HUD visible et aucun débordement. Les 15 captures sont dans `docs/screenshots/child-valley-tier-*.png` et ont été revues visuellement. Build web vert. `docs/BRIEF_CODEX_VALLEE_PALIERS.md` est exécuté ; le garder comme procédure de régénération.
+- Pour une prochaine reprise : restent les illustrations dédiées des quêtes créativité, école, jardin et animaux, puis la revue finale de la mission initiale dans `CHILD_ASSET_PLAN.md` et `CHILD_UI_REDESIGN.md`.
+
 ## Point d'étape du 27 septembre 2026 : vallée par paliers, architecture prête, illustrations à produire
 
 - Le propriétaire a relancé la vallée qui grandit avec le niveau. L'accueil enfant pose désormais un calque transparent par palier (5, 10, 20, 30) sur le fond `child-hub-*`, sous les lieux et le personnage, non cliquable et masqué aux lecteurs d'écran. Le palier vient du niveau renvoyé par `/child/me` ; aucune logique côté API. Un calque complet par palier, sans empilement.
-- **Aucun calque n'est encore illustré** : cette session n'avait pas d'outil de génération d'images. `tierLayers` est vide dans `apps/web/src/pages/child/Home.tsx`, donc rien ne change à l'écran tant qu'un palier n'y est pas ajouté.
+- À cette étape, aucun calque n'était encore illustré. Les quatre paliers ont depuis été livrés et activés ; voir le point d'étape ci-dessus.
 - Outils livrés : `optimize-child-art.mjs` produit `backgrounds/hub-tier-<palier>-{wide,tall}-*.webp` quand la source existe et refuse un calque opaque ou mal cadré ; `extract-hub-tier-layer.mjs` tire le calque d'une scène complète éditée par le générateur ; `capture-child-valley-tiers.mjs` capture les cinq paliers à 375/768/1280 px avec un niveau remplacé dans le navigateur seulement. Zones libres, contenu de chaque palier et consignes de génération : `docs/BRIEF_CODEX_VALLEE_PALIERS.md`.
 - Vérifié avec un calque de test jetable (contours du fond en rouge, non versionné) : alignement exact aux trois largeurs, lieux et personnage cliquables, HUD intact, pas de débordement. Extraction testée sur une édition simulée (teinte décalée, grain, JPEG, autre résolution). Build web vert.
 - Décision du propriétaire : le hameau du fond actuel reste le palier 1, sans campement redessiné.
-- **Reste : exécuter `docs/BRIEF_CODEX_VALLEE_PALIERS.md` dans Codex**, qui a la génération d'images (quota Codex épuisé le 27/09, à reprendre plus tard). Le brief est autonome : huit consignes prêtes à coller, zones, extraction, activation des paliers, captures, registre et push.
+- `docs/BRIEF_CODEX_VALLEE_PALIERS.md` a été exécuté dans Codex après le retour du quota ; il reste la référence pour régénérer les calques.
 
 ## Point d'étape du 27 septembre 2026 : objets des quêtes courantes
 
@@ -26,7 +33,7 @@
 - Les 14 portraits autres qu'Emma et Lucas ont chacun une illustration en pied fidèle au visage, à la coiffure et aux vêtements du portrait, dans la lumière de la vallée. Leurs PNG sources et les WebP 256/512/768 sont versionnés ; les régénérer avec `node apps/web/scripts/optimize-child-art.mjs`. Une première composition horizontale du portrait 16 a été rejetée avant intégration.
 - Le personnage sélectionné apparaît sur la place, le profil, les leçons et lors de la récompense. Emma et Lucas gardent leurs six poses ; les 14 autres personnages utilisent la pose repos sur ces écrans.
 - Contrôlés dans le navigateur à 375, 768 et 1280 px pour les portraits 01, 04, 07, 10, 11, 12 et 16 sur la place et le profil, avec `apps/web/scripts/capture-child-characters.mjs`. Captures dans `docs/screenshots/child-character-*`. Les images verticales qui débordaient du profil sur tablette sont recadrées par le conteneur de figure ; aucun débordement horizontal.
-- Le roster en pied est complet. Les autres limites de la refonte sont décrites dans `CHILD_ASSET_PLAN.md` et `CHILD_UI_REDESIGN.md` ; les variantes de décor par palier restent reportées par décision du propriétaire.
+- Le roster en pied est complet. Les autres limites de la refonte sont décrites dans `CHILD_ASSET_PLAN.md` et `CHILD_UI_REDESIGN.md` ; les variantes de décor par palier sont livrées au point d'étape ci-dessus.
 
 ## Point d'étape du 27 septembre 2026 : administration et accès visible
 

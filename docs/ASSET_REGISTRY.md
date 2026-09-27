@@ -30,6 +30,7 @@ code du dépôt (aucune banque d'images, aucun modèle génératif externe, aucu
 | Avatars (roster de 12) | `avatars/aventurier-01.svg` … `aventurier-12.svg` | Pipeline vectoriel, `scripts/art/characters/avatars.mjs` | `node scripts/art/export-svg.mjs avatars` (dans `apps/web`) | 2026-09-26 |
 | Logo (déclinaisons web) | `brand/logo-full-{320,640,960}.webp` | Redimensionnement WebP (sharp) du logo peint fourni par le propriétaire (`public/logo-full.png`) | voir commande `sharp` dans l'historique du commit | 2026-09-26 |
 | Village enfant | `backgrounds/child-hub-{wide,tall}-*.webp` | Illustration générée pour la Vallée d'Okodukai, source panoramique et source verticale dans `apps/web/art/source/child/` et dossier original de génération | Sources PNG + script d'optimisation du premier lot | 2026-09-27 |
+| Paliers de la vallée | `backgrounds/hub-tier-{5,10,20,30}-{wide,tall}-*.webp` | Génération d'images par édition successive du fond (`hub-wide.png`, `hub-tall.png`) ; calque complet par palier extrait par différence. Sources `hub-tier-*-full.png` et `hub-tier-*.png` dans `art/source/child/` | `node apps/web/scripts/extract-hub-tier-layer.mjs <palier> <wide\|tall>` puis `node apps/web/scripts/optimize-child-art.mjs` | 2026-09-27 |
 | Cinq lieux intérieurs | `backgrounds/child-{gallery,observatory,library,shop}-interior-{1280,1920}.webp`, `backgrounds/child-savings-chamber-{1280,1920}.webp` | Génération d'images à partir de la vallée de référence ; sélection visuelle, la première échoppe avec faux caractères a été rejetée. PNG dans `apps/web/art/source/child/` | `node apps/web/scripts/optimize-child-art.mjs` | 2026-09-27 |
 | Registre de compte | `backgrounds/child-registry-interior-{1280,1920}.webp` | Intérieur généré avec la vallée comme référence visuelle ; zone sombre à gauche et registre de cuir à droite. Source `art/source/child/registry-interior.png` | `node apps/web/scripts/optimize-child-art.mjs` | 2026-09-27 |
 | Emma et Lucas en pied | `characters/adventurer-{emma,lucas}-{idle,happy,proud,thinking,victory,discovery}-{256,512,768}.webp` | Génération d'images avec portrait du roster comme référence ; six poses cohérentes par personnage, contrôlées visuellement. PNG dans `apps/web/art/source/child/` | `node apps/web/scripts/optimize-child-art.mjs` | 2026-09-27 |
@@ -47,12 +48,6 @@ Les lignes « génération d'images » correspondent à des créations produites
 
 ## Hors registre (à traiter)
 
-- `backgrounds/hub-tier-{5,10,20,30}-{wide,tall}-*.webp` : calques de progression de la vallée, pas encore
-  illustrés. Choix retenu : un calque transparent complet par palier (le palier 20 contient aussi les ajouts des
-  paliers 5 et 10), posé sur `child-hub-*` ; jamais plusieurs calques empilés. Même pipeline « génération
-  d'images » que le village enfant, par édition du fond puis extraction du calque
-  (`scripts/extract-hub-tier-layer.mjs`) ; zones et consignes dans `BRIEF_CODEX_VALLEE_PALIERS.md`. Ajouter une ligne au
-  tableau à la livraison.
 - `apps/web/public/cards/**` et `apps/web/public/avatars/*.png` : images de *Héros de la classe* copiées localement,
   gitignorées (voir `CLAUDE.md`). Les anciens identifiants d'avatars restent lisibles : `Avatar.tsx` retombe sur un
   portrait du roster si le PNG manque.

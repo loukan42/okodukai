@@ -25,7 +25,7 @@ Le registre des fichiers livrés et de leur provenance est `ASSET_REGISTRY.md`. 
 | `child-{gallery,observatory,library,shop}-interior-{1280,1920}.webp` | Lieux intérieurs | WebP panoramique | Même bois, laiton, vallée et lumière | P1 | Livré |
 | `child-savings-chamber-{1280,1920}.webp` | Chambre du trésor | WebP panoramique | Pierre moussue et grand coffre | P1 | Livré |
 | `child-registry-interior-{1280,1920}.webp` | Registre de compte enfant | WebP panoramique | Comptoir de bois, registre ouvert, vallée par la fenêtre ; zone calme à gauche pour les chiffres | P1 | Livré |
-| `hub-tier-{5,10,20,30}-{wide,tall}-*.webp` | Progression du village | WebP transparent, un calque complet par palier, 1280/1920 et 720/1080, mêmes dimensions que le fond | Même caméra et même lumière que `child-hub-*` ; ajouts dans les zones libres | P2 | Architecture livrée (calque, scripts, capture) ; illustrations à produire avec `BRIEF_CODEX_VALLEE_PALIERS.md` |
+| `hub-tier-{5,10,20,30}-{wide,tall}-*.webp` | Progression du village | WebP transparent, un calque complet par palier, 1280/1920 et 720/1080, mêmes dimensions que le fond | Même caméra et même lumière que `child-hub-*` ; ajouts dans les zones libres | P2 | Livré ; contrôle à 375/768/1280 px avec `capture-child-valley-tiers.mjs` |
 | `xp-tree-{sprout,sapling,young,flowering,mature}-{256,512}.webp` | HUD et profil, croissance avec l'XP | WebP transparent, deux tailles | Trois-quarts, arbre courbe à fleurs ivoire, base moussue et lumière de la vallée | P1 | Livré, cinq formes |
 | `goal-waypost-{128,256,512}.webp` | Destination des objectifs libres | WebP transparent, trois tailles | Poteau en bois, carte sans texte, médaillon vide ; trois-quarts | P1 | Livré |
 
