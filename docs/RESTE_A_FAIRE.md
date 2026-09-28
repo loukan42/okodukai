@@ -12,16 +12,16 @@
 - Vérifié par `curl` (résolution DNS système), par Cloudflare/Google DNS publics, et par le propriétaire en
   navigation privée : les deux domaines renvoient le site réel. Un navigateur déjà ouvert avant la correction
   peut garder une ancienne résolution DNS en cache ; un redémarrage du navigateur suffit à la purger.
-- Reste à faire par le propriétaire, hors code : mettre à jour les balises sociales (Open Graph/Twitter) et
-  toute URL codée en dur vers `okodukai-gold.vercel.app` pour utiliser `https://okodukai.fr` maintenant que le
-  domaine propre fonctionne (voir la note plus bas sur `images/metadescription.png`).
+- Finition du 28 septembre : les balises canonical, Open Graph et Twitter utilisent `https://okodukai.fr`.
+  Le sujet VAPID par défaut utilise aussi ce domaine. La page d'accueil, l'image de partage, le favicon et
+  `/api/health` répondent sur le domaine public (HTTP 200, base et secret JWT opérationnels).
 
 ## Bilan du 27 septembre 2026 : refonte enfant livrée
 
 - Finition du 28 septembre : les quatorze autres personnages disposent désormais, comme Emma et Lucas, des six poses de jeu. Les 70 nouvelles vues ont été contrôlées côte à côte ; la place et le profil ont été revus à 375, 768 et 1280 px. Lors de la création d'un objectif libre, l'enfant choisit parmi neuf illustrations peintes. Les anciens objectifs sans choix gardent leur poteau ; aucune pièce n'est créée par ce choix.
 - La barre « Démo » permet de choisir un niveau de 1 à 30 pour l'enfant connecté, ou de revenir au niveau réel. Cet aperçu reste dans l'onglet : la vallée, l'arbre et le profil suivent le niveau choisi ; l'XP, les boosters et les cadres enregistrés ne changent pas. Le calcul de l'aperçu vient de l'API de développement. Le sélecteur n'est pas livré dans le build de production.
 - `node apps/web/scripts/capture-demo-levels.mjs` contrôle les seuils 1/5/10/20/30, le retour au niveau réel et les vues à 375/768/1280 px. Captures : `docs/screenshots/demo-level-*`. Le script vérifie que l'XP en base ne change pas.
-- Le visuel `images/metadescription.png` fourni pour les réseaux sociaux est publié en JPEG optimisé avec les balises Open Graph et Twitter. Le coffre `images/favicon.png` remplace le favicon, l'icône iOS et les icônes PWA. Les URL des balises sociales utilisent le domaine de production documenté `okodukai-gold.vercel.app` ; les adapter si le site reçoit un domaine propre.
+- Le visuel `images/metadescription.png` fourni pour les réseaux sociaux est publié en JPEG optimisé avec les balises Open Graph et Twitter. Le coffre `images/favicon.png` remplace le favicon, l'icône iOS et les icônes PWA. Les URL des balises sociales utilisent désormais `https://okodukai.fr`.
 
 - Ajout après la revue finale : trois cadres de portrait cosmétiques aux niveaux 5, 10 et 20. Le choix est conservé sur le profil enfant et vérifié côté API. Captures à 375, 768 et 1280 px : `child-portrait-frames-*`. Les 16 portraits et l'arbre d'XP restent en place.
 

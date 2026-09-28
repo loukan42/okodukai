@@ -7,7 +7,7 @@ const publicKey = process.env.VAPID_PUBLIC_KEY;
 const privateKey = process.env.VAPID_PRIVATE_KEY;
 export const pushConfigured = Boolean(publicKey && privateKey);
 export const vapidPublicKey = pushConfigured ? publicKey! : null;
-if (pushConfigured) webpush.setVapidDetails(process.env.VAPID_SUBJECT ?? "https://okodukai-gold.vercel.app", publicKey!, privateKey!);
+if (pushConfigured) webpush.setVapidDetails(process.env.VAPID_SUBJECT ?? "https://okodukai.fr", publicKey!, privateKey!);
 
 /**
  * Envoie à tous les appareils abonnés de l'enfant, chacun dans sa langue ; un abonnement expiré
