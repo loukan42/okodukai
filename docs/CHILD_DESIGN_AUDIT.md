@@ -59,4 +59,4 @@ Les captures viennent du foyer local de démonstration ; le bouton « Démo » n
 
 ## Limites constatées
 
-Les personnages de plein pied couvrent les 16 portraits : Emma et Lucas ont six poses chacun, les 14 autres une pose repos. Les contenus éditoriaux créés par le foyer et certains contenus du seed restent en français ; les traduire automatiquement risquerait de changer leur sens. Ces limites sont consignées dans `CHILD_UI_REDESIGN.md` et `CHILD_ASSET_PLAN.md` ; elles ne changent ni les soldes, ni les protections parentales.
+Les personnages de plein pied couvrent les 16 portraits et ont chacun six poses depuis le 28 septembre. Les contenus éditoriaux créés par le foyer et certains contenus du seed restent en français ; les traduire automatiquement risquerait de changer leur sens. Pour un objectif libre, l'enfant choisit l'image la plus proche de son idée parmi neuf objets. Ces limites de contenu sont consignées dans `CHILD_UI_REDESIGN.md` et `CHILD_ASSET_PLAN.md` ; elles ne changent ni les soldes, ni les protections parentales.

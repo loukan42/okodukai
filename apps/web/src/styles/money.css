@@ -704,6 +704,16 @@
   font-size: 18px;
 }
 
+.money-goal-artwork { min-width: 0; margin: 12px 0 18px; padding: 0; border: 0; }
+.money-goal-artwork legend { padding: 0; color: var(--ink); font-weight: 800; }
+.money-goal-artwork p { margin: 4px 0 12px; color: var(--ink-soft); font-size: 14px; }
+.money-goal-artwork-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; }
+.money-goal-artwork-option { display: grid; justify-items: center; align-content: center; gap: 4px; min-height: 100px; padding: 6px; border: 2px solid var(--parchment-line); border-radius: 12px; background: var(--surface); color: var(--ink); font: 700 12px var(--font-interface); cursor: pointer; }
+.money-goal-artwork-option img { width: 64px; height: 64px; object-fit: contain; }
+.money-goal-artwork-option:hover { border-color: #b38948; }
+.money-goal-artwork-option--selected { border-color: #294958; background: #e7f0e9; box-shadow: 0 0 0 2px #fff8e7 inset; }
+.money-goal-artwork-option:focus-visible { outline: 3px solid #294958; outline-offset: 2px; }
+
 .field-label {
   font-size: 13px;
   font-weight: 700;

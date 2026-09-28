@@ -228,6 +228,7 @@ const createGoalSchema = z.object({
   title: z.string().trim().min(1).max(60),
   targetCoins: z.number().int().positive().max(100_000),
   rewardId: z.string().uuid().optional(),
+  illustrationKey: z.enum(["cinema", "icecream", "dessert", "bicycle", "family-game", "music", "friend", "figurine", "book"]).optional(),
 });
 
 savingsRouter.post("/child/savings/goals", requireChild, validateBody(createGoalSchema), async (req, res) => {
@@ -251,6 +252,7 @@ savingsRouter.post("/child/savings/goals", requireChild, validateBody(createGoal
         title: fromReward?.title ?? req.body.title,
         targetCoins: fromReward?.priceCoins ?? req.body.targetCoins,
         rewardId: fromReward?.id ?? null,
+        illustrationKey: fromReward ? null : (req.body.illustrationKey ?? null),
         position: (goals.at(-1)?.position ?? -1) + 1,
       },
     });

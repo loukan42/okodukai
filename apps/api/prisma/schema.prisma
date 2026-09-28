@@ -370,6 +370,8 @@ model SavingsGoal {
   title       String
   targetCoins Int
   rewardId    String?
+  /// Objet choisi par l'enfant pour représenter un objectif libre (catalogue fixe).
+  illustrationKey String?
   /// Ordre de remplissage : Mon coffre remplit les objectifs l'un après l'autre (le plus petit d'abord).
   position    Int          @default(0)
   achievedAt  DateTime?

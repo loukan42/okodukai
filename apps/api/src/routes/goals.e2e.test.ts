@@ -23,14 +23,16 @@ describe.skipIf(!process.env.DATABASE_URL)("objectifs d'épargne", () => {
       const foreign = await prisma.reward.create({ data: { householdId: other.id, title: "Ailleurs", category: "OBJET", priceCoins: 5 } });
       const kid = { cookie: `okodukai_session=${signSession({ kind: "child", childId: child.id, householdId: household.id })}`, "content-type": "application/json" };
       const create = (body: unknown) => fetch(`${base}/child/savings/goals`, { method: "POST", headers: kid, body: JSON.stringify(body) });
-      const goals = async () => ((await (await fetch(`${base}/child/money`, { headers: kid })).json()) as { goals: { id: string; title: string; targetCoins: number; rewardId: string | null }[] }).goals;
+      const goals = async () => ((await (await fetch(`${base}/child/money`, { headers: kid })).json()) as { goals: { id: string; title: string; targetCoins: number; rewardId: string | null; illustrationKey: string | null }[] }).goals;
 
+      expect((await create({ title: "Autre", targetCoins: 10, illustrationKey: "javascript:bad" })).status).toBe(400);
       expect((await create({ title: "x", targetCoins: 1, rewardId: foreign.id })).status).toBe(404);
-      expect((await create({ title: "Pas le vrai titre", targetCoins: 1, rewardId: reward.id })).status).toBe(201);
-      expect((await create({ title: "Un livre", targetCoins: 25 })).status).toBe(201);
+      expect((await create({ title: "Pas le vrai titre", targetCoins: 1, rewardId: reward.id, illustrationKey: "book" })).status).toBe(201);
+      expect((await create({ title: "Un livre", targetCoins: 25, illustrationKey: "book" })).status).toBe(201);
       let list = await goals();
       expect(list.map((g) => g.title)).toEqual(["Sortie vélo", "Un livre"]);
-      expect(list[0]).toMatchObject({ targetCoins: 40, rewardId: reward.id });
+      expect(list[0]).toMatchObject({ targetCoins: 40, rewardId: reward.id, illustrationKey: null });
+      expect(list[1].illustrationKey).toBe("book");
 
       const order = (goalIds: string[]) => fetch(`${base}/child/savings/goals/order`, { method: "POST", headers: kid, body: JSON.stringify({ goalIds }) });
       expect((await order([list[1].id])).status).toBe(400);

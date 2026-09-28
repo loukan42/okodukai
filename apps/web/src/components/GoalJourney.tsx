@@ -1,5 +1,6 @@
 import { CoinArt } from "../art/CoinArt";
 import { rewardArtworkName } from "./RewardArt";
+import { isGoalArtworkKey } from "../lib/goalArtwork";
 import { defineCopy, useCopy } from "../i18n";
 import "../styles/goal-journey.css";
 
@@ -9,9 +10,9 @@ const copy = defineCopy({
 });
 
 /** A visual path to a goal; the progress values always come from the server. */
-export function GoalJourney({ title, present, target }: { title: string; present: number; target: number }) {
+export function GoalJourney({ title, present, target, illustrationKey = null }: { title: string; present: number; target: number; illustrationKey?: string | null }) {
   const t = useCopy(copy);
-  const art = rewardArtworkName(title);
+  const art = isGoalArtworkKey(illustrationKey) ? illustrationKey : rewardArtworkName(title);
   const capped = Math.min(Math.max(0, present), Math.max(1, target));
   const percent = Math.min(100, Math.max(0, target > 0 ? present / target * 100 : 0));
   const image = art ? `/assets/rewards/reward-${art}` : "/assets/goals/goal-waypost";

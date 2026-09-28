@@ -8,6 +8,59 @@ const webRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const source = join(webRoot, "art", "source", "child");
 const output = join(webRoot, "public", "assets");
 
+/** Retain the principal figure in a sprite cell; occasional fragments from the
+ * neighbouring row must not become stray marks around a character. */
+function isolatePoseCell(sheet, sheetWidth, left, top) {
+  const side = 512;
+  const pixels = Buffer.alloc(side * side * 4);
+  for (let y = 0; y < side; y++) sheet.copy(pixels, y * side * 4, ((top + y) * sheetWidth + left) * 4, ((top + y) * sheetWidth + left + side) * 4);
+  const seen = new Uint8Array(side * side);
+  const queue = new Uint32Array(side * side);
+  let largest = new Uint32Array(0);
+  for (let start = 0; start < seen.length; start++) {
+    if (seen[start] || pixels[start * 4 + 3] < 64) continue;
+    let head = 0, tail = 1;
+    queue[0] = start;
+    seen[start] = 1;
+    while (head < tail) {
+      const index = queue[head++];
+      const x = index % side, y = (index / side) | 0;
+      for (const neighbour of [x > 0 ? index - 1 : -1, x < side - 1 ? index + 1 : -1, y > 0 ? index - side : -1, y < side - 1 ? index + side : -1]) {
+        if (neighbour < 0 || seen[neighbour] || pixels[neighbour * 4 + 3] < 64) continue;
+        seen[neighbour] = 1;
+        queue[tail++] = neighbour;
+      }
+    }
+    if (tail > largest.length) largest = queue.slice(0, tail);
+  }
+  if (largest.length < 10000) throw new Error("Pose trop petite ou absente dans la planche");
+  let keep = new Uint8Array(side * side);
+  for (const index of largest) keep[index] = 1;
+  for (let step = 0; step < 3; step++) {
+    const expanded = keep.slice();
+    for (let index = 0; index < keep.length; index++) {
+      if (!keep[index]) continue;
+      const x = index % side, y = (index / side) | 0;
+      if (x > 0) expanded[index - 1] = 1;
+      if (x < side - 1) expanded[index + 1] = 1;
+      if (y > 0) expanded[index - side] = 1;
+      if (y < side - 1) expanded[index + side] = 1;
+    }
+    keep = expanded;
+  }
+  let minX = side, minY = side, maxX = -1, maxY = -1;
+  for (let index = 0; index < keep.length; index++) {
+    if (!keep[index]) { pixels[index * 4 + 3] = 0; continue; }
+    if (pixels[index * 4 + 3] === 0) continue;
+    const x = index % side, y = (index / side) | 0;
+    minX = Math.min(minX, x); minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
+  }
+  const pad = 6;
+  const crop = { left: Math.max(0, minX - pad), top: Math.max(0, minY - pad), width: Math.min(side - 1, maxX + pad) - Math.max(0, minX - pad) + 1, height: Math.min(side - 1, maxY + pad) - Math.max(0, minY - pad) + 1 };
+  return sharp(pixels, { raw: { width: side, height: side, channels: 4 } }).extract(crop).png().toBuffer();
+}
+
 const images = [
   ...["01", "02", "03", "04", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16"].map((id) => ({ name: `adventurer-${id}-idle`, folder: "characters", sizes: [256, 512, 768] })),
   ...["home", "autonomy", "learning", "help", "creativity", "school", "garden", "animals"].map((name) => ({ name: `quest-${name}`, folder: "quests", sizes: [180, 360, 540] })),
@@ -76,6 +129,29 @@ for (const item of images) {
       .webp({ quality: item.quality ?? 84, effort: 6, alphaQuality: item.alphaQuality ?? 95 })
       .toFile(target);
     console.log(target);
+  }
+}
+
+// Les planches des 14 autres personnages portent six poses dans une grille 2 × 3.
+// La pose repos déjà publiée garde sa source d'origine ; on extrait les cinq
+// expressions nouvelles, en recadrant sur les pixels visibles de chaque case.
+const additionalCharacters = ["01", "02", "03", "04", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16"];
+const additionalPoses = ["happy", "proud", "thinking", "victory", "discovery"];
+for (const id of additionalCharacters) {
+  const sheet = join(source, "pose-sheets", `adventurer-${id}-poses.png`);
+  if (!existsSync(sheet)) throw new Error(`Planche de poses manquante : ${sheet}`);
+  const { data, info } = await sharp(sheet).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  if (info.width !== 1024 || info.height !== 1536) throw new Error(`Planche de poses mal cadrée : ${sheet}`);
+  for (const [index, pose] of additionalPoses.entries()) {
+    const cell = index + 1;
+    const left = (cell % 2) * 512;
+    const top = Math.floor(cell / 2) * 512;
+    const cutout = await isolatePoseCell(data, info.width, left, top);
+    for (const width of [256, 512]) {
+      const target = join(output, "characters", `adventurer-${id}-${pose}-${width}.webp`);
+      await sharp(cutout).resize({ width }).webp({ quality: 84, effort: 6, alphaQuality: 95 }).toFile(target);
+      console.log(target);
+    }
   }
 }
 

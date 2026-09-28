@@ -5,6 +5,7 @@ import { api, ApiError } from "../../../lib/api";
 import { chestStateFor, intentKey, pieces, type MoneyOverview } from "../../../lib/money";
 import { ChestArt } from "../../../art/ChestArt";
 import { GoalJourney } from "../../../components/GoalJourney";
+import { GOAL_ARTWORKS, type GoalArtworkKey } from "../../../lib/goalArtwork";
 import { MoneyLoadError, useMoneyOverview } from "./MoneyAccount";
 import { FinanceTip } from "../../../components/finance/FinanceTip";
 import { FinanceQuestion } from "../../../components/finance/FinanceQuestion";
@@ -75,6 +76,9 @@ const COPY = defineCopy({
     placeholder: "Un livre, un vélo, une sortie…",
     howMany: "Combien de pièces ?",
     quick: "Montants rapides",
+    artLabel: "Choisis une image pour ton objectif",
+    artHint: "Elle t'attendra au bout du chemin. Choisis celle qui ressemble le plus à ton idée.",
+    artNames: { book: "Livre", bicycle: "Vélo", cinema: "Cinéma", icecream: "Glace", dessert: "Dessert", "family-game": "Jeu en famille", music: "Musique", friend: "Ami", figurine: "Figurine" },
     save: "Enregistrer l'objectif",
     orReward: "Ou vise une récompense de la boutique :",
     rewards: "Récompenses de la boutique",
@@ -134,6 +138,9 @@ const COPY = defineCopy({
     placeholder: "A book, a bike, a day out…",
     howMany: "How many coins?",
     quick: "Quick amounts",
+    artLabel: "Choose a picture for your goal",
+    artHint: "You'll see it at the end of the path. Pick the closest match to your idea.",
+    artNames: { book: "Book", bicycle: "Bike", cinema: "Cinema", icecream: "Ice cream", dessert: "Dessert", "family-game": "Family game", music: "Music", friend: "Friend", figurine: "Figure" },
     save: "Save the goal",
     orReward: "Or aim for a reward from the shop:",
     rewards: "Shop rewards",
@@ -198,6 +205,7 @@ export function MoneyVault() {
   const [bump, setBump] = useState(false);
   const [goalTitle, setGoalTitle] = useState("");
   const [goalTarget, setGoalTarget] = useState(50);
+  const [goalArtwork, setGoalArtwork] = useState<GoalArtworkKey | null>(null);
   const [goalError, setGoalError] = useState<string | null>(null);
   const [rewards, setRewards] = useState<{ id: string; title: string; priceCoins: number }[]>([]);
   const [explained] = useState(explainedBefore);
@@ -268,10 +276,12 @@ export function MoneyVault() {
 
   async function createGoal(e: FormEvent) {
     e.preventDefault();
+    if (!goalArtwork) return;
     setGoalError(null);
     try {
-      await api.post("/child/savings/goals", { title: goalTitle.trim(), targetCoins: goalTarget });
+      await api.post("/child/savings/goals", { title: goalTitle.trim(), targetCoins: goalTarget, illustrationKey: goalArtwork });
       setGoalTitle("");
+      setGoalArtwork(null);
       await reload();
     } catch (err) {
       setGoalError(err instanceof ApiError && err.status !== 0 ? err.message : t.goalFailed);
@@ -414,7 +424,7 @@ export function MoneyVault() {
                 </strong>
                 <span>{t.of(goal.present, goal.targetCoins)}</span>
               </div>
-              <GoalJourney title={goal.title} present={goal.present} target={goal.targetCoins} />
+              <GoalJourney title={goal.title} present={goal.present} target={goal.targetCoins} illustrationKey={goal.illustrationKey} />
               <p>{goal.reached ? (goal.rewardId ? t.reachedShop(goal.title) : t.reached) : t.missing(pieces(goal.missing))}</p>
               {data.goals.length > 1 && (
                 <div className="money-goal-order">
@@ -445,6 +455,16 @@ export function MoneyVault() {
               <label htmlFor="goal-title">{t.what}</label>
               <input id="goal-title" value={goalTitle} onChange={(e) => setGoalTitle(e.target.value)} maxLength={60} placeholder={t.placeholder} required />
             </div>
+            <fieldset className="money-goal-artwork">
+              <legend>{t.artLabel}</legend>
+              <p>{t.artHint}</p>
+              <div className="money-goal-artwork-options">
+                {GOAL_ARTWORKS.map((key) => <button key={key} type="button" className={`money-goal-artwork-option${goalArtwork === key ? " money-goal-artwork-option--selected" : ""}`} aria-pressed={goalArtwork === key} onClick={() => setGoalArtwork(key)}>
+                  <img src={`/assets/rewards/reward-${key}-256.webp`} alt="" loading="lazy" width="64" height="64" />
+                  <span>{t.artNames[key]}</span>
+                </button>)}
+              </div>
+            </fieldset>
             <div className="field">
               <span className="field-label" id="goal-target-label">
                 {t.howMany}
@@ -460,7 +480,7 @@ export function MoneyVault() {
                 ))}
               </div>
             </div>
-            <button type="submit" className="btn btn-primary btn-block" disabled={!goalTitle.trim()}>
+            <button type="submit" className="btn btn-primary btn-block" disabled={!goalTitle.trim() || !goalArtwork}>
               {t.save}
             </button>
             {rewards.some((r) => !data.goals.some((g) => g.rewardId === r.id)) && (

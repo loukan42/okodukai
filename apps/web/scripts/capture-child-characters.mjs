@@ -40,7 +40,8 @@ try {
             await character.evaluate((image) => image.decode());
           }
           const imageName = await character.getAttribute("src");
-          if (!imageName?.includes(`adventurer-${id}-idle-`)) throw new Error(`${screen} ${width}px: expected full-body avatar ${id}, got ${imageName}`);
+          const expectedPose = screen === "home" ? "happy" : "proud";
+          if (!imageName?.includes(`adventurer-${id}-${expectedPose}-`)) throw new Error(`${screen} ${width}px: expected full-body avatar ${id} in ${expectedPose} pose, got ${imageName}`);
           if (screen === "profile") {
             const fit = await page.evaluate(() => {
               const scene = document.querySelector(".character-scene")?.getBoundingClientRect();
