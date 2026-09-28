@@ -74,6 +74,9 @@
 - Le texte préparatoire et l'inventaire des données vérifiées sont dans `docs/CONFIDENTIALITE_A_VALIDER.md`.
   La publication attend l'identité et les coordonnées du responsable, les durées retenues, les prestataires
   effectifs et une procédure d'exercice des droits. Ne pas publier les champs de ce brouillon tels quels.
+- L'inscription demande maintenant de ne pas saisir de données sensibles (santé, convictions, vie intime)
+  dans les profils, quêtes ou objectifs. Aucun champ ne les demande ; les champs libres peuvent toutefois
+  en recevoir. Cette consigne ne remplace pas la notice RGPD attendue.
 
 ## Point d'étape du 27 septembre 2026 : roster complet de personnages en pied
 

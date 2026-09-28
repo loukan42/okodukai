@@ -178,6 +178,16 @@
   color: var(--ink-faint);
 }
 
+.world-data-note {
+  margin: 0 0 18px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--gold);
+  background: rgba(246, 240, 223, 0.75);
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .world-footnote {
   margin: 18px 0 0;
   font-size: 13px;

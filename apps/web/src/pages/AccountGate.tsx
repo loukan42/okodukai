@@ -30,6 +30,7 @@ const TEXT = defineCopy({
     fallback: "La connexion n'a pas abouti. Réessayez dans un instant.",
     privacy: "Aucun paiement, aucune carte bancaire : les pièces d'Okodukai restent virtuelles.",
     accountPrivacy: "Votre e-mail sert à vous connecter. L'administrateur du service peut le consulter pour gérer votre compte.",
+    sensitiveData: "Ne saisissez pas de données sensibles sur votre famille (santé, convictions, vie intime) dans les profils, quêtes ou objectifs que vous créerez.",
     noApp: "Ça marche directement dans le navigateur, sur ordinateur comme sur le téléphone de votre enfant : rien à télécharger.",
   },
   en: {
@@ -48,6 +49,7 @@ const TEXT = defineCopy({
     fallback: "We couldn't log you in. Try again in a moment.",
     privacy: "No payment and no bank card: Okodukai coins are only virtual.",
     accountPrivacy: "Your email is used to sign in. The service administrator can view it to manage your account.",
+    sensitiveData: "Do not enter sensitive information about your family (health, beliefs or intimate life) in the profiles, quests or goals you create.",
     noApp: "It works directly in the browser, on a computer or on your child's phone: nothing to download.",
   },
 });
@@ -150,6 +152,7 @@ export function AccountGate() {
             {COPY.passwordHint}
           </p>
         </div>
+        <p className="world-data-note">{COPY.sensitiveData}</p>
         <button type="submit" className="btn btn-quest btn-block" disabled={submitting}>
           {submitting ? COPY.submitting : COPY.submit}
         </button>

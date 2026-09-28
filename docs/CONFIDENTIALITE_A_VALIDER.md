@@ -2,6 +2,8 @@
 
 Ce document n'est pas publié dans l'application. Il rassemble les faits vérifiés dans le code et les décisions que le responsable du traitement doit confirmer avant la mise en ligne de `/confidentialite`. Les champs entre crochets ne sont pas des coordonnées de contact utilisables.
 
+L'application ne comporte pas de champ destiné aux données sensibles au sens du RGPD. Une consigne à l'inscription demande désormais de ne pas en saisir dans les profils, quêtes ou objectifs. Ces champs libres pourraient malgré tout en recevoir. L'e-mail du parent, les noms de profils et l'activité des enfants restent des données personnelles : cette consigne ne remplace pas la notice d'information.
+
 ## Informations à confirmer
 
 1. Nom ou raison sociale, adresse postale publique et adresse e-mail de contact du responsable du traitement.
