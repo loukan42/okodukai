@@ -15,6 +15,11 @@
 - Finition du 28 septembre : les balises canonical, Open Graph et Twitter utilisent `https://okodukai.fr`.
   Le sujet VAPID par défaut utilise aussi ce domaine. La page d'accueil, l'image de partage, le favicon et
   `/api/health` répondent sur le domaine public (HTTP 200, base et secret JWT opérationnels).
+- Contrôle après déploiement : les nouvelles balises sont bien servies sur `okodukai.fr` ; `www`,
+  `/inscription` et la route de l'invitation enfant répondent. L'image sociale, les icônes iOS/PWA et le
+  favicon ont le bon type de contenu. Sans session, `/api/auth/me`, `/api/admin/users` et `/api/child/me`
+  répondent 401 ; un lien enfant invalide répond 404. Un parcours connecté de production n'a pas été
+  exécuté sans compte de test dédié.
 
 ## Bilan du 27 septembre 2026 : refonte enfant livrée
 
@@ -63,6 +68,9 @@
 - La page Administration affiche les e-mails et dates d'inscription des comptes parents, 25 par page. L'API `/admin/users` sélectionne uniquement ces champs, relit le droit admin en base à chaque requête et interdit la mise en cache, y compris pour les accès refusés. Les enfants et l'activité individuelle ne figurent pas dans cette liste.
 - L'écran de connexion informe les parents que l'administrateur peut consulter leur e-mail pour gérer les comptes. Tableau vérifié dans Chrome avec un admin local à 375 et 1280 px, sans débordement horizontal. Builds API/web et test d'accès admin verts.
 - À compléter pour la conformité RGPD : notice de confidentialité publique, base juridique des finalités, durées de conservation et modalités d'exercice des droits. Ces choix demandent les informations du responsable de traitement ; voir `docs/ADMIN_ANALYTICS.md`.
+- Le texte préparatoire et l'inventaire des données vérifiées sont dans `docs/CONFIDENTIALITE_A_VALIDER.md`.
+  La publication attend l'identité et les coordonnées du responsable, les durées retenues, les prestataires
+  effectifs et une procédure d'exercice des droits. Ne pas publier les champs de ce brouillon tels quels.
 
 ## Point d'étape du 27 septembre 2026 : roster complet de personnages en pied
 
@@ -211,7 +219,7 @@ P1, P2 et P3 sont faits (détail dans chaque section). Ce qui reste demande le p
      relancer le déploiement.
    - Si la base passe par un pooler (PgBouncer), `migrate deploy` peut exiger une URL directe
      (`directUrl` dans `schema.prisma`).
-3. Contrôle : `https://okodukai-gold.vercel.app/api/health` doit renvoyer `"database":"ok"` et
+3. Contrôle : `https://okodukai.fr/api/health` doit renvoyer `"database":"ok"` et
    `"jwtSecret":"ok"`.
 4. Les images de cartes et les anciens avatars (Héros de la classe) sont **gitignorés** : en prod, les
    cartes n'ont pas d'image. Il faut un vrai stockage (S3, Supabase storage propre à Okodukai ou Git
