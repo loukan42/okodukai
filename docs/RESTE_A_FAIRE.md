@@ -1,5 +1,19 @@
 # Reste à faire : passation (26 septembre 2026)
 
+## Point d'étape du 28 septembre 2026 : spot TV Okodukai v2
+
+- Projet source : `videos/okodukai-tv/` (brief, script, storyboard, composition HyperFrames, assets et outils de
+  mixage/mastering). Quatre rendus locaux : source 4K, ProRes TV, MP4 TV et MP4 web. Les fichiers vidéo lourds
+  et WAV générés restent hors Git ; les planches contact sont versionnées.
+- Contrôle du MP4 PAD final à une image par seconde : sept scènes cohérentes, 105 cartes affichées à la fin du
+  compteur, signature lisible, aucune plage noire détectée. Les trois masters 1080p font 30,000 s et 750 images
+  à 25 i/s progressives ; audio TV −23,0 LUFS / −11,2 dBTP, web −14,0 LUFS / −2,2 dBTP.
+- **Reste avant diffusion** : recevoir les sept répliques Marishnou (`assets/vo/vo-1` à `vo-7`), choisir une piste
+  musicale définitive si la synthèse actuelle n'est pas retenue, relancer `mix.mjs`, le rendu et `master.mjs`, puis
+  contrôler de nouveau image et son. La voix des rendus actuels est encore la piste témoin Hortense. Prendre en
+  compte le visa ARPP et les spécifications de la régie (voir le README du spot).
+- `npm run check` n'a pas pu être rejoué dans cette session hors ligne : HyperFrames 0.8.81 n'est pas en cache npm.
+
 ## Point d'étape du 27 septembre 2026 : domaine okodukai.fr configuré
 
 - Le domaine acheté sur OVH est relié au projet Vercel `okodukai` : `okodukai.fr` et `www.okodukai.fr`

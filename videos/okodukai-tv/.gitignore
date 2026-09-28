@@ -1,0 +1,5 @@
+# Masters and generated audio stay local; the source project and review sheets are versioned.
+renders/*.mp4
+renders/*.mov
+renders/qc-*.png
+assets/soundtrack*.wav

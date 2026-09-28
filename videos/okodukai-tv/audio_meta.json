@@ -1,0 +1,51 @@
+{
+  "duration": 30,
+  "sample_rate": 48000,
+  "bpm": 125,
+  "music": "synthèse originale (tools/mix.mjs)",
+  "voice": "piste témoin Windows Hortense",
+  "lines": [
+    {
+      "line": 1,
+      "start": 0.36,
+      "end": 1.88,
+      "file": "assets\\vo-guide\\vo-1.wav"
+    },
+    {
+      "line": 2,
+      "start": 2.96,
+      "end": 6.99,
+      "file": "assets\\vo-guide\\vo-2.wav"
+    },
+    {
+      "line": 3,
+      "start": 7.4,
+      "end": 11.25,
+      "file": "assets\\vo-guide\\vo-3.wav"
+    },
+    {
+      "line": 4,
+      "start": 12.25,
+      "end": 15.18,
+      "file": "assets\\vo-guide\\vo-4.wav"
+    },
+    {
+      "line": 5,
+      "start": 15.6,
+      "end": 18.01,
+      "file": "assets\\vo-guide\\vo-5.wav"
+    },
+    {
+      "line": 6,
+      "start": 19,
+      "end": 22.29,
+      "file": "assets\\vo-guide\\vo-6.wav"
+    },
+    {
+      "line": 7,
+      "start": 23.42,
+      "end": 28.77,
+      "file": "assets\\vo-guide\\vo-7.wav"
+    }
+  ]
+}
