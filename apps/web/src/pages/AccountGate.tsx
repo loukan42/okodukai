@@ -16,7 +16,7 @@ interface ContinueResponse {
 const TEXT = defineCopy({
   fr: {
     title: "Votre compte Okodukai",
-    lead: "Continuez avec Google ou utilisez votre e-mail et votre mot de passe. Votre compte est créé si vous êtes nouveau.",
+    lead: "Utilisez votre e-mail et votre mot de passe. Si vous êtes nouveau, votre compte sera créé.",
     email: "E-mail",
     password: "Mot de passe",
     passwordHint: "8 caractères minimum pour un nouveau compte.",
@@ -34,7 +34,7 @@ const TEXT = defineCopy({
   },
   en: {
     title: "Your Okodukai account",
-    lead: "Continue with Google or use your email and password. We'll create an account if you're new.",
+    lead: "Use your email and password. If you're new, we'll create your account.",
     email: "Email",
     password: "Password",
     passwordHint: "At least 8 characters for a new account.",

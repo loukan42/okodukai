@@ -19,7 +19,10 @@
   `/inscription` et la route de l'invitation enfant répondent. L'image sociale, les icônes iOS/PWA et le
   favicon ont le bon type de contenu. Sans session, `/api/auth/me`, `/api/admin/users` et `/api/child/me`
   répondent 401 ; un lien enfant invalide répond 404. Un parcours connecté de production n'a pas été
-  exécuté sans compte de test dédié.
+  exécuté sans compte de test dédié. L'écran d'inscription s'affiche en navigateur aux largeurs 375, 768
+  et 1280 px sans débordement. La connexion Google est indisponible dans la configuration de production
+  observée ; l'entrée par e-mail et mot de passe reste proposée. Le texte d'introduction ne promet plus
+  Google tant que son bouton ne peut pas apparaître.
 
 ## Bilan du 27 septembre 2026 : refonte enfant livrée
 
